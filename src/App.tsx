@@ -11,6 +11,7 @@ import Clientes from "./pages/Clientes";
 import Prontuario from "./pages/Prontuario";
 import Configuracoes from "./pages/Configuracoes";
 import Financeiro from "./pages/Financeiro";
+import Estoque from "./pages/Estoque";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,9 +30,9 @@ const App = () => (
             <Route path="/prontuarios" element={<Prontuario />} />
             <Route path="/configuracoes" element={<Configuracoes />} />
             <Route path="/financeiro" element={<Financeiro />} />
+            <Route path="/estoque" element={<Estoque />} />
             {/* Placeholder routes for other pages */}
             <Route path="/pets" element={<div className="text-center py-12"><h2 className="text-2xl font-bold text-muted-foreground">Página de Pets em desenvolvimento</h2></div>} />
-            <Route path="/estoque" element={<div className="text-center py-12"><h2 className="text-2xl font-bold text-muted-foreground">Página de Estoque em desenvolvimento</h2></div>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Layout>
