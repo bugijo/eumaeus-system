@@ -25,6 +25,8 @@ import {
 
 const Clientes = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+  const [selectedClient, setSelectedClient] = useState(null);
 
   // Sample clients data
   const clients = [
@@ -122,14 +124,41 @@ const Clientes = () => {
       : 'bg-gray-100 text-gray-800';
   };
 
+  // Handlers para o modal
+  const handleNewClient = () => {
+    setSelectedClient(null);
+    setIsFormModalOpen(true);
+  };
+
+  const handleEdit = (client: any) => {
+    setSelectedClient(client);
+    setIsFormModalOpen(true);
+  };
+
+  const handleFormSuccess = () => {
+    setIsFormModalOpen(false);
+    setSelectedClient(null);
+    // Aqui você pode adicionar lógica para atualizar a lista de clientes
+  };
+
+  const handleFormCancel = () => {
+    setIsFormModalOpen(false);
+    setSelectedClient(null);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-foreground flex items-center">
-          <Users className="h-6 w-6 mr-2 text-primary" />
-          Gestão de Clientes
-        </h1>
-        <Button className="gradient-pink text-white hover:opacity-90">
+        <div className="flex items-center space-x-3">
+          <div className="w-8 h-8 rounded-lg gradient-pink flex items-center justify-center">
+            <Users className="w-5 h-5 text-white" />
+          </div>
+          <h1 className="text-2xl font-bold text-gradient">Gestão de Clientes</h1>
+        </div>
+        <Button 
+          className="gradient-pink text-white hover:opacity-90"
+          onClick={handleNewClient}
+        >
           <Plus className="h-4 w-4 mr-2" />
           Novo Cliente
         </Button>
@@ -227,7 +256,12 @@ const Clientes = () => {
                         <Button variant="outline" size="icon" className="h-8 w-8">
                           <Eye className="h-4 w-4" />
                         </Button>
-                        <Button variant="outline" size="icon" className="h-8 w-8">
+                        <Button 
+                          variant="outline" 
+                          size="icon" 
+                          className="h-8 w-8"
+                          onClick={() => handleEdit(client)}
+                        >
                           <Edit className="h-4 w-4" />
                         </Button>
                       </div>

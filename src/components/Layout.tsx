@@ -13,7 +13,9 @@ import {
   LogOut,
   Search,
   Bell,
-  User
+  User,
+  Menu,
+  X
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,6 +33,7 @@ interface LayoutProps {
 
 const Layout = ({ children }: LayoutProps) => {
   const location = useLocation();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const navigationItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
@@ -44,14 +47,35 @@ const Layout = ({ children }: LayoutProps) => {
   ];
 
   return (
-    <div className="min-h-screen flex w-full bg-muted/30">
+    <div className="relative h-screen bg-gray-50">
       {/* Sidebar */}
-      <div className="w-64 bg-sidebar border-r border-sidebar-border flex flex-col">
+      <aside 
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-all duration-300 ease-in-out ${
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+        onMouseEnter={() => setSidebarOpen(true)}
+        onMouseLeave={() => setSidebarOpen(false)}
+      >
+        {/* Close button for mobile */}
+        <div className="absolute top-4 right-4 md:hidden">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={() => setSidebarOpen(false)}
+            className="h-8 w-8"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
         {/* Logo Section */}
         <div className="p-6 border-b border-sidebar-border">
           <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 rounded-lg gradient-pink flex items-center justify-center">
-              <PawPrint className="w-6 h-6 text-white" />
+            <div className="w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden">
+              <img 
+                src="/logo-vetdev.jpg" 
+                alt="Logo Clínica Veterinária" 
+                className="w-12 h-12 object-cover rounded-lg"
+              />
             </div>
             <div>
               <h2 className="font-semibold text-sidebar-foreground text-sm">Clínica Veterinária</h2>
@@ -90,32 +114,52 @@ const Layout = ({ children }: LayoutProps) => {
             <span>Sair</span>
           </button>
         </div>
-      </div>
+      </aside>
+
+      {/* Sidebar Hover Trigger */}
+      <div 
+        className="fixed left-0 top-0 w-4 h-full z-40"
+        onMouseEnter={() => setSidebarOpen(true)}
+      ></div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      <div className={`flex flex-col h-full transition-all duration-300 ${
+        sidebarOpen ? 'ml-64' : 'ml-0'
+      }`}>
         {/* Top Header */}
-        <header className="bg-white border-b border-border p-4 flex items-center justify-between">
+        <header className="bg-gradient-to-r from-pink-100 to-pink-200 border-b border-pink-300 p-4 flex items-center justify-between shadow-sm">
           <div className="flex items-center space-x-4">
-            <h1 className="text-lg font-semibold text-foreground">
-              Bem-vinda, Dra. Fernanda! 👋
-            </h1>
+            {/* Menu Toggle Button */}
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="h-8 w-8 text-pink-700 hover:bg-pink-200"
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+            
+            <div className="px-4 py-2 rounded-lg bg-gradient-to-r from-pink-200 to-pink-300">
+              <h1 className="text-lg font-semibold text-pink-800">
+                Bem-vinda, Dra. Fernanda! 👋
+              </h1>
+            </div>
           </div>
 
           <div className="flex items-center space-x-4">
             {/* Search Bar */}
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-pink-600" />
               <Input
                 placeholder="Buscar..."
-                className="pl-10 w-64"
+                className="pl-10 w-64 border-pink-300 focus:border-pink-500 focus:ring-pink-500 bg-white/80"
               />
             </div>
 
             {/* Notifications */}
-            <Button variant="ghost" size="icon" className="relative">
+            <Button variant="ghost" size="icon" className="relative text-pink-700 hover:bg-pink-200">
               <Bell className="w-5 h-5" />
-              <span className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full"></span>
+              <span className="absolute -top-1 -right-1 w-3 h-3 bg-pink-500 rounded-full"></span>
             </Button>
 
             {/* User Menu */}
@@ -143,7 +187,7 @@ const Layout = ({ children }: LayoutProps) => {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-6">
+        <main className="flex-1 p-6 transition-all duration-300">
           {children}
         </main>
       </div>

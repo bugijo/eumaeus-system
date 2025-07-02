@@ -118,14 +118,19 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
+      <div className="flex items-center space-x-3">
+        <div className="w-8 h-8 rounded-lg gradient-pink flex items-center justify-center">
+          <Stethoscope className="w-5 h-5 text-white" />
+        </div>
+        <h1 className="text-2xl font-bold text-gradient">Dashboard</h1>
+      </div>
       
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, index) => {
           const Icon = stat.icon;
           return (
-            <Card key={index} className="hover:shadow-lg transition-shadow">
+            <Card key={index} className="card-vet border-gradient">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   {stat.title}
@@ -149,9 +154,9 @@ const Dashboard = () => {
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Upcoming Appointments */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
+        <Card className="card-vet">
+          <CardHeader className="border-gradient">
+            <CardTitle className="flex items-center text-gradient">
               <Clock className="h-5 w-5 mr-2 text-primary" />
               Próximos Agendamentos
             </CardTitle>
@@ -177,9 +182,9 @@ const Dashboard = () => {
         </Card>
 
         {/* Recent Activities */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
+        <Card className="card-vet">
+          <CardHeader className="border-gradient">
+            <CardTitle className="flex items-center text-gradient">
               <TrendingUp className="h-5 w-5 mr-2 text-primary" />
               Atividades Recentes
             </CardTitle>
