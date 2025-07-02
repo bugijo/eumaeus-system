@@ -1,0 +1,9 @@
+import { Request, Response } from 'express';
+export declare class AppointmentController {
+    static getAllAppointments(req: Request, res: Response): void;
+    static createAppointment(req: Request, res: Response): void;
+    static getAppointmentById(req: Request, res: Response): void;
+    static updateAppointment(req: Request, res: Response): void;
+    static deleteAppointment(req: Request, res: Response): void;
+}
+//# sourceMappingURL=appointment.controller.d.ts.map

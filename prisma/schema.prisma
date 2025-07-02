@@ -1,0 +1,100 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Para controlar o status do agendamento de forma padronizada
+enum AppointmentStatus {
+  SCHEDULED
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+// 1. Modelo para o Tutor (Dono do Pet)
+model Tutor {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  name      String
+  email     String   @unique
+  phone     String
+  address   String?  // O '?' indica que o campo é opcional
+
+  // Relacionamento: Um Tutor pode ter vários Pets
+  pets         Pet[]
+  appointments Appointment[]
+}
+
+// 2. Modelo para o Pet
+model Pet {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  name      String
+  species   String   // Ex: "Cachorro", "Gato"
+  breed     String   // Ex: "SRD", "Poodle"
+  birthDate DateTime?
+
+  // Relacionamento: Um Pet pertence a um Tutor
+  tutorId      Int
+  tutor        Tutor    @relation(fields: [tutorId], references: [id])
+  appointments Appointment[]
+}
+
+// 3. Modelo para o Agendamento
+model Appointment {
+  id              Int      @id @default(autoincrement())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  appointmentDate DateTime
+  status          AppointmentStatus @default(SCHEDULED)
+  notes           String?
+
+  // Relacionamento: Um agendamento é para um Pet
+  petId           Int
+  pet             Pet      @relation(fields: [petId], references: [id])
+  
+  // Relacionamento: E pertence a um Tutor
+  tutorId         Int
+  tutor           Tutor    @relation(fields: [tutorId], references: [id])
+
+  // Relacionamento: Um agendamento gera um prontuário (1-para-1)
+  medicalRecord   MedicalRecord?
+
+  // Relacionamento: Um agendamento pode ter vários serviços (consulta, vacina, etc.)
+  services        Service[]
+}
+
+// 4. Modelo para o Prontuário Eletrônico
+model MedicalRecord {
+  id            Int      @id @default(autoincrement())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  symptoms      String
+  diagnosis     String
+  treatment     String
+  notes         String?
+
+  // Relacionamento: O prontuário pertence a um agendamento
+  appointmentId Int      @unique // @unique garante que cada agendamento só tenha um prontuário
+  appointment   Appointment @relation(fields: [appointmentId], references: [id])
+}
+
+// 5. Modelo para Serviços e Produtos (para faturamento)
+model Service {
+  id            Int      @id @default(autoincrement())
+  name          String   // Ex: "Consulta", "Vacina V10", "Raio-X"
+  price         Float
+  
+  // Relacionamento: O serviço está vinculado a um agendamento
+  appointmentId Int
+  appointment   Appointment @relation(fields: [appointmentId], references: [id])
+}

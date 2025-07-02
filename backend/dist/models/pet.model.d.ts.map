@@ -1,0 +1,1 @@
+{"version":3,"file":"pet.model.d.ts","sourceRoot":"","sources":["../../src/models/pet.model.ts"],"names":[],"mappings":"AAAA,MAAM,WAAW,GAAG;IAClB,EAAE,EAAE,MAAM,CAAC;IACX,IAAI,EAAE,MAAM,CAAC;IACb,OAAO,EAAE,MAAM,CAAC;IAChB,KAAK,EAAE,MAAM,CAAC;IACd,MAAM,EAAE,MAAM,CAAC;IACf,OAAO,EAAE,MAAM,CAAC;CACjB"}
