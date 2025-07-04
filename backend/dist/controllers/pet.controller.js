@@ -81,6 +81,20 @@ class PetController {
             res.status(500).json({ error: 'Erro interno do servidor' });
         }
     }
+    static getPetsByTutor(req, res) {
+        try {
+            const tutorId = parseInt(req.params.tutorId);
+            if (isNaN(tutorId)) {
+                res.status(400).json({ error: 'ID do tutor inválido' });
+                return;
+            }
+            const pets = pet_service_1.PetService.getPetsByTutorId(tutorId);
+            res.status(200).json(pets);
+        }
+        catch (error) {
+            res.status(500).json({ error: 'Erro interno do servidor' });
+        }
+    }
 }
 exports.PetController = PetController;
 //# sourceMappingURL=pet.controller.js.map

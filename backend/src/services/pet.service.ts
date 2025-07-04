@@ -92,4 +92,9 @@ export class PetService {
     console.log('Pet deletado:', pets[petIndex]);
     return true;
   }
+
+  static getPetsByTutorId(tutorId: number): Pet[] {
+    const pets = this.getAllPets();
+    return pets.filter(pet => pet.tutorId === tutorId);
+  }
 }

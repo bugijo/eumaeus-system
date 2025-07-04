@@ -21,7 +21,4 @@ router.get('/records/:recordId', MedicalRecordController.getRecordById);
 // PUT /api/records/:recordId - Atualizar prontuário específico
 router.put('/records/:recordId', MedicalRecordController.updateRecord);
 
-// DELETE /api/records/:recordId - Deletar prontuário específico
-router.delete('/records/:recordId', MedicalRecordController.deleteRecord);
-
 export default router;

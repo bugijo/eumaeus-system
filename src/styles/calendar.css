@@ -1,0 +1,90 @@
+/* Estilos para eventos do calendário baseados no status */
+
+/* Agendamento agendado (padrão) - Azul */
+.fc-event.event-scheduled {
+  background-color: #3b82f6 !important;
+  border-color: #2563eb !important;
+  color: white !important;
+}
+
+/* Agendamento confirmado - Verde claro */
+.fc-event.event-confirmed {
+  background-color: #10b981 !important;
+  border-color: #059669 !important;
+  color: white !important;
+}
+
+/* Agendamento finalizado - Verde escuro */
+.fc-event.event-completed {
+  background-color: #065f46 !important;
+  border-color: #064e3b !important;
+  color: white !important;
+}
+
+/* Agendamento cancelado - Vermelho */
+.fc-event.event-cancelled {
+  background-color: #dc2626 !important;
+  border-color: #b91c1c !important;
+  color: white !important;
+  opacity: 0.7;
+  text-decoration: line-through;
+}
+
+/* Hover effects */
+.fc-event.event-scheduled:hover {
+  background-color: #2563eb !important;
+  border-color: #1d4ed8 !important;
+}
+
+.fc-event.event-confirmed:hover {
+  background-color: #059669 !important;
+  border-color: #047857 !important;
+}
+
+.fc-event.event-completed:hover {
+  background-color: #064e3b !important;
+  border-color: #052e16 !important;
+}
+
+.fc-event.event-cancelled:hover {
+  background-color: #b91c1c !important;
+  border-color: #991b1b !important;
+}
+
+/* Legenda de status */
+.status-legend {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.status-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+}
+
+.status-color.scheduled {
+  background-color: #3b82f6;
+}
+
+.status-color.confirmed {
+  background-color: #10b981;
+}
+
+.status-color.completed {
+  background-color: #065f46;
+}
+
+.status-color.cancelled {
+  background-color: #dc2626;
+  opacity: 0.7;
+}

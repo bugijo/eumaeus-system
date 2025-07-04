@@ -92,23 +92,6 @@ class MedicalRecordController {
             res.status(500).json({ error: 'Erro interno do servidor' });
         }
     }
-    static deleteRecord(req, res) {
-        try {
-            const recordId = parseInt(req.params.recordId);
-            if (isNaN(recordId)) {
-                return res.status(400).json({ error: 'ID do prontuário inválido' });
-            }
-            const deleted = medicalRecord_service_1.MedicalRecordService.deleteRecord(recordId);
-            if (!deleted) {
-                return res.status(404).json({ error: 'Prontuário não encontrado' });
-            }
-            res.status(200).json({ message: 'Prontuário deletado com sucesso' });
-        }
-        catch (error) {
-            console.error('Erro ao deletar prontuário:', error);
-            res.status(500).json({ error: 'Erro interno do servidor' });
-        }
-    }
 }
 exports.MedicalRecordController = MedicalRecordController;
 //# sourceMappingURL=medicalRecord.controller.js.map

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug - Teste de Conectividade</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #ff69b4, #ff1493);
+            color: white;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+        .container {
+            text-align: center;
+            background: rgba(255,255,255,0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .status {
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+        }
+        button {
+            background: #fff;
+            color: #ff1493;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 TESTE DE DEBUG</h1>
+        <div class="status">
+            <h2>✅ Servidor Funcionando</h2>
+            <p>Timestamp: <span id="timestamp"></span></p>
+            <p>URL: <span id="url"></span></p>
+        </div>
+        <button onclick="testJS()">Testar JavaScript</button>
+        <button onclick="window.location.href='/'">Voltar para App React</button>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        // Atualizar timestamp
+        document.getElementById('timestamp').textContent = new Date().toLocaleString();
+        document.getElementById('url').textContent = window.location.href;
+
+        function testJS() {
+            const result = document.getElementById('result');
+            result.innerHTML = `
+                <div class="status" style="background: rgba(0,255,0,0.2); margin-top: 20px;">
+                    <h3>🎉 JavaScript Funcionando!</h3>
+                    <p>Hora atual: ${new Date().toLocaleTimeString()}</p>
+                    <p>User Agent: ${navigator.userAgent.substring(0, 50)}...</p>
+                </div>
+            `;
+        }
+
+        // Log automático
+        console.log('🔥 DEBUG HTML carregado com sucesso!');
+        console.log('Timestamp:', new Date().toISOString());
+        console.log('Location:', window.location.href);
+    </script>
+</body>
+</html>

@@ -1,6 +1,33 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { MedicalRecordService } from '../services/medicalRecordService';
 import { CreateMedicalRecordData } from '../types';
+import apiClient from './apiClient';
+
+// Interfaces para produtos
+export interface Product {
+  id: number;
+  name: string;
+  description?: string;
+  quantity: number;
+  price: number;
+  category?: string;
+}
+
+// API para produtos
+export const productApi = {
+  getAvailable: async (): Promise<Product[]> => {
+    const response = await apiClient.get('/records/products');
+    return response.data;
+  }
+};
+
+// API para status de agendamentos
+export const appointmentStatusApi = {
+  updateStatus: async (appointmentId: number, status: 'SCHEDULED' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED'): Promise<any> => {
+    const response = await apiClient.patch(`/appointments/${appointmentId}/status`, { status });
+    return response.data;
+  }
+};
 
 // Hook para buscar prontuários de um pet específico
 export function useMedicalRecords(petId: number) {
@@ -62,17 +89,24 @@ export function useUpdateMedicalRecord() {
   });
 }
 
-// Hook para deletar um prontuário
-export function useDeleteMedicalRecord() {
+// Hook para buscar produtos disponíveis
+export function useAvailableProducts() {
+  return useQuery({
+    queryKey: ['products', 'available'],
+    queryFn: () => productApi.getAvailable(),
+  });
+}
+
+// Hook para atualizar status de agendamento
+export function useUpdateAppointmentStatus() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: (recordId: number) => MedicalRecordService.deleteMedicalRecord(recordId),
-    onSuccess: (_, recordId) => {
-      // Invalida todas as queries relacionadas a prontuários
-      queryClient.invalidateQueries({ queryKey: ['medicalRecords'] });
-      // Remove o prontuário específico do cache
-      queryClient.removeQueries({ queryKey: ['medicalRecord', recordId] });
+    mutationFn: ({ appointmentId, status }: { appointmentId: number; status: 'SCHEDULED' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED' }) =>
+      appointmentStatusApi.updateStatus(appointmentId, status),
+    onSuccess: () => {
+      // Invalida os agendamentos para refletir a mudança de status
+      queryClient.invalidateQueries({ queryKey: ['appointments'] });
     },
   });
 }

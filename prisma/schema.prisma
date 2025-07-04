@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -16,6 +16,13 @@ enum AppointmentStatus {
   CONFIRMED
   CANCELLED
   COMPLETED
+}
+
+// Para controlar o status das faturas
+enum InvoiceStatus {
+  PENDING
+  PAID
+  CANCELLED
 }
 
 // 1. Modelo para o Tutor (Dono do Pet)
@@ -71,6 +78,9 @@ model Appointment {
 
   // Relacionamento: Um agendamento pode ter vários serviços (consulta, vacina, etc.)
   services        Service[]
+
+  // Relacionamento: Um agendamento pode gerar uma fatura (1-para-1)
+  invoice         Invoice?
 }
 
 // 4. Modelo para o Prontuário Eletrônico
@@ -86,6 +96,39 @@ model MedicalRecord {
   // Relacionamento: O prontuário pertence a um agendamento
   appointmentId Int      @unique // @unique garante que cada agendamento só tenha um prontuário
   appointment   Appointment @relation(fields: [appointmentId], references: [id])
+
+  // Relacionamento: Many-to-many com produtos utilizados
+  products      MedicalRecordProduct[]
+}
+
+// 4.1. Modelo para registrar produtos utilizados no prontuário
+model MedicalRecordProduct {
+  id              Int           @id @default(autoincrement())
+  quantityUsed    Int
+  
+  // Relacionamentos
+  medicalRecordId Int
+  medicalRecord   MedicalRecord @relation(fields: [medicalRecordId], references: [id])
+  
+  productId       Int
+  product         Product       @relation(fields: [productId], references: [id])
+
+  @@unique([medicalRecordId, productId]) // Evita duplicatas do mesmo produto no mesmo prontuário
+}
+
+// 4.2. Modelo para Produtos/Estoque
+model Product {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  name        String
+  description String?
+  quantity    Int      @default(0)
+  price       Float
+  category    String?  // Ex: "Medicamento", "Vacina", "Material"
+
+  // Relacionamento: Many-to-many com prontuários
+  medicalRecords MedicalRecordProduct[]
 }
 
 // 5. Modelo para Serviços e Produtos (para faturamento)
@@ -97,4 +140,73 @@ model Service {
   // Relacionamento: O serviço está vinculado a um agendamento
   appointmentId Int
   appointment   Appointment @relation(fields: [appointmentId], references: [id])
+}
+
+// Enum para garantir que os nomes dos cargos sejam sempre os mesmos
+enum RoleName {
+  DONO
+  VETERINARIO
+  FUNCIONARIO
+  FINANCEIRO
+}
+
+// O modelo para o usuário que vai fazer login
+model User {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  name         String
+  password     String   // A senha será guardada de forma criptografada
+  refreshToken String?  @unique // Token para renovação automática de sessão
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relacionamento: Um usuário tem um cargo
+  roleName     RoleName
+  role         Role     @relation(fields: [roleName], references: [name])
+}
+
+// O modelo para os Cargos (ou "Roles")
+model Role {
+  name        RoleName       @id @unique
+  description String?
+  users       User[]
+  // Relacionamento: Um cargo tem muitas permissões
+  permissions Permission[]
+}
+
+// O modelo para as Permissões individuais
+model Permission {
+  id          Int      @id @default(autoincrement())
+  action      String   // Ex: "view", "create", "edit", "delete"
+  subject     String   // Ex: "Tutor", "Pet", "Appointment", "Financials", "MedicalRecord"
+
+  // Relacionamento: Uma permissão pode estar em muitos cargos
+  roles       Role[]
+
+  @@unique([action, subject]) // Garante que não tenhamos permissões duplicadas (ex: duas "view_Tutor")
+}
+
+// 6. Modelo para Faturas
+model Invoice {
+  id            Int           @id @default(autoincrement())
+  totalAmount   Float
+  status        InvoiceStatus @default(PENDING)
+  createdAt     DateTime      @default(now())
+
+  appointmentId Int           @unique // Cada fatura está ligada a um único agendamento
+  appointment   Appointment   @relation(fields: [appointmentId], references: [id])
+
+  items         InvoiceItem[]
+}
+
+// 6.1. Modelo para Itens da Fatura
+model InvoiceItem {
+  id          Int     @id @default(autoincrement())
+  description String  // Ex: "Consulta Padrão" ou "Vacina V10"
+  quantity    Int
+  unitPrice   Float
+  totalPrice  Float   // quantity * unitPrice
+
+  invoiceId   Int
+  invoice     Invoice @relation(fields: [invoiceId], references: [id])
 }

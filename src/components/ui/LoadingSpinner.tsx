@@ -122,3 +122,6 @@ export function ButtonLoading({
     </button>
   );
 }
+
+// Export default para compatibilidade com importações sem chaves
+export default LoadingSpinner;

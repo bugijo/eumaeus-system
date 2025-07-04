@@ -8,7 +8,6 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useToast } from '@/hooks/useToast';
 import { useCreateAppointment, useUpdateAppointment, useDeleteAppointment } from '@/api/appointmentApi';
 import { usePets } from '@/api/petApi';
-import { ProductUsageForm } from './ProductUsageForm';
 
 // Schema de validação para agendamento
 const appointmentSchema = z.object({
@@ -32,7 +31,6 @@ export function AppointmentForm({ appointment, onSuccess, onCancel }: Appointmen
   const { toast } = useToast();
   const isEditing = !!appointment;
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [showProductUsage, setShowProductUsage] = useState(false);
   const createAppointmentMutation = useCreateAppointment();
   const updateAppointmentMutation = useUpdateAppointment();
   const deleteAppointmentMutation = useDeleteAppointment();
@@ -143,7 +141,6 @@ export function AppointmentForm({ appointment, onSuccess, onCancel }: Appointmen
   const statusOptions = [
     { value: 'Agendado', label: 'Agendado' },
     { value: 'Confirmado', label: 'Confirmado' },
-    { value: 'Finalizado', label: 'Finalizado' },
     { value: 'Pendente', label: 'Pendente' },
     { value: 'Cancelado', label: 'Cancelado' }
   ];
@@ -222,89 +219,58 @@ export function AppointmentForm({ appointment, onSuccess, onCancel }: Appointmen
         />
       </div>
 
-      {/* Botão para registrar uso de materiais (apenas para agendamentos finalizados) */}
-      {isEditing && appointment?.status === 'Finalizado' && !showProductUsage && (
-        <div className="border-t pt-4">
+      <div className="flex justify-between pt-4">
+        {/* Botão de deletar à esquerda (apenas quando editando) */}
+        {isEditing && (
           <Button
             type="button"
-            onClick={() => setShowProductUsage(true)}
-            className="w-full gradient-pink text-white hover:opacity-90 mb-4"
+            variant="destructive"
+            onClick={() => setShowDeleteConfirm(true)}
+            disabled={isSubmitting || deleteAppointmentMutation.isPending}
+            className="bg-red-600 hover:bg-red-700 text-white"
           >
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-            </svg>
-            Registrar Uso de Materiais
+            {deleteAppointmentMutation.isPending ? (
+              <>
+                <LoadingSpinner size="sm" className="mr-2" />
+                Deletando...
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                Deletar
+              </>
+            )}
+          </Button>
+        )}
+        
+        {/* Botões de ação à direita */}
+        <div className="flex space-x-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onCancel}
+            disabled={isSubmitting}
+          >
+            Cancelar
+          </Button>
+          <Button
+            type="submit"
+            disabled={isSubmitting || createAppointmentMutation.isPending || updateAppointmentMutation.isPending}
+            className="gradient-pink text-white hover:opacity-90"
+          >
+            {(isSubmitting || createAppointmentMutation.isPending || updateAppointmentMutation.isPending) ? (
+              <>
+                <LoadingSpinner size="sm" className="mr-2" />
+                {isEditing ? 'Atualizando...' : 'Criando...'}
+              </>
+            ) : (
+              isEditing ? 'Atualizar Agendamento' : 'Criar Agendamento'
+            )}
           </Button>
         </div>
-      )}
-
-      {/* Formulário de uso de produtos */}
-      {showProductUsage && isEditing && (
-        <ProductUsageForm
-          appointmentId={appointment.id}
-          onSuccess={() => {
-            setShowProductUsage(false);
-            onSuccess();
-          }}
-          onCancel={() => setShowProductUsage(false)}
-        />
-      )}
-
-      {/* Botões principais (ocultos quando mostrando uso de produtos) */}
-      {!showProductUsage && (
-        <div className="flex justify-between pt-4">
-          {/* Botão de deletar à esquerda (apenas quando editando) */}
-          {isEditing && (
-            <Button
-              type="button"
-              variant="destructive"
-              onClick={() => setShowDeleteConfirm(true)}
-              disabled={isSubmitting || deleteAppointmentMutation.isPending}
-              className="bg-red-600 hover:bg-red-700 text-white"
-            >
-              {deleteAppointmentMutation.isPending ? (
-                <>
-                  <LoadingSpinner size="sm" className="mr-2" />
-                  Deletando...
-                </>
-              ) : (
-                <>
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                  Deletar
-                </>
-              )}
-            </Button>
-          )}
-          
-          {/* Botões de ação à direita */}
-          <div className="flex space-x-3">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onCancel}
-              disabled={isSubmitting}
-            >
-              Cancelar
-            </Button>
-            <Button
-              type="submit"
-              disabled={isSubmitting || createAppointmentMutation.isPending || updateAppointmentMutation.isPending}
-              className="gradient-pink text-white hover:opacity-90"
-            >
-              {(isSubmitting || createAppointmentMutation.isPending || updateAppointmentMutation.isPending) ? (
-                <>
-                  <LoadingSpinner size="sm" className="mr-2" />
-                  {isEditing ? 'Atualizando...' : 'Criando...'}
-                </>
-              ) : (
-                isEditing ? 'Atualizar Agendamento' : 'Criar Agendamento'
-              )}
-            </Button>
-          </div>
-        </div>
-      )}
+      </div>
     </form>
     
     {/* Modal de Confirmação de Deleção */}

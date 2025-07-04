@@ -5,5 +5,6 @@ export declare class PetService {
     static getPetById(id: number): Pet | null;
     static updatePet(id: number, updateData: Partial<Omit<Pet, 'id'>>): Pet | null;
     static deletePet(id: number): boolean;
+    static getPetsByTutorId(tutorId: number): Pet[];
 }
 //# sourceMappingURL=pet.service.d.ts.map

@@ -5,5 +5,6 @@ export declare class PetController {
     static getPetById(req: Request, res: Response): void;
     static updatePet(req: Request, res: Response): void;
     static deletePet(req: Request, res: Response): void;
+    static getPetsByTutor(req: Request, res: Response): void;
 }
 //# sourceMappingURL=pet.controller.d.ts.map

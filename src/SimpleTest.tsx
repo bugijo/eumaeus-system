@@ -1,32 +1,26 @@
 import React from 'react';
 
-const SimpleTest: React.FC = () => {
+const SimpleTest = () => {
+  console.log('SimpleTest component is rendering');
+  
   return (
-    <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
-      <h1>Teste Simples - Sistema Veterinário</h1>
-      <p>Se você está vendo esta mensagem, o React está funcionando!</p>
-      <div style={{ marginTop: '20px', padding: '10px', backgroundColor: '#f0f0f0', borderRadius: '5px' }}>
-        <h3>Status dos Componentes:</h3>
-        <ul>
-          <li>✅ React carregado</li>
-          <li>✅ DOM renderizado</li>
-          <li>✅ CSS básico funcionando</li>
-        </ul>
+    <div style={{ 
+      padding: '20px', 
+      backgroundColor: '#f0f0f0', 
+      minHeight: '100vh',
+      fontFamily: 'Arial, sans-serif'
+    }}>
+      <h1 style={{ color: '#333', marginBottom: '20px' }}>Sistema Veterinário - Teste Simples</h1>
+      <p style={{ color: '#666', fontSize: '16px' }}>Se você está vendo esta mensagem, o React está funcionando corretamente.</p>
+      <div style={{ 
+        marginTop: '20px', 
+        padding: '15px', 
+        backgroundColor: '#e8f5e8', 
+        border: '1px solid #4caf50',
+        borderRadius: '5px'
+      }}>
+        <strong>Status:</strong> Componente renderizado com sucesso!
       </div>
-      <button 
-        onClick={() => alert('Botão funcionando!')} 
-        style={{ 
-          marginTop: '10px', 
-          padding: '10px 20px', 
-          backgroundColor: '#007bff', 
-          color: 'white', 
-          border: 'none', 
-          borderRadius: '5px', 
-          cursor: 'pointer' 
-        }}
-      >
-        Testar Interação
-      </button>
     </div>
   );
 };

@@ -102,22 +102,4 @@ export class MedicalRecordService {
       throw error;
     }
   }
-
-  static async deleteMedicalRecord(recordId: number): Promise<void> {
-    try {
-      const response = await fetch(`${this.baseUrl}/records/${recordId}`, {
-        method: 'DELETE',
-      });
-      
-      if (!response.ok) {
-        if (response.status === 404) {
-          throw new Error('Prontuário não encontrado');
-        }
-        throw new Error(`Erro ao deletar prontuário: ${response.statusText}`);
-      }
-    } catch (error) {
-      console.error('Erro ao deletar prontuário:', error);
-      throw error;
-    }
-  }
 }

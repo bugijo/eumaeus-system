@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Frontend - Sistema Veterinário</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏥 Sistema Veterinário - Teste de Conectividade</h1>
+        
+        <div class="status success">
+            ✅ Frontend: Arquivo HTML carregado com sucesso
+        </div>
+        
+        <div class="status info" id="backend-status">
+            🔄 Testando conexão com backend...
+        </div>
+        
+        <h2>Informações do Sistema</h2>
+        <ul>
+            <li><strong>Backend:</strong> http://localhost:3333</li>
+            <li><strong>Frontend:</strong> Arquivo estático</li>
+            <li><strong>Status:</strong> Protocolo de Limpeza Concluído</li>
+        </ul>
+        
+        <h2>Próximos Passos</h2>
+        <ol>
+            <li>Backend funcionando ✅</li>
+            <li>Resolver problemas do Vite/React ⚠️</li>
+            <li>Restaurar funcionalidades completas</li>
+        </ol>
+    </div>
+    
+    <script>
+        // Teste de conectividade com backend
+        fetch('http://localhost:3333/api/tutors')
+            .then(response => {
+                const statusDiv = document.getElementById('backend-status');
+                if (response.ok) {
+                    statusDiv.className = 'status success';
+                    statusDiv.innerHTML = '✅ Backend: Conectado com sucesso na porta 3333';
+                } else {
+                    statusDiv.className = 'status error';
+                    statusDiv.innerHTML = '❌ Backend: Erro na conexão (Status: ' + response.status + ')';
+                }
+            })
+            .catch(error => {
+                const statusDiv = document.getElementById('backend-status');
+                statusDiv.className = 'status error';
+                statusDiv.innerHTML = '❌ Backend: Erro de conectividade - ' + error.message;
+            });
+    </script>
+</body>
+</html>

@@ -7,7 +7,7 @@ appointmentRoutes.get('/appointments', AppointmentController.getAllAppointments)
 appointmentRoutes.get('/appointments/:id', AppointmentController.getAppointmentById);
 appointmentRoutes.post('/appointments', AppointmentController.createAppointment);
 appointmentRoutes.put('/appointments/:id', AppointmentController.updateAppointment);
+appointmentRoutes.patch('/appointments/:id/status', AppointmentController.updateAppointmentStatus);
 appointmentRoutes.delete('/appointments/:id', AppointmentController.deleteAppointment);
-appointmentRoutes.post('/appointments/:appointmentId/products', AppointmentController.registerProductUsage);
 
 export { appointmentRoutes };
