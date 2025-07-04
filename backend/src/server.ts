@@ -17,8 +17,20 @@ const app = express();
 const PORT = Number(process.env.PORT) || 3333;
 const HOST = '0.0.0.0'; // Aceitar conexões de qualquer endereço na rede
 
+// Configuração de CORS
+const corsOptions = {
+  origin: [
+    'http://localhost:3000',
+    'http://192.168.3.12:3000',
+    'https://vet-system-frontend-blitz.vercel.app'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+
 // Middlewares
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Rotas
