@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
 export declare class MedicalRecordController {
-    static getRecordsByPetId(req: Request, res: Response): Response<any, Record<string, any>> | undefined;
-    static createRecord(req: Request, res: Response): Response<any, Record<string, any>> | undefined;
-    static getRecordById(req: Request, res: Response): Response<any, Record<string, any>> | undefined;
-    static getAllRecords(req: Request, res: Response): void;
-    static updateRecord(req: Request, res: Response): Response<any, Record<string, any>> | undefined;
+    static getRecordsByPetId(req: Request, res: Response): Response | void;
+    static createRecord(req: Request, res: Response): Response | void;
+    static getRecordById(req: Request, res: Response): Response | void;
+    static getAllRecords(req: Request, res: Response): Response | void;
+    static updateRecord(req: Request, res: Response): Response | void;
 }
 //# sourceMappingURL=medicalRecord.controller.d.ts.map

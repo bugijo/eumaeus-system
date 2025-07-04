@@ -9,9 +9,11 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const tutor_routes_1 = require("./routes/tutor.routes");
 const pet_routes_1 = require("./routes/pet.routes");
 const appointment_routes_1 = require("./routes/appointment.routes");
-const medicalRecord_routes_1 = __importDefault(require("./routes/medicalRecord.routes"));
+const medicalRecordRoutes_1 = require("./routes/medicalRecordRoutes");
 const product_routes_1 = __importDefault(require("./routes/product.routes"));
 const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
+const dashboard_routes_1 = __importDefault(require("./routes/dashboard.routes"));
+const invoice_routes_1 = __importDefault(require("./routes/invoice.routes"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = Number(process.env.PORT) || 3333;
@@ -21,9 +23,11 @@ app.use(express_1.default.json());
 app.use('/api', tutor_routes_1.tutorRoutes);
 app.use('/api', pet_routes_1.petRoutes);
 app.use('/api', appointment_routes_1.appointmentRoutes);
-app.use('/api', medicalRecord_routes_1.default);
+app.use('/api/records', medicalRecordRoutes_1.medicalRecordRoutes);
 app.use('/api/products', product_routes_1.default);
 app.use('/api/auth', auth_routes_1.default);
+app.use('/api/dashboard', dashboard_routes_1.default);
+app.use('/api/invoices', invoice_routes_1.default);
 app.get('/', (req, res) => {
     res.json({ message: 'VetSystem API está funcionando!' });
 });
@@ -37,5 +41,7 @@ app.listen(PORT, HOST, () => {
     console.log(`🩺 Endpoint de prontuários: http://192.168.3.12:${PORT}/api/records`);
     console.log(`📦 Endpoint de produtos: http://192.168.3.12:${PORT}/api/products`);
     console.log(`🔐 Endpoint de autenticação: http://192.168.3.12:${PORT}/api/auth/login`);
+    console.log(`📊 Endpoint de dashboard: http://192.168.3.12:${PORT}/api/dashboard/stats`);
+    console.log(`💰 Endpoint de faturas: http://192.168.3.12:${PORT}/api/invoices`);
 });
 //# sourceMappingURL=server.js.map

@@ -6,38 +6,39 @@ class PetController {
     static getAllPets(req, res) {
         try {
             const pets = pet_service_1.PetService.getAllPets();
-            res.status(200).json(pets);
+            return res.status(200).json(pets);
         }
         catch (error) {
-            res.status(500).json({ error: 'Erro interno do servidor' });
+            console.error(error);
+            return res.status(500).json({ error: 'Erro interno do servidor' });
         }
     }
     static createPet(req, res) {
         try {
             const newPetData = req.body;
             const createdPet = pet_service_1.PetService.createPet(newPetData);
-            res.status(201).json(createdPet);
+            return res.status(201).json(createdPet);
         }
         catch (error) {
-            res.status(500).json({ error: 'Erro interno do servidor' });
+            console.error(error);
+            return res.status(500).json({ error: 'Erro interno do servidor' });
         }
     }
     static getPetById(req, res) {
         try {
             const id = parseInt(req.params.id);
             if (isNaN(id)) {
-                res.status(400).json({ error: 'ID inválido' });
-                return;
+                return res.status(400).json({ error: 'ID inválido' });
             }
             const pet = pet_service_1.PetService.getPetById(id);
             if (!pet) {
-                res.status(404).json({ error: 'Pet não encontrado' });
-                return;
+                return res.status(404).json({ error: 'Pet não encontrado' });
             }
-            res.status(200).json(pet);
+            return res.status(200).json(pet);
         }
         catch (error) {
-            res.status(500).json({ error: 'Erro interno do servidor' });
+            console.error(error);
+            return res.status(500).json({ error: 'Erro interno do servidor' });
         }
     }
     static updatePet(req, res) {
@@ -45,54 +46,69 @@ class PetController {
             const id = parseInt(req.params.id);
             const updateData = req.body;
             if (isNaN(id)) {
-                res.status(400).json({ error: 'ID inválido' });
-                return;
+                return res.status(400).json({ error: 'ID inválido' });
             }
             const updatedPet = pet_service_1.PetService.updatePet(id, updateData);
             if (!updatedPet) {
-                res.status(404).json({ error: 'Pet não encontrado' });
-                return;
+                return res.status(404).json({ error: 'Pet não encontrado' });
             }
-            res.status(200).json(updatedPet);
+            return res.status(200).json(updatedPet);
         }
         catch (error) {
-            res.status(500).json({ error: 'Erro interno do servidor' });
+            console.error(error);
+            return res.status(500).json({ error: 'Erro interno do servidor' });
         }
     }
     static deletePet(req, res) {
         try {
             const id = parseInt(req.params.id);
             if (isNaN(id)) {
-                res.status(400).json({ error: 'ID inválido' });
-                return;
+                return res.status(400).json({ error: 'ID inválido' });
             }
             const deleted = pet_service_1.PetService.deletePet(id);
             if (!deleted) {
-                res.status(404).json({ error: 'Pet não encontrado' });
-                return;
+                return res.status(404).json({ error: 'Pet não encontrado' });
             }
-            res.status(200).json({ message: 'Pet excluído com sucesso' });
+            return res.status(200).json({ message: 'Pet excluído com sucesso' });
         }
         catch (error) {
+            console.error(error);
             if (error instanceof Error && error.message.includes('registros associados')) {
-                res.status(400).json({ error: error.message });
-                return;
+                return res.status(400).json({ error: error.message });
             }
-            res.status(500).json({ error: 'Erro interno do servidor' });
+            return res.status(500).json({ error: 'Erro interno do servidor' });
         }
     }
     static getPetsByTutor(req, res) {
         try {
             const tutorId = parseInt(req.params.tutorId);
             if (isNaN(tutorId)) {
-                res.status(400).json({ error: 'ID do tutor inválido' });
-                return;
+                return res.status(400).json({ error: 'ID do tutor inválido' });
             }
             const pets = pet_service_1.PetService.getPetsByTutorId(tutorId);
-            res.status(200).json(pets);
+            return res.status(200).json(pets);
         }
         catch (error) {
-            res.status(500).json({ error: 'Erro interno do servidor' });
+            console.error(error);
+            return res.status(500).json({ error: 'Erro interno do servidor' });
+        }
+    }
+    static createPetForTutor(req, res) {
+        try {
+            const tutorId = parseInt(req.params.tutorId);
+            if (isNaN(tutorId)) {
+                return res.status(400).json({ error: 'ID do tutor inválido' });
+            }
+            const newPetData = {
+                ...req.body,
+                tutorId: tutorId
+            };
+            const createdPet = pet_service_1.PetService.createPet(newPetData);
+            return res.status(201).json(createdPet);
+        }
+        catch (error) {
+            console.error(error);
+            return res.status(500).json({ error: 'Erro interno do servidor' });
         }
     }
 }
