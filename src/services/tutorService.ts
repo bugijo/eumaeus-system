@@ -10,7 +10,7 @@ import type {
 export class TutorService {
   static async create(data: CreateTutorData): Promise<Tutor> {
     try {
-      const response = await apiClient.post('/api/tutors', data);
+      const response = await apiClient.post('/tutors', data);
       return response.data;
     } catch (error) {
       console.error('Erro ao criar tutor:', error);
@@ -20,7 +20,7 @@ export class TutorService {
 
   static async findAll(params?: TutorSearchParams): Promise<PaginatedResponse<Tutor>> {
     try {
-      const response = await apiClient.get('/api/tutors', { params });
+      const response = await apiClient.get('/tutors', { params });
       const tutors: Tutor[] = response.data;
       
       // Para manter compatibilidade com a interface PaginatedResponse
@@ -43,7 +43,7 @@ export class TutorService {
 
   static async findById(id: number): Promise<Tutor | null> {
     try {
-      const response = await apiClient.get(`/api/tutors/${id}`);
+      const response = await apiClient.get(`/tutors/${id}`);
       return response.data;
     } catch (error: any) {
       if (error.response?.status === 404) {
@@ -56,7 +56,7 @@ export class TutorService {
 
   static async update(id: number, data: UpdateTutorData): Promise<Tutor> {
     try {
-      const response = await apiClient.put(`/api/tutors/${id}`, data);
+      const response = await apiClient.put(`/tutors/${id}`, data);
       return response.data;
     } catch (error) {
       console.error('Erro ao atualizar tutor:', error);
@@ -66,7 +66,7 @@ export class TutorService {
 
   static async delete(id: number): Promise<void> {
     try {
-      await apiClient.delete(`/api/tutors/${id}`);
+      await apiClient.delete(`/tutors/${id}`);
     } catch (error: any) {
       if (error.response?.status === 404) {
         throw new Error('Tutor não encontrado');
@@ -78,7 +78,7 @@ export class TutorService {
 
   static async findByEmail(email: string): Promise<Tutor | null> {
     try {
-      const response = await apiClient.get(`/api/tutors/email/${email}`);
+      const response = await apiClient.get(`/tutors/email/${email}`);
       return response.data;
     } catch (error: any) {
       if (error.response?.status === 404) {
@@ -95,7 +95,7 @@ export class TutorService {
     withAppointments: number;
   }> {
     try {
-      const response = await apiClient.get('/api/tutors/stats');
+      const response = await apiClient.get('/tutors/stats');
       return response.data;
     } catch (error) {
       console.error('Erro ao buscar estatísticas de tutores:', error);

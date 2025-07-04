@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { API_BASE_URL } from '@/config/env';
+import apiClient from './apiClient';
 
 export interface Product {
   id: number;
@@ -46,82 +46,37 @@ export interface ProductUsageResponse {
 // Funções da API
 const productApi = {
   getAll: async (): Promise<Product[]> => {
-    const response = await fetch(`${API_BASE_URL}/products`);
-    if (!response.ok) {
-      throw new Error('Erro ao buscar produtos');
-    }
-    return response.json();
+    const response = await apiClient.get('/products');
+    return response.data;
   },
 
   getById: async (id: number): Promise<Product> => {
-    const response = await fetch(`${API_BASE_URL}/products/${id}`);
-    if (!response.ok) {
-      throw new Error('Erro ao buscar produto');
-    }
-    return response.json();
+    const response = await apiClient.get(`/products/${id}`);
+    return response.data;
   },
 
   create: async (data: CreateProductData): Promise<Product> => {
-    const response = await fetch(`${API_BASE_URL}/products`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Erro ao criar produto');
-    }
-    return response.json();
+    const response = await apiClient.post('/products', data);
+    return response.data;
   },
 
   update: async (id: number, data: UpdateProductData): Promise<Product> => {
-    const response = await fetch(`${API_BASE_URL}/products/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Erro ao atualizar produto');
-    }
-    return response.json();
+    const response = await apiClient.put(`/products/${id}`, data);
+    return response.data;
   },
 
   delete: async (id: number): Promise<void> => {
-    const response = await fetch(`${API_BASE_URL}/products/${id}`, {
-      method: 'DELETE',
-    });
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Erro ao deletar produto');
-    }
+    await apiClient.delete(`/products/${id}`);
   },
 
   getStats: async (): Promise<StockStats> => {
-    const response = await fetch(`${API_BASE_URL}/products/stats`);
-    if (!response.ok) {
-      throw new Error('Erro ao buscar estatísticas do estoque');
-    }
-    return response.json();
+    const response = await apiClient.get('/products/stats');
+    return response.data;
   },
 
   registerUsage: async (appointmentId: number, products: ProductUsageRequest[]): Promise<ProductUsageResponse> => {
-    const response = await fetch(`${API_BASE_URL}/appointments/${appointmentId}/products`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(products),
-    });
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Erro ao registrar uso de produtos');
-    }
-    return response.json();
+    const response = await apiClient.post(`/appointments/${appointmentId}/products`, products);
+    return response.data;
   },
 };
 

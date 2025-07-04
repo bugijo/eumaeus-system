@@ -1,4 +1,4 @@
-import { apiClient } from './apiClient';
+import apiClient from '../api/apiClient';
 import type { CreateProductData, UpdateProductData } from '../schemas/productSchema';
 
 // Tipos para as respostas da API
