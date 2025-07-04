@@ -56,7 +56,8 @@ export default {
         },
       });
     } catch (error) {
-      res.status(500).json({ message: 'Erro interno do servidor' });
+      console.error('Erro no login:', error);
+      return res.status(500).json({ message: 'Erro interno do servidor' });
     }
   },
 
@@ -120,7 +121,8 @@ export default {
         },
       });
     } catch (error) {
-      res.status(500).json({ message: 'Erro interno do servidor' });
+      console.error('Erro no refresh:', error);
+      return res.status(500).json({ message: 'Erro interno do servidor' });
     }
   }
 };

@@ -15,7 +15,7 @@ export class MedicalRecordController {
       res.json(records);
     } catch (error) {
       console.error('Erro ao buscar prontuários:', error);
-      res.status(500).json({ error: 'Erro interno do servidor' });
+      return res.status(500).json({ error: 'Erro interno do servidor' });
     }
   }
 
@@ -44,7 +44,7 @@ export class MedicalRecordController {
       res.status(201).json(newRecord);
     } catch (error) {
       console.error('Erro ao criar prontuário:', error);
-      res.status(500).json({ error: 'Erro interno do servidor' });
+      return res.status(500).json({ error: 'Erro interno do servidor' });
     }
   }
 
@@ -65,7 +65,7 @@ export class MedicalRecordController {
       res.json(record);
     } catch (error) {
       console.error('Erro ao buscar prontuário:', error);
-      res.status(500).json({ error: 'Erro interno do servidor' });
+      return res.status(500).json({ error: 'Erro interno do servidor' });
     }
   }
 
@@ -75,7 +75,7 @@ export class MedicalRecordController {
       res.json(records);
     } catch (error) {
       console.error('Erro ao buscar todos os prontuários:', error);
-      res.status(500).json({ error: 'Erro interno do servidor' });
+      return res.status(500).json({ error: 'Erro interno do servidor' });
     }
   }
 
@@ -105,7 +105,7 @@ export class MedicalRecordController {
       res.json(updatedRecord);
     } catch (error) {
       console.error('Erro ao atualizar prontuário:', error);
-      res.status(500).json({ error: 'Erro interno do servidor' });
+      return res.status(500).json({ error: 'Erro interno do servidor' });
     }
   }
 }

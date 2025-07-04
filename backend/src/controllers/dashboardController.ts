@@ -16,7 +16,7 @@ export default {
       res.json({ tutorCount, petCount, appointmentCount, productCount: 0 });
     } catch (error) {
       console.error('Erro ao buscar estatísticas:', error);
-      res.status(500).json({ message: 'Erro ao buscar estatísticas' });
+      return res.status(500).json({ message: 'Erro ao buscar estatísticas' });
     }
   }
 };
