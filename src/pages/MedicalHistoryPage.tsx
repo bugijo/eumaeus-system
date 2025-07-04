@@ -4,7 +4,7 @@ import { useMedicalRecords, useCreateMedicalRecord, useUpdateMedicalRecord } fro
 import { usePet } from '../api/petApi';
 import { CreateMedicalRecordData, MedicalRecord } from '../types';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
-import { Button } from '../components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { useToast } from '../hooks/useToast';
 import { Edit2 } from 'lucide-react';
 
