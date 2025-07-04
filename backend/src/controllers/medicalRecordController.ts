@@ -15,7 +15,7 @@ const createMedicalRecordSchema = z.object({
 });
 
 // Criar prontuário médico com transação
-export const createMedicalRecord = async (req: Request, res: Response) => {
+export const createMedicalRecord = async (req: Request, res: Response): Promise<Response | void> => {
   try {
     const { appointmentId } = req.params;
     const validatedData = createMedicalRecordSchema.parse(req.body);
@@ -110,7 +110,7 @@ export const createMedicalRecord = async (req: Request, res: Response) => {
       }
     });
 
-    res.status(201).json(completeMedicalRecord);
+    return res.status(201).json(completeMedicalRecord);
   } catch (error) {
     console.error('Erro ao criar prontuário:', error);
     if (error instanceof z.ZodError) {
@@ -121,7 +121,7 @@ export const createMedicalRecord = async (req: Request, res: Response) => {
 };
 
 // Buscar prontuários por pet
-export const getRecordsByPet = async (req: Request, res: Response) => {
+export const getRecordsByPet = async (req: Request, res: Response): Promise<Response | void> => {
   try {
     const { petId } = req.params;
 
@@ -146,7 +146,7 @@ export const getRecordsByPet = async (req: Request, res: Response) => {
       }
     });
 
-    res.json(records);
+    return res.json(records);
   } catch (error) {
     console.error('Erro ao buscar prontuários do pet:', error);
     return res.status(500).json({ error: 'Erro interno do servidor' });
@@ -154,7 +154,7 @@ export const getRecordsByPet = async (req: Request, res: Response) => {
 };
 
 // Buscar prontuário por agendamento
-export const getRecordByAppointment = async (req: Request, res: Response) => {
+export const getRecordByAppointment = async (req: Request, res: Response): Promise<Response | void> => {
   try {
     const { appointmentId } = req.params;
 
@@ -178,7 +178,7 @@ export const getRecordByAppointment = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Prontuário não encontrado' });
     }
 
-    res.json(record);
+    return res.json(record);
   } catch (error) {
     console.error('Erro ao buscar prontuário:', error);
     return res.status(500).json({ error: 'Erro interno do servidor' });
@@ -186,7 +186,7 @@ export const getRecordByAppointment = async (req: Request, res: Response) => {
 };
 
 // Buscar todos os produtos disponíveis (para o formulário)
-export const getAvailableProducts = async (req: Request, res: Response) => {
+export const getAvailableProducts = async (req: Request, res: Response): Promise<Response | void> => {
   try {
     const products = await prisma.product.findMany({
       where: {
@@ -199,7 +199,7 @@ export const getAvailableProducts = async (req: Request, res: Response) => {
       }
     });
 
-    res.json(products);
+    return res.json(products);
   } catch (error) {
     console.error('Erro ao buscar produtos:', error);
     return res.status(500).json({ error: 'Erro interno do servidor' });

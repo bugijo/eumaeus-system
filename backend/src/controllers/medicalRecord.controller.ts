@@ -3,7 +3,7 @@ import { MedicalRecordService } from '../services/medicalRecord.service';
 import { CreateMedicalRecordRequest } from '../models/medicalRecord.model';
 
 export class MedicalRecordController {
-  static getRecordsByPetId(req: Request, res: Response) {
+  static getRecordsByPetId(req: Request, res: Response): Response | void {
     try {
       const petId = parseInt(req.params.petId);
       
@@ -12,14 +12,14 @@ export class MedicalRecordController {
       }
 
       const records = MedicalRecordService.getRecordsByPetId(petId);
-      res.json(records);
+      return res.json(records);
     } catch (error) {
       console.error('Erro ao buscar prontuários:', error);
       return res.status(500).json({ error: 'Erro interno do servidor' });
     }
   }
 
-  static createRecord(req: Request, res: Response) {
+  static createRecord(req: Request, res: Response): Response | void {
     try {
       const appointmentId = parseInt(req.params.appointmentId);
       
@@ -41,14 +41,14 @@ export class MedicalRecordController {
       };
 
       const newRecord = MedicalRecordService.createRecord(appointmentId, recordData);
-      res.status(201).json(newRecord);
+      return res.status(201).json(newRecord);
     } catch (error) {
       console.error('Erro ao criar prontuário:', error);
       return res.status(500).json({ error: 'Erro interno do servidor' });
     }
   }
 
-  static getRecordById(req: Request, res: Response) {
+  static getRecordById(req: Request, res: Response): Response | void {
     try {
       const recordId = parseInt(req.params.recordId || req.params.id);
       
@@ -62,24 +62,24 @@ export class MedicalRecordController {
         return res.status(404).json({ error: 'Prontuário não encontrado' });
       }
 
-      res.json(record);
+      return res.json(record);
     } catch (error) {
       console.error('Erro ao buscar prontuário:', error);
       return res.status(500).json({ error: 'Erro interno do servidor' });
     }
   }
 
-  static getAllRecords(req: Request, res: Response) {
+  static getAllRecords(req: Request, res: Response): Response | void {
     try {
       const records = MedicalRecordService.getAllRecords();
-      res.json(records);
+      return res.json(records);
     } catch (error) {
       console.error('Erro ao buscar todos os prontuários:', error);
       return res.status(500).json({ error: 'Erro interno do servidor' });
     }
   }
 
-  static updateRecord(req: Request, res: Response) {
+  static updateRecord(req: Request, res: Response): Response | void {
     try {
       const recordId = parseInt(req.params.recordId);
       
@@ -102,7 +102,7 @@ export class MedicalRecordController {
         return res.status(404).json({ error: 'Prontuário não encontrado' });
       }
 
-      res.json(updatedRecord);
+      return res.json(updatedRecord);
     } catch (error) {
       console.error('Erro ao atualizar prontuário:', error);
       return res.status(500).json({ error: 'Erro interno do servidor' });
