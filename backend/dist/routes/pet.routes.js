@@ -13,4 +13,5 @@ petRoutes.delete('/pets/:id', pet_controller_1.PetController.deletePet);
 const tutorPetRoutes = (0, express_1.Router)({ mergeParams: true });
 exports.tutorPetRoutes = tutorPetRoutes;
 tutorPetRoutes.get('/', pet_controller_1.PetController.getPetsByTutor);
+tutorPetRoutes.post('/', pet_controller_1.PetController.createPetForTutor);
 //# sourceMappingURL=pet.routes.js.map

@@ -27,7 +27,7 @@ exports.default = {
                 where: { id: user.id },
                 data: { refreshToken: refreshToken },
             });
-            res.status(200).json({
+            return res.status(200).json({
                 accessToken,
                 refreshToken,
                 user: {
@@ -39,7 +39,8 @@ exports.default = {
             });
         }
         catch (error) {
-            res.status(500).json({ message: 'Erro interno do servidor' });
+            console.error('Erro no login:', error);
+            return res.status(500).json({ message: 'Erro interno do servidor' });
         }
     },
     async refresh(req, res) {
@@ -70,7 +71,7 @@ exports.default = {
                 where: { id: user.id },
                 data: { refreshToken: newRefreshToken },
             });
-            res.status(200).json({
+            return res.status(200).json({
                 accessToken: newAccessToken,
                 refreshToken: newRefreshToken,
                 user: {
@@ -82,7 +83,8 @@ exports.default = {
             });
         }
         catch (error) {
-            res.status(500).json({ message: 'Erro interno do servidor' });
+            console.error('Erro no refresh:', error);
+            return res.status(500).json({ message: 'Erro interno do servidor' });
         }
     }
 };

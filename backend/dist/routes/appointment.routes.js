@@ -9,5 +9,6 @@ appointmentRoutes.get('/appointments', appointment_controller_1.AppointmentContr
 appointmentRoutes.get('/appointments/:id', appointment_controller_1.AppointmentController.getAppointmentById);
 appointmentRoutes.post('/appointments', appointment_controller_1.AppointmentController.createAppointment);
 appointmentRoutes.put('/appointments/:id', appointment_controller_1.AppointmentController.updateAppointment);
+appointmentRoutes.patch('/appointments/:id/status', appointment_controller_1.AppointmentController.updateAppointmentStatus);
 appointmentRoutes.delete('/appointments/:id', appointment_controller_1.AppointmentController.deleteAppointment);
 //# sourceMappingURL=appointment.routes.js.map
