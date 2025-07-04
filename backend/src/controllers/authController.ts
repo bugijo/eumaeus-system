@@ -9,7 +9,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'SEGREDO_SUPER_SECRETO';
 const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET || 'REFRESH_SEGREDO_SUPER_SECRETO';
 
 export default {
-  async login(req: Request, res: Response) {
+  async login(req: Request, res: Response): Promise<Response | void> {
     try {
       const { email, password } = req.body;
 
@@ -45,7 +45,7 @@ export default {
       });
 
       // 5. Enviar ambos os tokens para o frontend
-      res.status(200).json({
+      return res.status(200).json({
         accessToken,
         refreshToken,
         user: {
@@ -61,7 +61,7 @@ export default {
     }
   },
 
-  async refresh(req: Request, res: Response) {
+  async refresh(req: Request, res: Response): Promise<Response | void> {
     try {
       const { refreshToken } = req.body;
 
@@ -110,7 +110,7 @@ export default {
       });
 
       // 6. Enviar os novos tokens
-      res.status(200).json({
+      return res.status(200).json({
         accessToken: newAccessToken,
         refreshToken: newRefreshToken,
         user: {

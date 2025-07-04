@@ -9,7 +9,7 @@ export class InvoiceController {
   }
 
   // POST /api/invoices/from-appointment/:appointmentId
-  createFromAppointment = async (req: Request, res: Response) => {
+  createFromAppointment = async (req: Request, res: Response): Promise<Response | void> => {
     try {
       const appointmentId = parseInt(req.params.appointmentId);
       
@@ -21,7 +21,7 @@ export class InvoiceController {
 
       const invoice = await this.invoiceService.createFromAppointment(appointmentId);
       
-      res.status(201).json({
+      return res.status(201).json({
         message: 'Fatura criada com sucesso',
         data: invoice
       });
@@ -43,7 +43,7 @@ export class InvoiceController {
   };
 
   // GET /api/invoices/:id
-  getById = async (req: Request, res: Response) => {
+  getById = async (req: Request, res: Response): Promise<Response | void> => {
     try {
       const invoiceId = parseInt(req.params.id);
       
@@ -61,7 +61,7 @@ export class InvoiceController {
         });
       }
       
-      res.json({ data: invoice });
+      return res.json({ data: invoice });
     } catch (error: any) {
       console.error('Erro ao buscar fatura:', error);
       return res.status(500).json({ 
@@ -71,7 +71,7 @@ export class InvoiceController {
   };
 
   // GET /api/invoices/appointment/:appointmentId
-  getByAppointmentId = async (req: Request, res: Response) => {
+  getByAppointmentId = async (req: Request, res: Response): Promise<Response | void> => {
     try {
       const appointmentId = parseInt(req.params.appointmentId);
       
@@ -83,7 +83,7 @@ export class InvoiceController {
 
       const invoice = await this.invoiceService.getByAppointmentId(appointmentId);
       
-      res.json({ data: invoice });
+      return res.json({ data: invoice });
     } catch (error: any) {
       console.error('Erro ao buscar fatura por agendamento:', error);
       return res.status(500).json({ 
@@ -93,7 +93,7 @@ export class InvoiceController {
   };
 
   // PATCH /api/invoices/:id/status
-  updateStatus = async (req: Request, res: Response) => {
+  updateStatus = async (req: Request, res: Response): Promise<Response | void> => {
     try {
       const invoiceId = parseInt(req.params.id);
       const { status } = req.body;
@@ -112,7 +112,7 @@ export class InvoiceController {
 
       const invoice = await this.invoiceService.updateStatus(invoiceId, status);
       
-      res.json({
+      return res.json({
         message: 'Status da fatura atualizado com sucesso',
         data: invoice
       });
@@ -130,11 +130,11 @@ export class InvoiceController {
   };
 
   // GET /api/invoices
-  getAll = async (req: Request, res: Response) => {
+  getAll = async (req: Request, res: Response): Promise<Response | void> => {
     try {
       const invoices = await this.invoiceService.getAll();
       
-      res.json({ data: invoices });
+      return res.json({ data: invoices });
     } catch (error: any) {
       console.error('Erro ao listar faturas:', error);
       return res.status(500).json({ 

@@ -3,17 +3,17 @@ import { ProductService } from '../services/product.service';
 import { CreateProductData, UpdateProductData } from '../models/product.model';
 
 export class ProductController {
-  static async getAllProducts(req: Request, res: Response) {
+  static async getAllProducts(req: Request, res: Response): Promise<Response | void> {
     try {
       const products = await ProductService.getAllProducts();
-      res.json(products);
+      return res.json(products);
     } catch (error) {
       console.error('Erro ao buscar produtos:', error);
       return res.status(500).json({ error: 'Erro interno do servidor' });
     }
   }
 
-  static async getProductById(req: Request, res: Response) {
+  static async getProductById(req: Request, res: Response): Promise<Response | void> {
     try {
       const id = parseInt(req.params.id);
       
@@ -27,14 +27,14 @@ export class ProductController {
         return res.status(404).json({ error: 'Produto não encontrado' });
       }
 
-      res.json(product);
+      return res.json(product);
     } catch (error) {
       console.error('Erro ao buscar produto:', error);
       return res.status(500).json({ error: 'Erro interno do servidor' });
     }
   }
 
-  static async createProduct(req: Request, res: Response) {
+  static async createProduct(req: Request, res: Response): Promise<Response | void> {
     try {
       const { name, supplier, quantity, costPrice, expirationDate }: CreateProductData = req.body;
 
@@ -62,14 +62,14 @@ export class ProductController {
       };
 
       const newProduct = await ProductService.createProduct(productData);
-      res.status(201).json(newProduct);
+      return res.status(201).json(newProduct);
     } catch (error) {
       console.error('Erro ao criar produto:', error);
       return res.status(500).json({ error: 'Erro interno do servidor' });
     }
   }
 
-  static async updateProduct(req: Request, res: Response) {
+  static async updateProduct(req: Request, res: Response): Promise<Response | void> {
     try {
       const id = parseInt(req.params.id);
       
@@ -109,14 +109,14 @@ export class ProductController {
         return res.status(404).json({ error: 'Produto não encontrado' });
       }
 
-      res.json(updatedProduct);
+      return res.json(updatedProduct);
     } catch (error) {
       console.error('Erro ao atualizar produto:', error);
       return res.status(500).json({ error: 'Erro interno do servidor' });
     }
   }
 
-  static async deleteProduct(req: Request, res: Response) {
+  static async deleteProduct(req: Request, res: Response): Promise<Response | void> {
     try {
       const id = parseInt(req.params.id);
       
@@ -130,17 +130,17 @@ export class ProductController {
         return res.status(404).json({ error: 'Produto não encontrado' });
       }
 
-      res.status(204).send();
+      return res.status(204).send();
     } catch (error) {
       console.error('Erro ao deletar produto:', error);
       return res.status(500).json({ error: 'Erro interno do servidor' });
     }
   }
 
-  static async getStockStats(req: Request, res: Response) {
+  static async getStockStats(req: Request, res: Response): Promise<Response | void> {
     try {
       const stats = await ProductService.getStockStats();
-      res.json(stats);
+      return res.json(stats);
     } catch (error) {
       console.error('Erro ao buscar estatísticas do estoque:', error);
       return res.status(500).json({ error: 'Erro interno do servidor' });
