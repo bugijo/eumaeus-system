@@ -1,0 +1,66 @@
+name: CI - Continuous Integration
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20'
+        cache: 'npm'
+
+    - name: Install Frontend Dependencies
+      run: npm install
+
+    # --- NOVA ETAPA DE TESTE COM CYPRESS ---
+    - name: Run Cypress E2E Tests
+      uses: cypress-io/github-action@v6
+      with:
+        # Diz ao Cypress para esperar o servidor iniciar antes de rodar
+        wait-on: 'http://localhost:3000'
+        # Timeout para aguardar o servidor iniciar (2 minutos)
+        wait-on-timeout: 120
+        # Comando para iniciar nosso servidor de dev para os testes
+        start: npm run dev
+        # Navegador que será usado para os testes
+        browser: chrome
+        # Usar configuração específica para CI
+        config-file: cypress.ci.config.js
+        # Executar testes específicos para CI
+         spec: |
+           cypress/e2e/ci-main-flow.cy.ts
+           cypress/e2e/teste-integracao-final.cy.ts
+      env:
+        # Passa a URL da nossa API de produção para o ambiente de teste do Cypress
+        VITE_API_URL: ${{ secrets.VITE_API_URL }}
+        # Configurações adicionais para CI
+         CI: true
+         NODE_ENV: test
+
+    # Upload de artefatos em caso de falha
+    - name: Upload Cypress Screenshots
+      uses: actions/upload-artifact@v3
+      if: failure()
+      with:
+        name: cypress-screenshots
+        path: cypress/screenshots
+        retention-days: 7
+
+    - name: Upload Cypress Videos
+      uses: actions/upload-artifact@v3
+      if: failure()
+      with:
+        name: cypress-videos
+        path: cypress/videos
+        retention-days: 7
