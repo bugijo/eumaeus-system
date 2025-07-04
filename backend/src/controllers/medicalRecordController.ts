@@ -116,7 +116,7 @@ export const createMedicalRecord = async (req: Request, res: Response) => {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: 'Dados inválidos', details: error.errors });
     }
-    res.status(500).json({ error: error instanceof Error ? error.message : 'Erro interno do servidor' });
+    return res.status(500).json({ error: error instanceof Error ? error.message : 'Erro interno do servidor' });
   }
 };
 
@@ -149,7 +149,7 @@ export const getRecordsByPet = async (req: Request, res: Response) => {
     res.json(records);
   } catch (error) {
     console.error('Erro ao buscar prontuários do pet:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
+    return res.status(500).json({ error: 'Erro interno do servidor' });
   }
 };
 
@@ -181,7 +181,7 @@ export const getRecordByAppointment = async (req: Request, res: Response) => {
     res.json(record);
   } catch (error) {
     console.error('Erro ao buscar prontuário:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
+    return res.status(500).json({ error: 'Erro interno do servidor' });
   }
 };
 
@@ -202,6 +202,6 @@ export const getAvailableProducts = async (req: Request, res: Response) => {
     res.json(products);
   } catch (error) {
     console.error('Erro ao buscar produtos:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
+    return res.status(500).json({ error: 'Erro interno do servidor' });
   }
 };

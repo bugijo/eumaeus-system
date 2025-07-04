@@ -9,7 +9,7 @@ export class ProductController {
       res.json(products);
     } catch (error) {
       console.error('Erro ao buscar produtos:', error);
-      res.status(500).json({ error: 'Erro interno do servidor' });
+      return res.status(500).json({ error: 'Erro interno do servidor' });
     }
   }
 
@@ -30,7 +30,7 @@ export class ProductController {
       res.json(product);
     } catch (error) {
       console.error('Erro ao buscar produto:', error);
-      res.status(500).json({ error: 'Erro interno do servidor' });
+      return res.status(500).json({ error: 'Erro interno do servidor' });
     }
   }
 
@@ -65,7 +65,7 @@ export class ProductController {
       res.status(201).json(newProduct);
     } catch (error) {
       console.error('Erro ao criar produto:', error);
-      res.status(500).json({ error: 'Erro interno do servidor' });
+      return res.status(500).json({ error: 'Erro interno do servidor' });
     }
   }
 
@@ -112,7 +112,7 @@ export class ProductController {
       res.json(updatedProduct);
     } catch (error) {
       console.error('Erro ao atualizar produto:', error);
-      res.status(500).json({ error: 'Erro interno do servidor' });
+      return res.status(500).json({ error: 'Erro interno do servidor' });
     }
   }
 
@@ -133,7 +133,7 @@ export class ProductController {
       res.status(204).send();
     } catch (error) {
       console.error('Erro ao deletar produto:', error);
-      res.status(500).json({ error: 'Erro interno do servidor' });
+      return res.status(500).json({ error: 'Erro interno do servidor' });
     }
   }
 
@@ -143,7 +143,7 @@ export class ProductController {
       res.json(stats);
     } catch (error) {
       console.error('Erro ao buscar estatísticas do estoque:', error);
-      res.status(500).json({ error: 'Erro interno do servidor' });
+      return res.status(500).json({ error: 'Erro interno do servidor' });
     }
   }
 }

@@ -7,7 +7,8 @@ export class TutorController {
       const tutors = TutorService.getAllTutors();
       res.status(200).json(tutors);
     } catch (error) {
-      res.status(500).json({ error: 'Erro interno do servidor' });
+      console.error('Erro ao buscar tutores:', error);
+      return res.status(500).json({ error: 'Erro interno do servidor' });
     }
   }
 
@@ -17,7 +18,8 @@ export class TutorController {
       const createdTutor = TutorService.createTutor(newTutorData);
       res.status(201).json(createdTutor);
     } catch (error) {
-      res.status(500).json({ error: 'Erro interno do servidor' });
+      console.error('Erro ao criar tutor:', error);
+      return res.status(500).json({ error: 'Erro interno do servidor' });
     }
   }
 
@@ -39,7 +41,8 @@ export class TutorController {
       
       res.status(200).json(tutor);
     } catch (error) {
-      res.status(500).json({ error: 'Erro interno do servidor' });
+      console.error('Erro ao buscar tutor:', error);
+      return res.status(500).json({ error: 'Erro interno do servidor' });
     }
   }
 
@@ -62,7 +65,8 @@ export class TutorController {
       
       res.status(200).json(updatedTutor);
     } catch (error) {
-      res.status(500).json({ error: 'Erro interno do servidor' });
+      console.error('Erro ao atualizar tutor:', error);
+      return res.status(500).json({ error: 'Erro interno do servidor' });
     }
   }
 
@@ -84,7 +88,8 @@ export class TutorController {
       
       res.status(200).json({ message: 'Tutor deletado com sucesso' });
     } catch (error) {
-      res.status(500).json({ error: 'Erro interno do servidor' });
+      console.error('Erro ao deletar tutor:', error);
+      return res.status(500).json({ error: 'Erro interno do servidor' });
     }
   }
 }

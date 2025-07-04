@@ -14,7 +14,8 @@ export class AppointmentController {
       const appointments = AppointmentService.getAllAppointments();
       res.status(200).json(appointments);
     } catch (error) {
-      res.status(500).json({ error: 'Erro interno do servidor' });
+      console.error('Erro ao buscar agendamentos:', error);
+      return res.status(500).json({ error: 'Erro interno do servidor' });
     }
   }
 
@@ -24,7 +25,8 @@ export class AppointmentController {
       const createdAppointment = AppointmentService.createAppointment(newAppointmentData);
       res.status(201).json(createdAppointment);
     } catch (error) {
-      res.status(500).json({ error: 'Erro interno do servidor' });
+      console.error('Erro ao criar agendamento:', error);
+      return res.status(500).json({ error: 'Erro interno do servidor' });
     }
   }
 
@@ -46,7 +48,8 @@ export class AppointmentController {
       
       res.status(200).json(appointment);
     } catch (error) {
-      res.status(500).json({ error: 'Erro interno do servidor' });
+      console.error('Erro ao buscar agendamento:', error);
+      return res.status(500).json({ error: 'Erro interno do servidor' });
     }
   }
 
@@ -69,7 +72,8 @@ export class AppointmentController {
       
       res.status(200).json(updatedAppointment);
     } catch (error) {
-      res.status(500).json({ error: 'Erro interno do servidor' });
+      console.error('Erro ao atualizar agendamento:', error);
+      return res.status(500).json({ error: 'Erro interno do servidor' });
     }
   }
 
@@ -91,7 +95,8 @@ export class AppointmentController {
       
       res.status(200).json({ message: 'Agendamento deletado com sucesso' });
     } catch (error) {
-      res.status(500).json({ error: 'Erro interno do servidor' });
+      console.error('Erro ao deletar agendamento:', error);
+      return res.status(500).json({ error: 'Erro interno do servidor' });
     }
   }
 
@@ -115,10 +120,10 @@ export class AppointmentController {
       res.status(200).json(updatedAppointment);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        res.status(400).json({ error: 'Status inválido', details: error.errors });
-        return;
+        return res.status(400).json({ error: 'Status inválido', details: error.errors });
       }
-      res.status(500).json({ error: 'Erro interno do servidor' });
+      console.error('Erro ao atualizar status do agendamento:', error);
+      return res.status(500).json({ error: 'Erro interno do servidor' });
     }
   }
 }

@@ -36,7 +36,7 @@ export class InvoiceController {
         return res.status(409).json({ error: error.message });
       }
       
-      res.status(500).json({ 
+      return res.status(500).json({ 
         error: 'Erro interno do servidor ao criar fatura' 
       });
     }
@@ -64,7 +64,7 @@ export class InvoiceController {
       res.json({ data: invoice });
     } catch (error: any) {
       console.error('Erro ao buscar fatura:', error);
-      res.status(500).json({ 
+      return res.status(500).json({ 
         error: 'Erro interno do servidor ao buscar fatura' 
       });
     }
@@ -86,7 +86,7 @@ export class InvoiceController {
       res.json({ data: invoice });
     } catch (error: any) {
       console.error('Erro ao buscar fatura por agendamento:', error);
-      res.status(500).json({ 
+      return res.status(500).json({ 
         error: 'Erro interno do servidor ao buscar fatura' 
       });
     }
@@ -123,7 +123,7 @@ export class InvoiceController {
         return res.status(404).json({ error: error.message });
       }
       
-      res.status(500).json({ 
+      return res.status(500).json({ 
         error: 'Erro interno do servidor ao atualizar fatura' 
       });
     }
@@ -137,7 +137,7 @@ export class InvoiceController {
       res.json({ data: invoices });
     } catch (error: any) {
       console.error('Erro ao listar faturas:', error);
-      res.status(500).json({ 
+      return res.status(500).json({ 
         error: 'Erro interno do servidor ao listar faturas' 
       });
     }
