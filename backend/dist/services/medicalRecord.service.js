@@ -37,14 +37,6 @@ class MedicalRecordService {
         };
         return this.records[recordIndex];
     }
-    static deleteRecord(recordId) {
-        const recordIndex = this.records.findIndex(record => record.id === recordId);
-        if (recordIndex === -1) {
-            return false;
-        }
-        this.records.splice(recordIndex, 1);
-        return true;
-    }
 }
 exports.MedicalRecordService = MedicalRecordService;
 MedicalRecordService.records = [

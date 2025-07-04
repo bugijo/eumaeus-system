@@ -1,8 +1,12 @@
 import { Request, Response } from 'express';
 import { Appointment } from '../models/appointment.model';
 import { AppointmentService } from '../services/appointment.service';
-import { AppointmentProductUsageService } from '../services/appointmentProductUsage.service';
-import { ProductUsageRequest } from '../models/appointmentProductUsage.model';
+import { z } from 'zod';
+
+// Schema de validação para atualização de status
+const updateStatusSchema = z.object({
+  status: z.enum(['SCHEDULED', 'CONFIRMED', 'COMPLETED', 'CANCELLED'])
+});
 
 export class AppointmentController {
   static getAllAppointments(req: Request, res: Response): void {
@@ -91,51 +95,29 @@ export class AppointmentController {
     }
   }
 
-  static async registerProductUsage(req: Request, res: Response): Promise<void> {
+  static updateAppointmentStatus(req: Request, res: Response): void {
     try {
-      const appointmentId = parseInt(req.params.appointmentId);
-      const products: ProductUsageRequest[] = req.body;
+      const id = parseInt(req.params.id);
       
-      if (isNaN(appointmentId)) {
-        res.status(400).json({ error: 'ID do agendamento inválido' });
+      if (isNaN(id)) {
+        res.status(400).json({ error: 'ID inválido' });
         return;
       }
+
+      const validatedData = updateStatusSchema.parse(req.body);
+      const updatedAppointment = AppointmentService.updateAppointmentStatus(id, validatedData.status);
       
-      // Verificar se o agendamento existe
-      const appointment = AppointmentService.getAppointmentById(appointmentId);
-      if (!appointment) {
+      if (!updatedAppointment) {
         res.status(404).json({ error: 'Agendamento não encontrado' });
         return;
       }
       
-      // Validar formato dos produtos
-      if (!Array.isArray(products) || products.length === 0) {
-        res.status(400).json({ error: 'Lista de produtos é obrigatória e deve conter pelo menos um item' });
+      res.status(200).json(updatedAppointment);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ error: 'Status inválido', details: error.errors });
         return;
       }
-      
-      // Validar cada produto
-      for (const product of products) {
-        if (!product.productId || !product.quantityUsed || product.quantityUsed <= 0) {
-          res.status(400).json({ error: 'Cada produto deve ter productId e quantityUsed válidos' });
-          return;
-        }
-      }
-      
-      const result = await AppointmentProductUsageService.registerProductUsage(appointmentId, products);
-      
-      if (result.success) {
-        res.status(200).json({
-          message: result.message,
-          usages: result.usages
-        });
-      } else {
-        res.status(400).json({
-          error: result.message,
-          partialUsages: result.usages
-        });
-      }
-    } catch (error) {
       res.status(500).json({ error: 'Erro interno do servidor' });
     }
   }

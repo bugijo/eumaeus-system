@@ -31,6 +31,28 @@ export class PetService {
     }
   }
 
+  static async createForTutor(tutorId: number, data: Omit<CreatePetData, 'tutorId'>): Promise<Pet> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/tutors/${tutorId}/pets`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const pet: Pet = await response.json();
+      return pet;
+    } catch (error) {
+      console.error('Erro ao criar pet para tutor:', error);
+      throw new Error('Falha ao criar pet para tutor');
+    }
+  }
+
   static async findAll(params?: PetSearchParams): Promise<PaginatedResponse<Pet>> {
     try {
       const response = await fetch(`${API_BASE_URL}/api/pets`);
@@ -81,14 +103,14 @@ export class PetService {
 
   static async findByTutorId(tutorId: number): Promise<Pet[]> {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/pets`);
+      const response = await fetch(`${API_BASE_URL}/api/tutors/${tutorId}/pets`);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
       const pets: Pet[] = await response.json();
-      return pets.filter(pet => pet.tutorId === tutorId);
+      return pets;
     } catch (error) {
       console.error('Erro ao buscar pets do tutor:', error);
       throw new Error('Falha ao buscar pets do tutor');

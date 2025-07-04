@@ -9,6 +9,5 @@ export declare class MedicalRecordService {
         notes: string;
         prescription: string;
     }): MedicalRecord | null;
-    static deleteRecord(recordId: number): boolean;
 }
 //# sourceMappingURL=medicalRecord.service.d.ts.map

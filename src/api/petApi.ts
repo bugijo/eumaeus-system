@@ -97,6 +97,33 @@ export function useCreatePet() {
   });
 }
 
+export function useCreatePetForTutor() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ tutorId, data }: { tutorId: number; data: Omit<CreatePetData, 'tutorId'> }) => 
+      PetService.createForTutor(tutorId, data),
+    onSuccess: (newPet) => {
+      // Invalidar listas de pets
+      queryClient.invalidateQueries({ queryKey: petKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: petKeys.stats() });
+      
+      // Invalidar pets do tutor específico
+      queryClient.invalidateQueries({ queryKey: petKeys.byTutor(newPet.tutorId) });
+      
+      // Invalidar dados do tutor (para atualizar contagem de pets)
+      queryClient.invalidateQueries({ queryKey: tutorKeys.detail(newPet.tutorId) });
+      queryClient.invalidateQueries({ queryKey: tutorKeys.lists() });
+      
+      // Adicionar o novo pet ao cache
+      queryClient.setQueryData(petKeys.detail(newPet.id), newPet);
+    },
+    onError: (error) => {
+      console.error('Erro ao criar pet para tutor:', error);
+    },
+  });
+}
+
 export function useUpdatePet() {
   const queryClient = useQueryClient();
   

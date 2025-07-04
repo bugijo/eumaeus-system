@@ -90,6 +90,7 @@ export function TutorForm({ tutor, onSuccess, onCancel, className }: TutorFormPr
             required
             error={errors.name?.message}
             disabled={isLoading}
+            data-cy="input-nome"
             {...form.register('name')}
           />
           
@@ -100,6 +101,7 @@ export function TutorForm({ tutor, onSuccess, onCancel, className }: TutorFormPr
             required
             error={errors.email?.message}
             disabled={isLoading}
+            data-cy="input-email"
             {...form.register('email')}
           />
         </div>
@@ -112,6 +114,7 @@ export function TutorForm({ tutor, onSuccess, onCancel, className }: TutorFormPr
             required
             error={errors.phone?.message}
             disabled={isLoading}
+            data-cy="input-telefone"
             {...form.register('phone')}
           />
           
@@ -120,6 +123,7 @@ export function TutorForm({ tutor, onSuccess, onCancel, className }: TutorFormPr
             placeholder="Digite o endereço completo"
             error={errors.address?.message}
             disabled={isLoading}
+            data-cy="input-endereco"
             {...form.register('address')}
           />
         </div>
@@ -130,6 +134,7 @@ export function TutorForm({ tutor, onSuccess, onCancel, className }: TutorFormPr
           rows={4}
           error={errors.notes?.message}
           disabled={isLoading}
+          data-cy="input-observacoes"
           {...form.register('notes')}
         />
       </div>
@@ -137,19 +142,21 @@ export function TutorForm({ tutor, onSuccess, onCancel, className }: TutorFormPr
       <div className="flex justify-end space-x-4 mt-8">
         {onCancel && (
           <Button
-            type="button"
-            variant="outline"
-            onClick={onCancel}
-            disabled={isLoading}
-          >
-            Cancelar
-          </Button>
+          type="button"
+          variant="outline"
+          onClick={onCancel}
+          disabled={isLoading}
+          data-cy="btn-cancelar"
+        >
+          Cancelar
+        </Button>
         )}
         
         <Button
           type="submit"
           disabled={isLoading}
           className="min-w-[120px]"
+          data-cy="btn-salvar-tutor"
         >
           {isLoading ? (
             <>

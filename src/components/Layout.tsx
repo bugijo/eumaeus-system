@@ -1,10 +1,11 @@
 
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   Calendar, 
   Users, 
+  UserCheck,
   PawPrint, 
   FileText, 
   DollarSign, 
@@ -17,6 +18,7 @@ import {
   Menu,
   X
 } from 'lucide-react';
+import { useAuthStore } from '../stores/authStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -33,12 +35,20 @@ interface LayoutProps {
 
 const Layout = ({ children }: LayoutProps) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { user, logout } = useAuthStore();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   const navigationItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
     { icon: Calendar, label: 'Agendamentos', path: '/agendamentos' },
     { icon: Users, label: 'Clientes', path: '/clientes' },
+    { icon: UserCheck, label: 'Tutores', path: '/tutores' },
     { icon: PawPrint, label: 'Pets', path: '/pets' },
     { icon: FileText, label: 'Prontuários', path: '/prontuarios' },
     { icon: DollarSign, label: 'Financeiro', path: '/financeiro' },
@@ -78,8 +88,8 @@ const Layout = ({ children }: LayoutProps) => {
               />
             </div>
             <div>
-              <h2 className="font-semibold text-sidebar-foreground text-sm">Clínica Veterinária</h2>
-              <p className="text-xs text-sidebar-foreground/70">Fernanda Calixto</p>
+              <h2 className="font-semibold text-sidebar-foreground text-sm">PulseVet System</h2>
+              <p className="text-xs text-sidebar-foreground/70">{user?.name || 'Usuário'}</p>
             </div>
           </div>
         </div>
@@ -109,7 +119,10 @@ const Layout = ({ children }: LayoutProps) => {
 
         {/* Logout */}
         <div className="p-4 border-t border-sidebar-border">
-          <button className="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground w-full transition-colors">
+          <button 
+            onClick={handleLogout}
+            className="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground w-full transition-colors"
+          >
             <LogOut className="w-5 h-5" />
             <span>Sair</span>
           </button>
@@ -141,7 +154,7 @@ const Layout = ({ children }: LayoutProps) => {
             
             <div className="px-4 py-2 rounded-lg bg-gradient-to-r from-pink-200 to-pink-300">
               <h1 className="text-lg font-semibold text-pink-800">
-                Bem-vinda, Dra. Fernanda! 👋
+                Bem-vindo(a), {user?.name || 'Usuário'}! 👋
               </h1>
             </div>
           </div>
@@ -167,8 +180,10 @@ const Layout = ({ children }: LayoutProps) => {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src="/placeholder.svg" alt="Dra. Fernanda" />
-                    <AvatarFallback className="gradient-pink text-white text-sm">FC</AvatarFallback>
+                    <AvatarImage src="/placeholder.svg" alt={user?.name || 'Usuário'} />
+                    <AvatarFallback className="gradient-pink text-white text-sm">
+                      {user?.name?.charAt(0).toUpperCase() || 'U'}
+                    </AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
@@ -177,7 +192,7 @@ const Layout = ({ children }: LayoutProps) => {
                   <User className="mr-2 h-4 w-4" />
                   <span>Meu Perfil</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={handleLogout}>
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Sair</span>
                 </DropdownMenuItem>

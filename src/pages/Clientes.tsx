@@ -1,9 +1,9 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { ClientFormModal } from '@/components/forms/ClientForm';
 import {
   Table,
   TableBody,
@@ -281,6 +281,14 @@ const Clientes = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Modal de Formulário */}
+      <ClientFormModal
+        isOpen={isFormModalOpen}
+        onClose={handleFormCancel}
+        client={selectedClient || undefined}
+        onSuccess={handleFormSuccess}
+      />
     </div>
   );
 };

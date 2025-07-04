@@ -1,1 +1,1 @@
-{"version":3,"file":"pet.routes.d.ts","sourceRoot":"","sources":["../../src/routes/pet.routes.ts"],"names":[],"mappings":"AAGA,QAAA,MAAM,SAAS,4CAAW,CAAC;AAQ3B,OAAO,EAAE,SAAS,EAAE,CAAC"}
+{"version":3,"file":"pet.routes.d.ts","sourceRoot":"","sources":["../../src/routes/pet.routes.ts"],"names":[],"mappings":"AAGA,QAAA,MAAM,SAAS,4CAAW,CAAC;AAU3B,QAAA,MAAM,cAAc,4CAAgC,CAAC;AAGrD,OAAO,EAAE,SAAS,EAAE,cAAc,EAAE,CAAC"}

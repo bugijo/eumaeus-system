@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { InputField, TextareaField, SelectField } from '@/components/ui/FormField';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { petSchema, petUpdateSchema, type PetFormData, type PetUpdateData } from '@/schemas/petSchema';
-import { useCreatePet, useUpdatePet } from '@/api/petApi';
+import { useCreatePet, useCreatePetForTutor, useUpdatePet } from '@/api/petApi';
 import { useTutors } from '@/api/tutorApi';
 import { useToast } from '@/hooks/useToast';
 import { COMMON_SPECIES } from '@/constants';
@@ -26,6 +26,7 @@ export function PetForm({ pet, tutorId, onSuccess, onCancel, className }: PetFor
   const isEditing = !!pet;
   
   const createPetMutation = useCreatePet();
+  const createPetForTutorMutation = useCreatePetForTutor();
   const updatePetMutation = useUpdatePet();
   const { data: tutors, isLoading: tutorsLoading } = useTutors({ page: 1, limit: 100 });
   
@@ -56,7 +57,7 @@ export function PetForm({ pet, tutorId, onSuccess, onCancel, className }: PetFor
 
   const { handleSubmit, formState: { errors, isSubmitting }, reset, watch } = form;
   const selectedSpecies = watch('species');
-  const isLoading = isSubmitting || createPetMutation.isPending || updatePetMutation.isPending;
+  const isLoading = isSubmitting || createPetMutation.isPending || createPetForTutorMutation.isPending || updatePetMutation.isPending;
 
   const onSubmit = async (data: PetFormData | PetUpdateData) => {
     try {
@@ -80,7 +81,17 @@ export function PetForm({ pet, tutorId, onSuccess, onCancel, className }: PetFor
           variant: 'default',
         });
       } else {
-        result = await createPetMutation.mutateAsync(formattedData as PetFormData);
+        if (tutorId) {
+          // Usar a nova API para criar pet para tutor específico
+          const { tutorId: _, ...petData } = formattedData as PetFormData;
+          result = await createPetForTutorMutation.mutateAsync({
+            tutorId: parseInt(tutorId),
+            data: petData
+          });
+        } else {
+          // Usar a API geral de criação de pets
+          result = await createPetMutation.mutateAsync(formattedData as PetFormData);
+        }
         toast({
           title: 'Sucesso!',
           description: 'Pet cadastrado com sucesso.',

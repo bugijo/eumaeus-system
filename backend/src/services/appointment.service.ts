@@ -94,4 +94,21 @@ export class AppointmentService {
     console.log('Agendamento deletado com ID:', id);
     return true;
   }
+
+  static updateAppointmentStatus(id: number, status: string): Appointment | null {
+    const appointments = this.getAllAppointments();
+    const appointmentIndex = appointments.findIndex(appointment => appointment.id === id);
+    
+    if (appointmentIndex === -1) {
+      return null;
+    }
+    
+    const updatedAppointment: Appointment = {
+      ...appointments[appointmentIndex],
+      status
+    };
+    
+    console.log('Status do agendamento atualizado:', updatedAppointment);
+    return updatedAppointment;
+  }
 }

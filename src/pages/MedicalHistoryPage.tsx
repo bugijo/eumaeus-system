@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { useMedicalRecords, useCreateMedicalRecord, useUpdateMedicalRecord, useDeleteMedicalRecord } from '../api/medicalRecordApi';
+import { useMedicalRecords, useCreateMedicalRecord, useUpdateMedicalRecord } from '../api/medicalRecordApi';
 import { usePet } from '../api/petApi';
 import { CreateMedicalRecordData, MedicalRecord } from '../types';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 import { Button } from '../components/ui/Button';
 import { useToast } from '../hooks/useToast';
-import { Edit2, Trash2 } from 'lucide-react';
+import { Edit2 } from 'lucide-react';
 
 interface MedicalRecordFormData {
   notes: string;
@@ -17,8 +17,6 @@ export function MedicalHistoryPage() {
   const { petId } = useParams<{ petId: string }>();
   const [showForm, setShowForm] = useState(false);
   const [editingRecord, setEditingRecord] = useState<MedicalRecord | null>(null);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [recordToDelete, setRecordToDelete] = useState<MedicalRecord | null>(null);
   const [formData, setFormData] = useState<MedicalRecordFormData>({
     notes: '',
     prescription: ''
@@ -31,7 +29,6 @@ export function MedicalHistoryPage() {
   const { data: records, isLoading: recordsLoading, refetch } = useMedicalRecords(petIdNumber);
   const createRecordMutation = useCreateMedicalRecord();
   const updateRecordMutation = useUpdateMedicalRecord();
-  const deleteRecordMutation = useDeleteMedicalRecord();
 
   const isEditing = editingRecord !== null;
 
@@ -48,40 +45,6 @@ export function MedicalHistoryPage() {
     setEditingRecord(null);
     setFormData({ notes: '', prescription: '' });
     setShowForm(false);
-  };
-
-  const handleDeleteRecord = (record: MedicalRecord) => {
-    setRecordToDelete(record);
-    setShowDeleteModal(true);
-  };
-
-  const handleConfirmDelete = async () => {
-    if (!recordToDelete) return;
-
-    try {
-      await deleteRecordMutation.mutateAsync(recordToDelete.id);
-      
-      toast({
-        title: 'Sucesso',
-        description: 'Prontuário deletado com sucesso!',
-        variant: 'default'
-      });
-      
-      setShowDeleteModal(false);
-      setRecordToDelete(null);
-      refetch();
-    } catch (error) {
-      toast({
-        title: 'Erro',
-        description: 'Erro ao deletar prontuário',
-        variant: 'destructive'
-      });
-    }
-  };
-
-  const handleCancelDelete = () => {
-    setShowDeleteModal(false);
-    setRecordToDelete(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -293,15 +256,6 @@ export function MedicalHistoryPage() {
                         <Edit2 size={14} />
                         <span>Editar</span>
                       </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDeleteRecord(record)}
-                        className="flex items-center space-x-1 text-gray-600 hover:text-red-600"
-                      >
-                        <Trash2 size={14} />
-                        <span>Deletar</span>
-                      </Button>
                       <span className="text-sm text-gray-500">ID: {record.id}</span>
                     </div>
                   </div>
@@ -325,43 +279,6 @@ export function MedicalHistoryPage() {
           )}
         </div>
       </div>
-
-      {/* Modal de Confirmação de Delete */}
-      {showDeleteModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Confirmar Exclusão
-            </h3>
-            <p className="text-gray-600 mb-6">
-              Você tem certeza que deseja excluir este registro do prontuário? Esta ação não pode ser desfeita.
-            </p>
-            <div className="flex space-x-3 justify-end">
-              <Button
-                variant="outline"
-                onClick={handleCancelDelete}
-                disabled={deleteRecordMutation.isPending}
-              >
-                Cancelar
-              </Button>
-              <Button
-                onClick={handleConfirmDelete}
-                disabled={deleteRecordMutation.isPending}
-                className="bg-red-600 hover:bg-red-700 text-white"
-              >
-                {deleteRecordMutation.isPending ? (
-                  <>
-                    <LoadingSpinner size="sm" className="mr-2" />
-                    Excluindo...
-                  </>
-                ) : (
-                  'Confirmar Exclusão'
-                )}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

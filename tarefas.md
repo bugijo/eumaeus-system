@@ -1,159 +1,106 @@
-# Plano de Tarefas - Sistema Veterinário
+# PulseVet System - Roadmap de Desenvolvimento
 
-## Status Geral: 20% Concluído
-
----
-
-## FASE 1: CONFIGURAÇÃO E MODELAGEM DE DADOS (0-20%)
-
-### 1.1 Configuração do Prisma ✅ CONCLUÍDO
-- [x] Instalar Prisma CLI e dependências
-- [x] Criar arquivo prisma/schema.prisma
-- [x] Configurar conexão com banco de dados
-- [x] Criar modelos Tutor e Pet
-- [x] Executar primeira migração
-
-**Critérios de Teste**: ✅ Banco criado com tabelas Tutor e Pet funcionais
-
-### 1.2 Modelos Básicos do Sistema ✅ CONCLUÍDO
-- [x] Modelo Appointment (Agendamentos)
-- [x] Modelo MedicalRecord (Prontuário)
-- [x] Modelo Service (Serviços)
-- [x] Relacionamentos entre modelos
-- [x] Migração dos novos modelos
-
-**Critérios de Teste**: ✅ Todos os modelos criados e relacionados corretamente
+## Legenda de Status
+- ✅ **Concluído:** Tarefa finalizada e validada.
+- ⏳ **Em Andamento:** Tarefa que estamos executando agora.
+- 🔲 **A Fazer:** Próximas tarefas na fila.
+- 🚀 **Visão Futura:** Ideias para evoluções pós-V2.0.
 
 ---
 
-## FASE 2: CRUD BÁSICO - TUTORES E PETS (20-40%)
+## FASE 1: FUNDAÇÃO E ESTRUTURA (O que já fizemos)
 
-### 2.1 Interface de Cadastro de Tutores 📋 PENDENTE
-- [ ] Criar formulário de cadastro de tutor
-- [ ] Implementar validação de dados
-- [ ] Conectar com API/Prisma
-- [ ] Lista de tutores cadastrados
-- [ ] Edição e exclusão de tutores
+Esta fase representa a base sólida que construímos para o projeto.
 
-**Critérios de Teste**: CRUD completo de tutores funcionando
-
-### 2.2 Interface de Cadastro de Pets 📋 PENDENTE
-- [ ] Criar formulário de cadastro de pet
-- [ ] Seleção de tutor responsável
-- [ ] Campos específicos (espécie, raça, idade)
-- [ ] Lista de pets por tutor
-- [ ] Edição e exclusão de pets
-
-**Critérios de Teste**: CRUD completo de pets com relacionamento ao tutor
-
----
-
-## FASE 3: SISTEMA DE AGENDAMENTOS (40-60%)
-
-### 3.1 Calendário de Agendamentos 📋 PENDENTE
-- [ ] Componente de calendário
-- [ ] Visualização por dia/semana/mês
-- [ ] Criação de novos agendamentos
-- [ ] Associação pet + serviço + horário
-- [ ] Status do agendamento
-
-### 3.2 Gestão de Agendamentos 📋 PENDENTE
-- [ ] Lista de agendamentos do dia
-- [ ] Filtros por pet, tutor, serviço
-- [ ] Reagendamento e cancelamento
-- [ ] Notificações de lembrete
-
-**Critérios de Teste**: Sistema de agendamentos completo e funcional
+- ✅ **1.1. Setup do Projeto e Banco de Dados:**
+  - [x] Configuração do monorepo (Frontend + Backend).
+  - [x] Instalação e configuração do Prisma com PostgreSQL.
+  - [x] Modelagem inicial de dados (Tutor, Pet, Appointment, etc.).
+- ✅ **1.2. Segurança e Estabilidade:**
+  - [x] Implementação do fluxo de autenticação com JWT e Refresh Tokens.
+  - [x] Criação de `ProtectedRoute` no frontend.
+  - [x] Implementação de `Error Boundaries` para resiliência da UI.
+- ✅ **1.3. UI e Infraestrutura Frontend:**
+  - [x] Configuração do Vite, TailwindCSS e `shadcn/ui`.
+  - [x] Implementação de `QueryClientProvider` para React Query.
+  - [x] Criação do `apiClient` com interceptors Axios.
+  - [x] Criação da página de Login e do Layout principal.
+- ✅ **1.4. CRUD de Tutores (Completo):**
+  - [x] **Read:** Tela de listagem de tutores com React Query.
+  - [x] **Create:** Formulário de criação de tutor com React Hook Form e Zod.
+  - [x] **Update:** Funcionalidade de edição com formulário inteligente.
+  - [x] **Delete:** Exclusão segura com modal de confirmação AlertDialog.
 
 ---
 
-## FASE 4: PRONTUÁRIO ELETRÔNICO (60-75%)
+## FASE 2: VERSÃO 1.0 (MVP PARA LANÇAMENTO)
 
-### 4.1 Histórico Médico 📋 PENDENTE
-- [ ] Visualização do histórico do pet
-- [ ] Registro de consultas
-- [ ] Anexo de exames e documentos
-- [ ] Controle de vacinas
-- [ ] Prescrições médicas
+Esta é a nossa lista de missões para ter uma versão funcional e lançável do sistema.
 
-### 4.2 Consulta Atual 📋 PENDENTE
-- [ ] Interface de atendimento
-- [ ] Registro de sintomas e diagnóstico
-- [ ] Prescrição de medicamentos
-- [ ] Agendamento de retorno
+- ✅ **2.1. Finalizar CRUD de Tutores:**
+  - ✅ **Update:** Criar a funcionalidade e a interface para editar um tutor existente.
+  - ✅ **Delete:** Implementar a funcionalidade de exclusão com modal de confirmação.
 
-**Critérios de Teste**: Prontuário completo com histórico e consultas
+- ⏳ **2.2. Implementar CRUD Completo de Pets:**
+  - 🔲 Create, Read, Update e Delete para Pets, com vínculo obrigatório ao Tutor.
 
----
+- 🔲 **2.3. Implementar Gestão de Agendamentos (Core):**
+  - 🔲 CRUD completo para Agendamentos.
+  - 🔲 Interface de calendário para visualização e criação de novos agendamentos.
 
-## FASE 5: GESTÃO DE ESTOQUE (75-85%)
+- 🔲 **2.4. Implementar Prontuário Eletrônico (Core):**
+  - 🔲 Capacidade de criar um registro de consulta a partir de um agendamento.
+  - 🔲 Visualização do histórico médico completo na página de detalhes do Pet.
 
-### 5.1 Cadastro de Produtos 📋 PENDENTE
-- [ ] Medicamentos e materiais
-- [ ] Controle de lotes e validade
-- [ ] Fornecedores
-- [ ] Categorização de produtos
+- 🔲 **2.5. Implementar Gestão de Estoque (Core):**
+  - 🔲 CRUD completo de Produtos (medicamentos e materiais).
+  - 🔲 Funcionalidade para dar baixa em itens do estoque durante um atendimento.
 
-### 5.2 Movimentação de Estoque 📋 PENDENTE
-- [ ] Entrada de produtos
-- [ ] Saída por uso em consultas
-- [ ] Relatórios de movimentação
-- [ ] Alertas de estoque baixo
-
-**Critérios de Teste**: Controle completo de estoque funcionando
+- 🔲 **2.6. Deploy de Produção (Lançamento V1.0):**
+  - 🔲 Preparar e fazer o deploy do Backend no Render (com PostgreSQL).
+  - 🔲 Preparar e fazer o deploy do Frontend na Vercel.
+  - 🔲 Configurar o CI/CD básico no GitHub Actions.
 
 ---
 
-## FASE 6: MÓDULO FINANCEIRO (85-95%)
+## FASE 3: VERSÃO 2.0 (EVOLUÇÃO PÓS-LANÇAMENTO)
 
-### 6.1 Faturamento 📋 PENDENTE
-- [ ] Geração de faturas por consulta
-- [ ] Controle de pagamentos
-- [ ] Diferentes formas de pagamento
-- [ ] Relatórios de receita
+Após o lançamento da V1.0, estas serão nossas prioridades para agregar mais valor.
 
-### 6.2 Gestão Financeira 📋 PENDENTE
-- [ ] Controle de despesas
-- [ ] Fluxo de caixa
-- [ ] Relatórios financeiros
-- [ ] Dashboard financeiro
+- 🔲 **3.1. Refatoração para Arquitetura Multi-Tenant (SaaS):**
+  - 🔲 Criar modelo `Clinic` no `schema.prisma`.
+  - 🔲 Adicionar `clinicId` às tabelas principais (User, Tutor, Pet, etc.) e executar migração.
+  - 🔲 Refatorar todas as queries do backend para filtrar por `clinicId` em cada requisição.
+  - 🔲 Implementar painel "Super Admin" para gerenciamento de clínicas.
+  - 🔲 Adaptar o fluxo de autenticação para o contexto multi-tenant.
 
-**Critérios de Teste**: Sistema financeiro completo e relatórios precisos
+- 🔲 **3.2. Implementar Módulo Financeiro:**
+  - 🔲 Geração de faturamento a partir dos atendimentos.
+  - 🔲 Controle de pagamentos e fluxo de caixa.
 
----
+- 🔲 **3.3. Implementar Portal do Cliente:**
+  - 🔲 Criação do site público (Headless CMS).
+  - 🔲 Área de login para tutores.
+  - 🔲 Agendamento online.
 
-## FASE 7: FINALIZAÇÃO E TESTES (95-100%)
+- 🔲 **3.4. Implementar Relatórios e Dashboard Avançado:**
+  - 🔲 Gráficos e métricas interativas no dashboard.
+  - 🔲 Módulo dedicado para relatórios gerenciais.
 
-### 7.1 Testes e Otimização 📋 PENDENTE
-- [ ] Testes de integração
-- [ ] Otimização de performance
-- [ ] Validação de segurança
-- [ ] Testes de usabilidade
+- 🔲 **3.5. Notificações e Automações:**
+  - 🔲 Integração para enviar lembretes de consulta (E-mail/WhatsApp).
 
-### 7.2 Deploy e Documentação 📋 PENDENTE
-- [ ] Configuração para produção
-- [ ] Documentação de usuário
-- [ ] Manual de instalação
-- [ ] Treinamento básico
-
-**Critérios de Teste**: Sistema completo, testado e pronto para produção
+- 🔲 **3.6. Refinamento Técnico:**
+  - 🔲 Otimizações de performance (Lazy Loading, Virtualização).
+  - 🔲 Aumentar a cobertura e estabilidade dos testes automatizados.
 
 ---
 
-## MARCOS IMPORTANTES
+## 🚀 FASE 4: VISÃO FUTURA (PULSE AI)
 
-- **Marco 1 (20%)**: Modelos de dados criados e funcionais
-- **Marco 2 (40%)**: CRUD de tutores e pets completo
-- **Marco 3 (60%)**: Sistema de agendamentos operacional
-- **Marco 4 (75%)**: Prontuário eletrônico funcional
-- **Marco 5 (85%)**: Gestão de estoque implementada
-- **Marco 6 (95%)**: Módulo financeiro completo
-- **Marco 7 (100%)**: Sistema finalizado e em produção
+- 🚀 **4.1. Co-piloto de Gestão:** IA para análise de dados e sugestões de negócio.
+- 🚀 **4.2. Co-piloto Clínico:** IA para suporte a diagnóstico e análise de prontuários.
 
----
+Este novo tarefas.md é o nosso mapa estratégico. Ele mostra o quão longe já chegamos e o caminho claro que temos pela frente.
 
-## PRÓXIMA TAREFA
-**ATUAL**: Modelos Básicos do Sistema (Appointment, MedicalRecord, Service)
-**RESPONSÁVEL**: Sistema automatizado
-**PRAZO**: Próxima sessão
-**STATUS**: 📋 PENDENTE
+Agora, vamos voltar ao nosso "zoom tático". A primeira tarefa não concluída (🔲) na nossa lista da V1.0 é "Finalizar CRUD de Tutores".

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { Pet } from '../models/Pet';
+import { Pet } from '../models/pet.model';
 import { PetService } from '../services/pet.service';
 
 export class PetController {
@@ -89,6 +89,43 @@ export class PetController {
         res.status(400).json({ error: error.message });
         return;
       }
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  }
+
+  static getPetsByTutor(req: Request, res: Response): void {
+    try {
+      const tutorId = parseInt(req.params.tutorId);
+      
+      if (isNaN(tutorId)) {
+        res.status(400).json({ error: 'ID do tutor inválido' });
+        return;
+      }
+      
+      const pets = PetService.getPetsByTutorId(tutorId);
+      res.status(200).json(pets);
+    } catch (error) {
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  }
+
+  static createPetForTutor(req: Request, res: Response): void {
+    try {
+      const tutorId = parseInt(req.params.tutorId);
+      
+      if (isNaN(tutorId)) {
+        res.status(400).json({ error: 'ID do tutor inválido' });
+        return;
+      }
+      
+      const newPetData = {
+        ...req.body,
+        tutorId: tutorId
+      };
+      
+      const createdPet = PetService.createPet(newPetData);
+      res.status(201).json(createdPet);
+    } catch (error) {
       res.status(500).json({ error: 'Erro interno do servidor' });
     }
   }

@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -10,38 +11,60 @@ import {
   TrendingUp, 
   Clock,
   CheckCircle,
-  AlertTriangle
+  AlertTriangle,
+  Package
 } from 'lucide-react';
+import ErrorBoundary from '@/components/utils/ErrorBoundary';
+import BuggyComponent from '@/components/utils/BuggyComponent';
+import DashboardService from '@/services/dashboardService';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
 const Dashboard = () => {
+  const { data: dashboardStats, isLoading: isLoadingStats } = useQuery({
+    queryKey: ['dashboardStats'],
+    queryFn: DashboardService.getStats,
+  });
+
   const stats = [
     {
-      title: 'Consultas Hoje',
-      value: '12',
+      title: 'Total de Agendamentos',
+      value: isLoadingStats ? '...' : dashboardStats?.appointmentCount?.toString() || '0',
       change: '+5% vs ontem',
       icon: Stethoscope,
-      positive: true
+      positive: true,
+      isStatic: false
     },
     {
       title: 'Pets Cadastrados',
-      value: '1.247',
+      value: isLoadingStats ? '...' : dashboardStats?.petCount?.toString() || '0',
       change: '+12% este mês',
       icon: PawPrint,
-      positive: true
+      positive: true,
+      isStatic: false
     },
     {
       title: 'Receita Mensal',
       value: 'R$ 45.230',
       change: '+8% vs mês anterior',
       icon: DollarSign,
-      positive: true
+      positive: true,
+      isStatic: true
     },
     {
-      title: 'Clientes Ativos',
-      value: '892',
+      title: 'Total de Tutores',
+      value: isLoadingStats ? '...' : dashboardStats?.tutorCount?.toString() || '0',
       change: '+15% este mês',
       icon: Users,
-      positive: true
+      positive: true,
+      isStatic: false
+    },
+    {
+      title: 'Produtos em Estoque',
+      value: isLoadingStats ? '...' : dashboardStats?.productCount?.toString() || '0',
+      change: '+8% este mês',
+      icon: Package,
+      positive: true,
+      isStatic: false
     }
   ];
 
@@ -126,7 +149,7 @@ const Dashboard = () => {
       </div>
       
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
         {stats.map((stat, index) => {
           const Icon = stat.icon;
           return (
@@ -140,7 +163,13 @@ const Dashboard = () => {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-foreground">{stat.value}</div>
+                <div className="text-2xl font-bold text-foreground">
+                  {!stat.isStatic && isLoadingStats ? (
+                    <LoadingSpinner />
+                  ) : (
+                    stat.value
+                  )}
+                </div>
                 <div className="flex items-center text-xs text-muted-foreground mt-1">
                   <TrendingUp className="h-3 w-3 mr-1 text-green-600" />
                   <span className="text-green-600">{stat.change}</span>
@@ -210,6 +239,29 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Seção de Teste dos Error Boundaries */}
+      <Card className="card-vet border-dashed border-2 border-yellow-300">
+        <CardHeader>
+          <CardTitle className="text-yellow-700">🧪 Teste de Error Boundary</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground mb-4">
+            Esta seção demonstra como os Error Boundaries protegem a aplicação. 
+            Clique no botão abaixo para simular um erro - apenas esta seção será afetada.
+          </p>
+          <ErrorBoundary fallback={
+            <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+              <h3 className="text-red-800 font-semibold">✅ Error Boundary Funcionando!</h3>
+              <p className="text-red-600 text-sm mt-1">
+                O erro foi capturado e isolado. O resto do Dashboard continua funcionando normalmente.
+              </p>
+            </div>
+          }>
+            <BuggyComponent />
+          </ErrorBoundary>
+        </CardContent>
+      </Card>
     </div>
   );
 };

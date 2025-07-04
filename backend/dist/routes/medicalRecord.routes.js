@@ -9,6 +9,5 @@ router.get('/records/:id', medicalRecord_controller_1.MedicalRecordController.ge
 router.get('/records', medicalRecord_controller_1.MedicalRecordController.getAllRecords);
 router.get('/records/:recordId', medicalRecord_controller_1.MedicalRecordController.getRecordById);
 router.put('/records/:recordId', medicalRecord_controller_1.MedicalRecordController.updateRecord);
-router.delete('/records/:recordId', medicalRecord_controller_1.MedicalRecordController.deleteRecord);
 exports.default = router;
 //# sourceMappingURL=medicalRecord.routes.js.map
