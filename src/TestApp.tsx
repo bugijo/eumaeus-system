@@ -1,4 +1,5 @@
 import React from 'react';
+import apiClient from './api/apiClient';
 
 const TestApp: React.FC = () => {
   return (
@@ -57,9 +58,9 @@ const TestApp: React.FC = () => {
         
         <button 
           onClick={() => {
-            fetch('http://localhost:3333/api/tutors')
+            apiClient.get('/tutors')
               .then(response => {
-                if (response.ok) {
+                if (response.status === 200) {
                   alert('✅ Backend conectado com sucesso!');
                 } else {
                   alert('⚠️ Backend respondeu com erro');

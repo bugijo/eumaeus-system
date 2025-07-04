@@ -1,4 +1,5 @@
 import React from 'react';
+import apiClient from './api/apiClient';
 
 const DiagnosticApp: React.FC = () => {
   const [errors, setErrors] = React.useState<string[]>([]);
@@ -6,9 +7,9 @@ const DiagnosticApp: React.FC = () => {
 
   React.useEffect(() => {
     // Teste de conectividade com API
-    fetch('http://localhost:3333/api/tutors')
+    apiClient.get('/tutors')
       .then(response => {
-        if (response.ok) {
+        if (response.status === 200) {
           setApiStatus('✅ API Conectada');
         } else {
           setApiStatus('⚠️ API com erro: ' + response.status);

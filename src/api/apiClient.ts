@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useAuthStore } from '../stores/authStore';
 
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3333/api',
+  baseURL: `${import.meta.env.VITE_API_URL || 'http://localhost:3333'}/api`,
 });
 
 // Interceptor de Requisição: Anexa o token em cada chamada
@@ -38,7 +38,7 @@ apiClient.interceptors.response.use(
         
         // Tentar renovar o token
         const { data } = await axios.post(
-          `${import.meta.env.VITE_API_URL || 'http://localhost:3333/api'}/auth/refresh`,
+          `${import.meta.env.VITE_API_URL || 'http://localhost:3333'}/api/auth/refresh`,
           { refreshToken }
         );
         

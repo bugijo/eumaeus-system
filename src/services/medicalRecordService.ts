@@ -1,105 +1,79 @@
-import { MedicalRecord, CreateMedicalRecordData } from '../types';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3333';
+import apiClient from '../api/apiClient';
+import type { MedicalRecord, CreateMedicalRecordData, UpdateMedicalRecordData } from '../types';
 
 export class MedicalRecordService {
-  private static baseUrl = `${API_BASE_URL}/api`;
 
-  static async getRecordsByPetId(petId: number): Promise<MedicalRecord[]> {
+  static async findByPetId(petId: number): Promise<MedicalRecord[]> {
     try {
-      const response = await fetch(`${this.baseUrl}/pets/${petId}/records`);
-      
-      if (!response.ok) {
-        throw new Error(`Erro ao buscar prontuários: ${response.statusText}`);
-      }
-      
-      const data = await response.json();
-      return data;
+      const response = await apiClient.get(`/pets/${petId}/medical-records`);
+      return response.data;
     } catch (error) {
       console.error('Erro ao buscar prontuários do pet:', error);
-      throw error;
+      throw new Error('Falha ao buscar prontuários do pet');
     }
   }
 
-  static async createRecord(appointmentId: number, data: CreateMedicalRecordData): Promise<MedicalRecord> {
+  static async create(data: CreateMedicalRecordData): Promise<MedicalRecord> {
     try {
-      const response = await fetch(`${this.baseUrl}/appointments/${appointmentId}/records`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Erro ao criar prontuário: ${response.statusText}`);
-      }
-      
-      const newRecord = await response.json();
-      return newRecord;
+      const response = await apiClient.post('/medical-records', data);
+      return response.data;
     } catch (error) {
       console.error('Erro ao criar prontuário:', error);
-      throw error;
+      throw new Error('Falha ao criar prontuário');
     }
   }
 
-  static async getRecordById(id: number): Promise<MedicalRecord> {
+  static async findById(id: number): Promise<MedicalRecord | null> {
     try {
-      const response = await fetch(`${this.baseUrl}/records/${id}`);
-      
-      if (!response.ok) {
-        if (response.status === 404) {
-          throw new Error('Prontuário não encontrado');
-        }
-        throw new Error(`Erro ao buscar prontuário: ${response.statusText}`);
+      const response = await apiClient.get(`/medical-records/${id}`);
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return null;
       }
-      
-      const record = await response.json();
-      return record;
-    } catch (error) {
       console.error('Erro ao buscar prontuário:', error);
-      throw error;
+      throw new Error('Falha ao buscar prontuário');
     }
   }
 
-  static async getAllRecords(): Promise<MedicalRecord[]> {
+  static async findAll(): Promise<MedicalRecord[]> {
     try {
-      const response = await fetch(`${this.baseUrl}/records`);
-      
-      if (!response.ok) {
-        throw new Error(`Erro ao buscar prontuários: ${response.statusText}`);
-      }
-      
-      const data = await response.json();
-      return data;
+      const response = await apiClient.get('/medical-records');
+      return response.data;
     } catch (error) {
       console.error('Erro ao buscar todos os prontuários:', error);
-      throw error;
+      throw new Error('Falha ao buscar prontuários');
     }
   }
 
-  static async updateMedicalRecord(recordId: number, data: { notes: string; prescription: string }): Promise<MedicalRecord> {
+  static async update(id: number, data: UpdateMedicalRecordData): Promise<MedicalRecord> {
     try {
-      const response = await fetch(`${this.baseUrl}/records/${recordId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-      
-      if (!response.ok) {
-        if (response.status === 404) {
-          throw new Error('Prontuário não encontrado');
-        }
-        throw new Error(`Erro ao atualizar prontuário: ${response.statusText}`);
+      const response = await apiClient.put(`/medical-records/${id}`, data);
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        throw new Error('Prontuário não encontrado');
       }
-      
-      const updatedRecord = await response.json();
-      return updatedRecord;
-    } catch (error) {
       console.error('Erro ao atualizar prontuário:', error);
-      throw error;
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error('Falha ao atualizar prontuário');
+    }
+  }
+
+  static async delete(id: number): Promise<void> {
+    try {
+      await apiClient.delete(`/medical-records/${id}`);
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        throw new Error('Prontuário não encontrado');
+      }
+      console.error('Erro ao excluir prontuário:', error);
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error('Falha ao excluir prontuário');
     }
   }
 }
