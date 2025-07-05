@@ -47,7 +47,7 @@ const Layout = ({ children }: LayoutProps) => {
   const navigationItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
     { icon: Calendar, label: 'Agendamentos', path: '/agendamentos' },
-    { icon: Users, label: 'Clientes', path: '/clientes' },
+    // { icon: Users, label: 'Clientes', path: '/clientes' }, // Removido - usando apenas Tutores
     { icon: UserCheck, label: 'Tutores', path: '/tutores' },
     { icon: PawPrint, label: 'Pets', path: '/pets' },
     { icon: FileText, label: 'Prontuários', path: '/prontuarios' },

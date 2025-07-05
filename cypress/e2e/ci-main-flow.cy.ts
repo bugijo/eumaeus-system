@@ -56,7 +56,7 @@ describe('CI/CD - Fluxo Principal do Sistema Veterinário', () => {
         cy.log('✅ Elementos de navegação encontrados');
         
         // Tentar navegar para diferentes seções
-        const sections = ['Clientes', 'Tutores', 'Pets', 'Dashboard'];
+        const sections = ['Tutores', 'Pets', 'Dashboard'];
         
         sections.forEach(section => {
           cy.get('body').then(($body) => {

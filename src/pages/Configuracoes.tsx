@@ -190,7 +190,7 @@ const Configuracoes = () => {
           <Card>
             <CardHeader>
               <CardTitle>Configurações de Notificações</CardTitle>
-              <CardDescription>Configure como e quando os clientes receberão avisos automáticos</CardDescription>
+              <CardDescription>Configure como e quando os tutores receberão avisos automáticos</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-4">
