@@ -146,7 +146,7 @@ const InvoiceDetailPage: React.FC = () => {
               <div>
                 <h3 className="font-semibold mb-3 flex items-center">
                   <User className="w-4 h-4 mr-2" />
-                  Informações do Cliente
+                  Informações do Tutor
                 </h3>
                 <div className="space-y-2 text-sm">
                   <div><strong>Tutor:</strong> {invoice.appointment.pet.tutor.name}</div>

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { TutorService } from '../services/tutorService';
+import { useDeleteTutor } from '../api/tutorApi';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -30,7 +31,6 @@ import type { Tutor } from '../types';
 export const TutorListPage = () => {
   const [tutorToDelete, setTutorToDelete] = useState<Tutor | null>(null);
   const { toast } = useToast();
-  const queryClient = useQueryClient();
 
   const { 
     data: tutorsResponse, 
@@ -42,15 +42,13 @@ export const TutorListPage = () => {
     queryFn: () => TutorService.findAll(),
   });
 
-  const deleteMutation = useMutation({
-    mutationFn: (id: number) => TutorService.delete(id),
+  const deleteMutation = useDeleteTutor({
     onSuccess: () => {
       toast({
         title: 'Sucesso!',
         description: 'Tutor excluído com sucesso.',
         variant: 'default',
       });
-      queryClient.invalidateQueries({ queryKey: ['tutors'] });
     },
     onError: (error: any) => {
       toast({

@@ -108,7 +108,7 @@ const Dashboard = () => {
 
   const activities = [
     {
-      action: 'Novo cliente cadastrado',
+      action: 'Novo tutor cadastrado',
       detail: 'Maria Silva com seu gato "Whiskers"',
       time: '5 min atrás',
       icon: Users

@@ -19,7 +19,7 @@ import {
 import { ArrowLeft, Plus, Phone, Mail, MapPin, Calendar, Edit, Trash2 } from 'lucide-react';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 import { PetFormModal } from '../components/forms/PetForm';
-import { useDeletePet } from '../api/petApi';
+import { useDeletePet, petKeys } from '../api/petApi';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { Pet } from '../types';
@@ -54,7 +54,7 @@ export const TutorDetailPage = () => {
 
   // Query para buscar a lista de pets deste tutor
   const { data: pets, isLoading: isLoadingPets } = useQuery({
-    queryKey: ['pets', tutorId],
+    queryKey: petKeys.byTutor(Number(tutorId!)),
     queryFn: () => PetService.findByTutorId(Number(tutorId!)),
     enabled: !!tutorId,
   });

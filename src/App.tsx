@@ -7,7 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout";
 import Dashboard from "./pages/Dashboard";
 import Agendamentos from "./pages/Agendamentos";
-import Clientes from "./pages/Clientes";
+// import Clientes from "./pages/Clientes"; // Removido - usando apenas Tutores
 import Prontuario from "./pages/Prontuario";
 import Configuracoes from "./pages/Configuracoes";
 import Financeiro from "./pages/Financeiro";
@@ -49,11 +49,7 @@ function App() {
                   <Layout><Agendamentos /></Layout>
                 </ErrorBoundary>
               } />
-              <Route path="/clientes" element={
-                <ErrorBoundary fallback={<div className="p-8 text-center"><h2 className="text-xl text-red-600">Erro ao carregar os Clientes</h2></div>}>
-                  <Layout><Clientes /></Layout>
-                </ErrorBoundary>
-              } />
+              {/* Rota /clientes removida - usando apenas /tutores */}
               <Route path="/tutores" element={
                 <ErrorBoundary fallback={<div className="p-8 text-center"><h2 className="text-xl text-red-600">Erro ao carregar os Tutores</h2></div>}>
                   <Layout><TutorListPage /></Layout>

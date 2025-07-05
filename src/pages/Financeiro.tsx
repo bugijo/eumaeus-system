@@ -237,7 +237,7 @@ const Financeiro = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Cliente/Descrição</TableHead>
+                    <TableHead>Tutor/Descrição</TableHead>
                     <TableHead>Data de Vencimento</TableHead>
                     <TableHead>Valor</TableHead>
                     <TableHead>Status</TableHead>
