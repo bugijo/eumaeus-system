@@ -3,9 +3,9 @@ import { Pet } from '../models/pet.model';
 import { PetService } from '../services/pet.service';
 
 export class PetController {
-  static getAllPets(req: Request, res: Response): Response | void {
+  static async getAllPets(req: Request, res: Response): Promise<Response> {
     try {
-      const pets = PetService.getAllPets();
+      const pets = await PetService.getAllPets();
       return res.status(200).json(pets);
     } catch (error) {
       console.error(error);
@@ -13,10 +13,10 @@ export class PetController {
     }
   }
 
-  static createPet(req: Request, res: Response): Response | void {
+  static async createPet(req: Request, res: Response): Promise<Response> {
     try {
       const newPetData = req.body;
-      const createdPet = PetService.createPet(newPetData);
+      const createdPet = await PetService.createPet(newPetData);
       return res.status(201).json(createdPet);
     } catch (error) {
       console.error(error);
@@ -24,7 +24,7 @@ export class PetController {
     }
   }
 
-  static getPetById(req: Request, res: Response): Response | void {
+  static async getPetById(req: Request, res: Response): Promise<Response> {
     try {
       const id = parseInt(req.params.id);
       
@@ -32,7 +32,7 @@ export class PetController {
         return res.status(400).json({ error: 'ID inválido' });
       }
       
-      const pet = PetService.getPetById(id);
+      const pet = await PetService.getPetById(id);
       
       if (!pet) {
         return res.status(404).json({ error: 'Pet não encontrado' });
@@ -45,7 +45,7 @@ export class PetController {
     }
   }
 
-  static updatePet(req: Request, res: Response): Response | void {
+  static async updatePet(req: Request, res: Response): Promise<Response> {
     try {
       const id = parseInt(req.params.id);
       const updateData = req.body;
@@ -54,7 +54,7 @@ export class PetController {
         return res.status(400).json({ error: 'ID inválido' });
       }
       
-      const updatedPet = PetService.updatePet(id, updateData);
+      const updatedPet = await PetService.updatePet(id, updateData);
       
       if (!updatedPet) {
         return res.status(404).json({ error: 'Pet não encontrado' });
@@ -67,7 +67,7 @@ export class PetController {
     }
   }
 
-  static deletePet(req: Request, res: Response): Response | void {
+  static async deletePet(req: Request, res: Response): Promise<Response> {
     try {
       const id = parseInt(req.params.id);
       
@@ -75,7 +75,7 @@ export class PetController {
         return res.status(400).json({ error: 'ID inválido' });
       }
       
-      const deleted = PetService.deletePet(id);
+      const deleted = await PetService.deletePet(id);
       
       if (!deleted) {
         return res.status(404).json({ error: 'Pet não encontrado' });
@@ -91,7 +91,7 @@ export class PetController {
     }
   }
 
-  static getPetsByTutor(req: Request, res: Response): Response | void {
+  static async getPetsByTutor(req: Request, res: Response): Promise<Response> {
     try {
       const tutorId = parseInt(req.params.tutorId);
       
@@ -99,7 +99,7 @@ export class PetController {
         return res.status(400).json({ error: 'ID do tutor inválido' });
       }
       
-      const pets = PetService.getPetsByTutorId(tutorId);
+      const pets = await PetService.getPetsByTutorId(tutorId);
       return res.status(200).json(pets);
     } catch (error) {
       console.error(error);
@@ -107,7 +107,7 @@ export class PetController {
     }
   }
 
-  static createPetForTutor(req: Request, res: Response): Response | void {
+  static async createPetForTutor(req: Request, res: Response): Promise<Response> {
     try {
       const tutorId = parseInt(req.params.tutorId);
       
@@ -120,7 +120,7 @@ export class PetController {
         tutorId: tutorId
       };
       
-      const createdPet = PetService.createPet(newPetData);
+      const createdPet = await PetService.createPet(newPetData);
       return res.status(201).json(createdPet);
     } catch (error) {
       console.error(error);

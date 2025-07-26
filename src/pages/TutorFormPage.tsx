@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { tutorSchema, type TutorFormData } from '../schemas/tutorSchema';
 import { TutorService } from '../services/tutorService';
+import { useCreateTutor, useUpdateTutor, tutorKeys } from '../api/tutorApi';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -17,11 +18,17 @@ const TutorFormPage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Determina se está no modo de edição
   const isEditMode = Boolean(id);
   const tutorId = id ? parseInt(id, 10) : null;
+
+  // Hooks para mutations
+  const createTutorMutation = useCreateTutor();
+  const updateTutorMutation = useUpdateTutor();
+  
+  // Atualiza o estado de loading baseado nas mutations
+  const isMutationLoading = createTutorMutation.isPending || updateTutorMutation.isPending;
 
   const {
     register,
@@ -40,7 +47,7 @@ const TutorFormPage = () => {
   
   // Busca os dados do tutor se estiver no modo de edição
   const { data: tutorData, isLoading: isLoadingTutor, error: tutorError } = useQuery({
-    queryKey: ['tutor', tutorId],
+    queryKey: tutorKeys.detail(tutorId!),
     queryFn: () => TutorService.findById(tutorId!),
     enabled: isEditMode && tutorId !== null,
   });
@@ -58,12 +65,13 @@ const TutorFormPage = () => {
   }, [tutorData, reset, isEditMode]);
 
   const onSubmit = async (data: TutorFormData) => {
-    setIsSubmitting(true);
-    
     try {
       if (isEditMode && tutorId) {
         // Modo de edição - atualiza o tutor existente
-        await TutorService.update(tutorId, data);
+        await updateTutorMutation.mutateAsync({
+          id: tutorId,
+          data
+        });
         
         toast({
           title: 'Sucesso!',
@@ -72,7 +80,7 @@ const TutorFormPage = () => {
         });
       } else {
         // Modo de criação - cria um novo tutor
-        await TutorService.create(data);
+        await createTutorMutation.mutateAsync(data);
         
         toast({
           title: 'Sucesso!',
@@ -92,8 +100,6 @@ const TutorFormPage = () => {
           : 'Falha ao cadastrar tutor. Tente novamente.',
         variant: 'destructive'
       });
-    } finally {
-      setIsSubmitting(false);
     }
   };
   
@@ -258,18 +264,22 @@ const TutorFormPage = () => {
                 type="button"
                 variant="outline"
                 onClick={() => navigate('/tutores')}
-                disabled={isSubmitting}
+                disabled={isMutationLoading}
               >
                 Cancelar
               </Button>
               <Button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isMutationLoading}
                 className="flex items-center space-x-2"
               >
-                <Save className="h-4 w-4" />
+                {isMutationLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Save className="h-4 w-4" />
+                )}
                 <span>
-                  {isSubmitting 
+                  {isMutationLoading 
                     ? (isEditMode ? 'Atualizando...' : 'Salvando...') 
                     : (isEditMode ? 'Atualizar Tutor' : 'Salvar Tutor')
                   }

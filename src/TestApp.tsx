@@ -42,7 +42,7 @@ const TestApp: React.FC = () => {
           color: '#1e40af',
           border: '1px solid #bfdbfe'
         }}>
-          📍 Frontend: http://localhost:8080
+          📍 Frontend: http://localhost:3000
         </div>
         
         <div style={{

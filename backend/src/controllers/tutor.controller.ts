@@ -2,9 +2,19 @@ import { Request, Response } from 'express';
 import { TutorService } from '../services/tutor.service';
 
 export class TutorController {
-  static getAllTutors(req: Request, res: Response): Response | void {
+  static async getTutorStats(req: Request, res: Response): Promise<Response> {
     try {
-      const tutors = TutorService.getAllTutors();
+      const stats = await TutorService.getTutorStats();
+      return res.status(200).json(stats);
+    } catch (error) {
+      console.error('Erro ao buscar estatísticas de tutores:', error);
+      return res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  }
+
+  static async getAllTutors(req: Request, res: Response): Promise<Response> {
+    try {
+      const tutors = await TutorService.getAllTutors();
       return res.status(200).json(tutors);
     } catch (error) {
       console.error('Erro ao buscar tutores:', error);
@@ -12,10 +22,10 @@ export class TutorController {
     }
   }
 
-  static createTutor(req: Request, res: Response): Response | void {
+  static async createTutor(req: Request, res: Response): Promise<Response> {
     try {
       const newTutorData = req.body;
-      const createdTutor = TutorService.createTutor(newTutorData);
+      const createdTutor = await TutorService.createTutor(newTutorData);
       return res.status(201).json(createdTutor);
     } catch (error) {
       console.error('Erro ao criar tutor:', error);
@@ -23,7 +33,7 @@ export class TutorController {
     }
   }
 
-  static getTutorById(req: Request, res: Response): Response | void {
+  static async getTutorById(req: Request, res: Response): Promise<Response> {
     try {
       const id = parseInt(req.params.id);
       
@@ -31,7 +41,7 @@ export class TutorController {
         return res.status(400).json({ error: 'ID inválido' });
       }
       
-      const tutor = TutorService.getTutorById(id);
+      const tutor = await TutorService.getTutorById(id);
       
       if (!tutor) {
         return res.status(404).json({ error: 'Tutor não encontrado' });
@@ -44,7 +54,7 @@ export class TutorController {
     }
   }
 
-  static updateTutor(req: Request, res: Response): Response | void {
+  static async updateTutor(req: Request, res: Response): Promise<Response> {
     try {
       const id = parseInt(req.params.id);
       const updatedData = req.body;
@@ -53,7 +63,7 @@ export class TutorController {
         return res.status(400).json({ error: 'ID inválido' });
       }
       
-      const updatedTutor = TutorService.updateTutor(id, updatedData);
+      const updatedTutor = await TutorService.updateTutor(id, updatedData);
       
       if (!updatedTutor) {
         return res.status(404).json({ error: 'Tutor não encontrado' });
@@ -66,7 +76,7 @@ export class TutorController {
     }
   }
 
-  static deleteTutor(req: Request, res: Response): Response | void {
+  static async deleteTutor(req: Request, res: Response): Promise<Response> {
     try {
       const id = parseInt(req.params.id);
       
@@ -74,7 +84,7 @@ export class TutorController {
         return res.status(400).json({ error: 'ID inválido' });
       }
       
-      const deleted = TutorService.deleteTutor(id);
+      const deleted = await TutorService.deleteTutor(id);
       
       if (!deleted) {
         return res.status(404).json({ error: 'Tutor não encontrado' });

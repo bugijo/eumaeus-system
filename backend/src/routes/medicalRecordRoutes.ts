@@ -1,12 +1,16 @@
 import { Router } from 'express';
 import {
   createMedicalRecord,
+  createDirectMedicalRecord,
   getRecordsByPet,
   getRecordByAppointment,
   getAvailableProducts
 } from '../controllers/medicalRecordController';
 
 const router = Router();
+
+// POST /api/records/direct - Criar prontuário diretamente para um pet
+router.post('/direct', createDirectMedicalRecord);
 
 // POST /api/records/:appointmentId - Criar prontuário para um agendamento
 router.post('/:appointmentId', createMedicalRecord);

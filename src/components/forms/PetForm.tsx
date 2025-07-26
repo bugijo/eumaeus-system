@@ -15,7 +15,7 @@ import type { Pet } from '@/types';
 
 interface PetFormProps {
   pet?: Pet;
-  tutorId?: string;
+  tutorId?: number;
   onSuccess?: (pet: Pet) => void;
   onCancel?: () => void;
   className?: string;
@@ -24,6 +24,9 @@ interface PetFormProps {
 export function PetForm({ pet, tutorId, onSuccess, onCancel, className }: PetFormProps) {
   const { toast } = useToast();
   const isEditing = !!pet;
+  
+  // DEBUG: Log para verificar o tutorId recebido
+  console.log('🔍 PetForm - tutorId recebido:', tutorId, 'tipo:', typeof tutorId);
   
   const createPetMutation = useCreatePet();
   const createPetForTutorMutation = useCreatePetForTutor();
@@ -37,21 +40,13 @@ export function PetForm({ pet, tutorId, onSuccess, onCancel, className }: PetFor
       species: pet.species,
       breed: pet.breed || '',
       birthDate: pet.birthDate ? new Date(pet.birthDate).toISOString().split('T')[0] : '',
-      weight: pet.weight || '',
-      color: pet.color || '',
-      microchip: pet.microchip || '',
-      notes: pet.notes || '',
       tutorId: pet.tutorId,
     } : {
       name: '',
       species: '',
       breed: '',
       birthDate: '',
-      weight: '',
-      color: '',
-      microchip: '',
-      notes: '',
-      tutorId: tutorId || '',
+      tutorId: tutorId || 0,
     },
   });
 
@@ -61,19 +56,29 @@ export function PetForm({ pet, tutorId, onSuccess, onCancel, className }: PetFor
 
   const onSubmit = async (data: PetFormData | PetUpdateData) => {
     try {
-      // Converter birthDate para Date se fornecido
-      const formattedData = {
-        ...data,
+      // Filtrar apenas os campos válidos do schema Prisma Pet
+      const validPetFields = {
+        name: data.name,
+        species: data.species,
+        breed: data.breed,
         birthDate: data.birthDate ? new Date(data.birthDate) : undefined,
-        weight: data.weight ? parseFloat(data.weight) : undefined,
+        tutorId: data.tutorId
       };
+      
+      // DEBUG: Log para verificar os dados enviados
+      console.log('🔍 DADOS ENVIADOS PARA A API:', {
+        isEditing,
+        tutorId,
+        formattedData: validPetFields,
+        originalData: data
+      });
       
       let result: Pet;
       
       if (isEditing) {
         result = await updatePetMutation.mutateAsync({
           id: pet.id,
-          data: formattedData as PetUpdateData,
+          data: validPetFields as PetUpdateData,
         });
         toast({
           title: 'Sucesso!',
@@ -83,14 +88,14 @@ export function PetForm({ pet, tutorId, onSuccess, onCancel, className }: PetFor
       } else {
         if (tutorId) {
           // Usar a nova API para criar pet para tutor específico
-          const { tutorId: _, ...petData } = formattedData as PetFormData;
+          const { tutorId: _, ...petData } = validPetFields as PetFormData;
           result = await createPetForTutorMutation.mutateAsync({
-            tutorId: parseInt(tutorId),
+            tutorId: tutorId,
             data: petData
           });
         } else {
           // Usar a API geral de criação de pets
-          result = await createPetMutation.mutateAsync(formattedData as PetFormData);
+          result = await createPetMutation.mutateAsync(validPetFields as PetFormData);
         }
         toast({
           title: 'Sucesso!',
@@ -204,7 +209,7 @@ export function PetForm({ pet, tutorId, onSuccess, onCancel, className }: PetFor
           )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
           <InputField
             label="Data de nascimento"
             type="date"
@@ -212,42 +217,7 @@ export function PetForm({ pet, tutorId, onSuccess, onCancel, className }: PetFor
             disabled={isLoading}
             {...form.register('birthDate')}
           />
-          
-          <InputField
-            label="Peso (kg)"
-            type="number"
-            step="0.1"
-            placeholder="0.0"
-            error={errors.weight?.message}
-            disabled={isLoading}
-            {...form.register('weight')}
-          />
-          
-          <InputField
-            label="Cor"
-            placeholder="Digite a cor"
-            error={errors.color?.message}
-            disabled={isLoading}
-            {...form.register('color')}
-          />
         </div>
-
-        <InputField
-          label="Microchip"
-          placeholder="Número do microchip"
-          error={errors.microchip?.message}
-          disabled={isLoading}
-          {...form.register('microchip')}
-        />
-
-        <TextareaField
-          label="Observações"
-          placeholder="Observações adicionais sobre o pet..."
-          rows={4}
-          error={errors.notes?.message}
-          disabled={isLoading}
-          {...form.register('notes')}
-        />
       </div>
 
       <div className="flex justify-end space-x-4 mt-8">
@@ -325,6 +295,7 @@ export function PetFormModal({
         <div className="p-6">
           <PetForm
             pet={pet}
+            tutorId={props.tutorId}
             onSuccess={handleSuccess}
             onCancel={onClose}
             {...props}

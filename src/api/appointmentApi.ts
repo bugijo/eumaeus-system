@@ -16,7 +16,7 @@ export function useAppointments() {
   return useQuery({
     queryKey: appointmentKeys.list(),
     queryFn: () => AppointmentService.findAll(),
-    staleTime: 5 * 60 * 1000, // 5 minutos
+    staleTime: 5 * 60 * 1000, // 5 minutos - valor normal de cache
   });
 }
 
@@ -37,6 +37,8 @@ export function useCreateAppointment() {
     mutationFn: (data: CreateAppointmentData) => AppointmentService.create(data),
     onSuccess: () => {
       // Invalida a query de appointments para atualizar a lista
+      queryClient.invalidateQueries({ queryKey: appointmentKeys.list() });
+      // Também invalida todas as queries relacionadas a appointments
       queryClient.invalidateQueries({ queryKey: appointmentKeys.all });
     },
   });
@@ -57,6 +59,7 @@ export function useUpdateAppointment() {
       );
       
       // Invalida a query de appointments para atualizar a lista
+      queryClient.invalidateQueries({ queryKey: appointmentKeys.list() });
       queryClient.invalidateQueries({ queryKey: appointmentKeys.all });
     },
   });
@@ -70,6 +73,7 @@ export function useDeleteAppointment() {
     mutationFn: (id: number) => AppointmentService.delete(id),
     onSuccess: () => {
       // Invalida a query de appointments para atualizar a lista
+      queryClient.invalidateQueries({ queryKey: appointmentKeys.list() });
       queryClient.invalidateQueries({ queryKey: appointmentKeys.all });
     },
   });

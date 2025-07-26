@@ -3,5 +3,5 @@ export interface Tutor {
   name: string;
   email: string;
   phone: string;
-  address: string;
+  address: string | null;
 }

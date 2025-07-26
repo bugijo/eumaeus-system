@@ -106,7 +106,7 @@ export const TutorDetailPage = () => {
               <CardTitle className="flex items-center gap-2">
                 <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
                   <span className="text-blue-600 font-semibold text-lg">
-                    {tutor.name.charAt(0).toUpperCase()}
+                    {tutor.name ? tutor.name.charAt(0).toUpperCase() : 'T'}
                   </span>
                 </div>
                 {tutor.name}
@@ -161,17 +161,25 @@ export const TutorDetailPage = () => {
                       <div className="flex items-center gap-4">
                         <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
                           <span className="text-green-600 font-semibold">
-                            {pet.name.charAt(0).toUpperCase()}
+                            {pet.name ? pet.name.charAt(0).toUpperCase() : 'P'}
                           </span>
                         </div>
                         <div>
                           <h3 className="font-semibold text-gray-900">{pet.name}</h3>
                           <div className="flex items-center gap-2 text-sm text-gray-600">
                             <Badge variant="outline">{pet.species}</Badge>
-                            <span>•</span>
-                            <span>{pet.breed}</span>
-                            <span>•</span>
-                            <span>{pet.weight}kg</span>
+                            {pet.breed && (
+                              <>
+                                <span>•</span>
+                                <span>{pet.breed}</span>
+                              </>
+                            )}
+                            {pet.birthDate && (
+                              <>
+                                <span>•</span>
+                                <span>{format(new Date(pet.birthDate), 'dd/MM/yyyy', { locale: ptBR })}</span>
+                              </>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -229,10 +237,11 @@ export const TutorDetailPage = () => {
           setIsPetModalOpen(false);
           setPetToEdit(null);
         }}
-        tutorId={tutorId}
+        tutorId={tutorId ? Number(tutorId) : undefined}
         pet={petToEdit}
         title={petToEdit ? 'Editar Pet' : 'Novo Pet'}
         onSuccess={(pet: Pet) => {
+          console.log('🔍 DEBUG TutorDetailPage - tutorId:', tutorId, 'Number(tutorId):', tutorId ? Number(tutorId) : undefined);
           console.log(petToEdit ? 'Pet atualizado com sucesso:' : 'Pet criado com sucesso:', pet);
           setIsPetModalOpen(false);
           setPetToEdit(null);
@@ -266,3 +275,5 @@ export const TutorDetailPage = () => {
     </div>
   );
 };
+
+export default TutorDetailPage;

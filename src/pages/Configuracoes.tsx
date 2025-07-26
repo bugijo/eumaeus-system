@@ -5,17 +5,92 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { UserPlus, Edit, Trash2, Save, Settings } from 'lucide-react';
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { UserPlus, Edit, Trash2, Save, Settings, Bell, Mail, Clock, TestTube, RotateCcw, Info } from 'lucide-react';
+import { useClinicSettings, useUpdateClinicSettings, useTestEmailSettings, useResetClinicSettings, useTemplateVariables } from '@/api/clinicSettingsApi';
+import { toast } from 'sonner';
 
-const Configuracoes = () => {
+export default function Configuracoes() {
   const [emailReminders, setEmailReminders] = useState(true);
   const [whatsappReminders, setWhatsappReminders] = useState(false);
   const [emailHealthAlerts, setEmailHealthAlerts] = useState(true);
   const [whatsappHealthAlerts, setWhatsappHealthAlerts] = useState(true);
   const [satisfactionSurvey, setSatisfactionSurvey] = useState(false);
+
+  // Hooks para o sistema de automação
+  const { data: settings, isLoading: settingsLoading, error: settingsError } = useClinicSettings();
+  const { data: templateVariables } = useTemplateVariables();
+  const updateSettingsMutation = useUpdateClinicSettings();
+  const testEmailMutation = useTestEmailSettings();
+  const resetSettingsMutation = useResetClinicSettings();
+
+  // Estados locais para os formulários
+  const [localSettings, setLocalSettings] = useState({
+    appointmentRemindersEnabled: true,
+    appointmentReminderTemplate: '',
+    vaccineRemindersEnabled: true,
+    vaccineReminderTemplate: '',
+    emailFromName: '',
+    clinicName: '',
+    clinicPhone: '',
+    reminderSendTime: '08:00',
+    vaccineReminderDaysBefore: 7
+  });
+
+  // Atualiza estados locais quando os dados chegam do servidor
+  React.useEffect(() => {
+    if (settings) {
+      setLocalSettings({
+        appointmentRemindersEnabled: settings.appointmentRemindersEnabled,
+        appointmentReminderTemplate: settings.appointmentReminderTemplate,
+        vaccineRemindersEnabled: settings.vaccineRemindersEnabled,
+        vaccineReminderTemplate: settings.vaccineReminderTemplate,
+        emailFromName: settings.emailFromName,
+        clinicName: settings.clinicName,
+        clinicPhone: settings.clinicPhone,
+        reminderSendTime: settings.reminderSendTime,
+        vaccineReminderDaysBefore: settings.vaccineReminderDaysBefore
+      });
+    }
+  }, [settings]);
+
+  // Função para salvar configurações
+  const handleSaveSettings = async () => {
+    try {
+      await updateSettingsMutation.mutateAsync({ data: localSettings });
+      toast.success('Configurações salvas com sucesso!');
+    } catch (error) {
+      toast.error('Erro ao salvar configurações');
+    }
+  };
+
+  // Função para testar e-mail
+  const handleTestEmail = async () => {
+    try {
+      const result = await testEmailMutation.mutateAsync();
+      if (result.success) {
+        toast.success(result.message);
+      } else {
+        toast.error(result.message);
+      }
+    } catch (error) {
+      toast.error('Erro ao testar configurações de e-mail');
+    }
+  };
+
+  // Função para resetar configurações
+  const handleResetSettings = async () => {
+    try {
+      await resetSettingsMutation.mutateAsync();
+      toast.success('Configurações resetadas para valores padrão!');
+    } catch (error) {
+      toast.error('Erro ao resetar configurações');
+    }
+  };
 
   const users = [
     {
@@ -187,78 +262,285 @@ const Configuracoes = () => {
         </TabsContent>
 
         <TabsContent value="notificacoes" className="space-y-6">
+          {settingsError && (
+            <Alert variant="destructive">
+              <AlertDescription>
+                Erro ao carregar configurações. Tente recarregar a página.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Status do Sistema de Automação */}
           <Card>
             <CardHeader>
-              <CardTitle>Configurações de Notificações</CardTitle>
-              <CardDescription>Configure como e quando os tutores receberão avisos automáticos</CardDescription>
+              <CardTitle className="flex items-center gap-2">
+                <Bell className="h-5 w-5" />
+                Sistema de Automação PulseVet
+              </CardTitle>
+              <CardDescription>
+                Controle total sobre os lembretes automáticos da sua clínica
+              </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-4">
-                <div>
-                  <h3 className="text-lg font-medium mb-3">Lembretes de Consulta</h3>
-                  <p className="text-sm text-muted-foreground mb-4">Enviar lembrete 24h antes da consulta via:</p>
-                  <div className="space-y-3">
-                    <div className="flex items-center space-x-3">
-                      <Switch 
-                        id="email-reminders" 
-                        checked={emailReminders}
-                        onCheckedChange={setEmailReminders}
-                      />
-                      <Label htmlFor="email-reminders">Email</Label>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <Switch 
-                        id="whatsapp-reminders" 
-                        checked={whatsappReminders}
-                        onCheckedChange={setWhatsappReminders}
-                      />
-                      <Label htmlFor="whatsapp-reminders">WhatsApp</Label>
-                    </div>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="flex items-center space-x-3 p-4 bg-green-50 rounded-lg">
+                  <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                  <div>
+                    <p className="font-medium text-green-800">Sistema Ativo</p>
+                    <p className="text-sm text-green-600">Lembretes funcionando</p>
                   </div>
                 </div>
-
-                <div className="border-t pt-4">
-                  <h3 className="text-lg font-medium mb-3">Avisos de Saúde</h3>
-                  <p className="text-sm text-muted-foreground mb-4">Enviar avisos de vencimento de vacinas e vermífugos via:</p>
-                  <div className="space-y-3">
-                    <div className="flex items-center space-x-3">
-                      <Switch 
-                        id="email-health" 
-                        checked={emailHealthAlerts}
-                        onCheckedChange={setEmailHealthAlerts}
-                      />
-                      <Label htmlFor="email-health">Email</Label>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <Switch 
-                        id="whatsapp-health" 
-                        checked={whatsappHealthAlerts}
-                        onCheckedChange={setWhatsappHealthAlerts}
-                      />
-                      <Label htmlFor="whatsapp-health">WhatsApp</Label>
-                    </div>
+                <div className="flex items-center space-x-3 p-4 bg-blue-50 rounded-lg">
+                  <Clock className="h-5 w-5 text-blue-600" />
+                  <div>
+                    <p className="font-medium text-blue-800">Horário: {localSettings.reminderSendTime}</p>
+                    <p className="text-sm text-blue-600">Envio diário</p>
                   </div>
                 </div>
-
-                <div className="border-t pt-4">
-                  <h3 className="text-lg font-medium mb-3">Pós-Consulta</h3>
-                  <div className="flex items-center space-x-3">
-                    <Switch 
-                      id="satisfaction-survey" 
-                      checked={satisfactionSurvey}
-                      onCheckedChange={setSatisfactionSurvey}
-                    />
-                    <Label htmlFor="satisfaction-survey">Enviar pesquisa de satisfação 1 dia após a consulta</Label>
+                <div className="flex items-center space-x-3 p-4 bg-purple-50 rounded-lg">
+                  <Mail className="h-5 w-5 text-purple-600" />
+                  <div>
+                    <p className="font-medium text-purple-800">Via E-mail</p>
+                    <p className="text-sm text-purple-600">Templates personalizados</p>
                   </div>
                 </div>
               </div>
-
-              <Button className="w-full md:w-auto">
-                <Save className="mr-2 h-4 w-4" />
-                Salvar Preferências
-              </Button>
             </CardContent>
           </Card>
+
+          {/* Configurações de Lembretes de Consulta */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                📅 Lembretes de Consulta
+              </CardTitle>
+              <CardDescription>
+                Configure os lembretes automáticos enviados 24h antes das consultas
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="flex items-center space-x-3">
+                <Switch 
+                  id="appointment-reminders" 
+                  checked={localSettings.appointmentRemindersEnabled}
+                  onCheckedChange={(checked) => 
+                    setLocalSettings(prev => ({ ...prev, appointmentRemindersEnabled: checked }))
+                  }
+                  disabled={settingsLoading}
+                />
+                <Label htmlFor="appointment-reminders" className="text-base font-medium">
+                  Habilitar lembretes de consulta
+                </Label>
+              </div>
+
+              {localSettings.appointmentRemindersEnabled && (
+                <div className="space-y-4 pl-6 border-l-2 border-blue-200">
+                  <div className="space-y-2">
+                    <Label htmlFor="appointment-template">Template da Mensagem</Label>
+                    <Textarea
+                      id="appointment-template"
+                      value={localSettings.appointmentReminderTemplate}
+                      onChange={(e) => 
+                        setLocalSettings(prev => ({ ...prev, appointmentReminderTemplate: e.target.value }))
+                      }
+                      placeholder="Digite o template da mensagem..."
+                      rows={4}
+                      disabled={settingsLoading}
+                    />
+                    <div className="text-sm text-muted-foreground">
+                      <p className="font-medium mb-1">Variáveis disponíveis:</p>
+                      <div className="flex flex-wrap gap-2">
+                        {templateVariables?.appointment?.map((variable) => (
+                          <Badge key={variable.variable} variant="outline" className="text-xs">
+                            {variable.variable}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Configurações de Lembretes de Vacina */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                💉 Lembretes de Vacinação
+              </CardTitle>
+              <CardDescription>
+                Configure os lembretes automáticos para vacinas próximas do vencimento
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="flex items-center space-x-3">
+                <Switch 
+                  id="vaccine-reminders" 
+                  checked={localSettings.vaccineRemindersEnabled}
+                  onCheckedChange={(checked) => 
+                    setLocalSettings(prev => ({ ...prev, vaccineRemindersEnabled: checked }))
+                  }
+                  disabled={settingsLoading}
+                />
+                <Label htmlFor="vaccine-reminders" className="text-base font-medium">
+                  Habilitar lembretes de vacinação
+                </Label>
+              </div>
+
+              {localSettings.vaccineRemindersEnabled && (
+                <div className="space-y-4 pl-6 border-l-2 border-green-200">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="vaccine-days-before">Avisar quantos dias antes?</Label>
+                      <Input
+                        id="vaccine-days-before"
+                        type="number"
+                        min="1"
+                        max="30"
+                        value={localSettings.vaccineReminderDaysBefore}
+                        onChange={(e) => 
+                          setLocalSettings(prev => ({ ...prev, vaccineReminderDaysBefore: parseInt(e.target.value) || 7 }))
+                        }
+                        disabled={settingsLoading}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="vaccine-template">Template da Mensagem</Label>
+                    <Textarea
+                      id="vaccine-template"
+                      value={localSettings.vaccineReminderTemplate}
+                      onChange={(e) => 
+                        setLocalSettings(prev => ({ ...prev, vaccineReminderTemplate: e.target.value }))
+                      }
+                      placeholder="Digite o template da mensagem..."
+                      rows={4}
+                      disabled={settingsLoading}
+                    />
+                    <div className="text-sm text-muted-foreground">
+                      <p className="font-medium mb-1">Variáveis disponíveis:</p>
+                      <div className="flex flex-wrap gap-2">
+                        {templateVariables?.vaccine?.map((variable) => (
+                          <Badge key={variable.variable} variant="outline" className="text-xs">
+                            {variable.variable}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Configurações Avançadas */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                ⚙️ Configurações Avançadas
+              </CardTitle>
+              <CardDescription>
+                Configurações técnicas do sistema de automação
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="send-time">Horário de Envio</Label>
+                  <Input
+                    id="send-time"
+                    type="time"
+                    value={localSettings.reminderSendTime}
+                    onChange={(e) => 
+                      setLocalSettings(prev => ({ ...prev, reminderSendTime: e.target.value }))
+                    }
+                    disabled={settingsLoading}
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    Horário diário para envio dos lembretes
+                  </p>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="clinic-name">Nome da Clínica</Label>
+                  <Input
+                    id="clinic-name"
+                    value={localSettings.clinicName}
+                    onChange={(e) => 
+                      setLocalSettings(prev => ({ ...prev, clinicName: e.target.value }))
+                    }
+                    placeholder="Nome da clínica"
+                    disabled={settingsLoading}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="clinic-phone">Telefone da Clínica</Label>
+                  <Input
+                    id="clinic-phone"
+                    value={localSettings.clinicPhone}
+                    onChange={(e) => 
+                      setLocalSettings(prev => ({ ...prev, clinicPhone: e.target.value }))
+                    }
+                    placeholder="(XX) XXXXX-XXXX"
+                    disabled={settingsLoading}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="email-from-name">Nome do Remetente</Label>
+                  <Input
+                    id="email-from-name"
+                    value={localSettings.emailFromName}
+                    onChange={(e) => 
+                      setLocalSettings(prev => ({ ...prev, emailFromName: e.target.value }))
+                    }
+                    placeholder="Nome que aparece no e-mail"
+                    disabled={settingsLoading}
+                  />
+                </div>
+              </div>
+
+              <Alert>
+                <Info className="h-4 w-4" />
+                <AlertDescription>
+                  <strong>Dica:</strong> Configure as variáveis de ambiente EMAIL_USER e EMAIL_PASSWORD no backend para ativar o envio real de e-mails.
+                </AlertDescription>
+              </Alert>
+            </CardContent>
+          </Card>
+
+          {/* Ações */}
+          <div className="flex flex-wrap gap-4">
+            <Button 
+              onClick={handleSaveSettings}
+              disabled={updateSettingsMutation.isPending || settingsLoading}
+              className="flex-1 md:flex-none"
+            >
+              <Save className="mr-2 h-4 w-4" />
+              {updateSettingsMutation.isPending ? 'Salvando...' : 'Salvar Configurações'}
+            </Button>
+            
+            <Button 
+              variant="outline"
+              onClick={handleTestEmail}
+              disabled={testEmailMutation.isPending || settingsLoading}
+            >
+              <TestTube className="mr-2 h-4 w-4" />
+              {testEmailMutation.isPending ? 'Testando...' : 'Testar E-mail'}
+            </Button>
+            
+            <Button 
+              variant="outline"
+              onClick={handleResetSettings}
+              disabled={resetSettingsMutation.isPending || settingsLoading}
+            >
+              <RotateCcw className="mr-2 h-4 w-4" />
+              {resetSettingsMutation.isPending ? 'Resetando...' : 'Resetar Padrão'}
+            </Button>
+          </div>
         </TabsContent>
 
         <TabsContent value="empresa" className="space-y-6">
@@ -308,6 +590,4 @@ const Configuracoes = () => {
       </Tabs>
     </div>
   );
-};
-
-export default Configuracoes;
+}

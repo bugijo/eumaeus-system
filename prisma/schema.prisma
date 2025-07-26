@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -25,15 +25,17 @@ enum InvoiceStatus {
   CANCELLED
 }
 
-// 1. Modelo para o Tutor (Dono do Pet)
+// 1. Modelo para o Tutor (Dono do Pet) modificado
 model Tutor {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   name      String
-  email     String   @unique
+  email     String   @unique // Mantemos o email aqui para comunicação
   phone     String
   address   String?  // O '?' indica que o campo é opcional
+  clinicId  Int      @default(1) // Essencial para a V2 Multi-Tenant no futuro
+  deletedAt DateTime? // Soft delete: quando preenchido, o registro está "excluído"
 
   // Relacionamento: Um Tutor pode ter vários Pets
   pets         Pet[]
@@ -49,6 +51,7 @@ model Pet {
   species   String   // Ex: "Cachorro", "Gato"
   breed     String   // Ex: "SRD", "Poodle"
   birthDate DateTime?
+  deletedAt DateTime? // Soft delete: quando preenchido, o registro está "excluído"
 
   // Relacionamento: Um Pet pertence a um Tutor
   tutorId      Int
@@ -99,6 +102,34 @@ model MedicalRecord {
 
   // Relacionamento: Many-to-many com produtos utilizados
   products      MedicalRecordProduct[]
+
+  // Relacionamento: Um prontuário pode ter uma receita (1-para-1)
+  prescription  Prescription?
+}
+
+// 4.3. Modelo para Receituário Digital
+model Prescription {
+  id              Int                 @id @default(autoincrement())
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  medicalRecordId Int                 @unique // Cada prontuário só pode ter uma receita associada
+  medicalRecord   MedicalRecord       @relation(fields: [medicalRecordId], references: [id])
+
+  items           PrescriptionItem[]
+}
+
+// 4.4. Modelo para Itens do Receituário
+model PrescriptionItem {
+  id          Int          @id @default(autoincrement())
+  medication  String
+  dosage      String
+  frequency   String
+  duration    String
+  instructions String?
+
+  prescriptionId Int
+  prescription   Prescription @relation(fields: [prescriptionId], references: [id])
 }
 
 // 4.1. Modelo para registrar produtos utilizados no prontuário
@@ -150,19 +181,35 @@ enum RoleName {
   FINANCEIRO
 }
 
-// O modelo para o usuário que vai fazer login
-model User {
-  id           Int      @id @default(autoincrement())
-  email        String   @unique
-  name         String
-  password     String   // A senha será guardada de forma criptografada
-  refreshToken String?  @unique // Token para renovação automática de sessão
+// Modelo central que lida APENAS com login
+model AuthProfile {
+  id           Int     @id @default(autoincrement())
+  email        String  @unique
+  password     String  // O hash da senha, como já fazemos
+  refreshToken String? @unique
   createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+
+  // A que tipo de perfil este login pertence?
+  // A relação é opcional em ambos os lados, pois um AuthProfile
+  // pertence a um User.
+  user   User?
+}
+
+// Modelo User (funcionário) modificado
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  clinicId  Int      @default(1) // Essencial para a V2 Multi-Tenant no futuro
 
   // Relacionamento: Um usuário tem um cargo
-  roleName     RoleName
-  role         Role     @relation(fields: [roleName], references: [name])
+  roleName  RoleName
+  role      Role     @relation(fields: [roleName], references: [name])
+
+  // Relacionamento 1-para-1 com AuthProfile
+  authProfileId Int         @unique
+  authProfile   AuthProfile @relation(fields: [authProfileId], references: [id], onDelete: Cascade)
 }
 
 // O modelo para os Cargos (ou "Roles")
@@ -192,6 +239,7 @@ model Invoice {
   totalAmount   Float
   status        InvoiceStatus @default(PENDING)
   createdAt     DateTime      @default(now())
+  nfeId         String?       // ID da NFS-e emitida (opcional)
 
   appointmentId Int           @unique // Cada fatura está ligada a um único agendamento
   appointment   Appointment   @relation(fields: [appointmentId], references: [id])

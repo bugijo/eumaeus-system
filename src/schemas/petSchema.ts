@@ -8,8 +8,8 @@ export const petSchema = z.object({
     .min(1, 'Espécie é obrigatória')
     .max(50, 'Espécie deve ter no máximo 50 caracteres'),
   breed: z.string()
-    .min(1, 'Raça é obrigatória')
-    .max(100, 'Raça deve ter no máximo 100 caracteres'),
+    .max(100, 'Raça deve ter no máximo 100 caracteres')
+    .optional(),
   birthDate: z.string()
     .optional()
     .refine((date) => {
@@ -17,10 +17,10 @@ export const petSchema = z.object({
       const birthDate = new Date(date);
       const today = new Date();
       return birthDate <= today;
-    }, 'Data de nascimento não pode ser no futuro')
-    .transform((date) => date ? new Date(date) : undefined),
-  tutorId: z.number()
-    .min(1, 'Tutor é obrigatório')
+    }, 'Data de nascimento não pode ser no futuro'),
+  tutorId: z.union([z.number(), z.string()])
+    .transform((val) => typeof val === 'string' ? parseInt(val) : val)
+    .refine((val) => !isNaN(val) && val > 0, 'Tutor é obrigatório')
 });
 
 export const petUpdateSchema = petSchema.partial().omit({ tutorId: true });
@@ -41,7 +41,7 @@ export type PetSearchParams = z.infer<typeof petSearchSchema>;
 
 // Constantes para espécies comuns
 export const COMMON_SPECIES = [
-  'Cachorro',
+  'Cão',
   'Gato',
   'Pássaro',
   'Peixe',

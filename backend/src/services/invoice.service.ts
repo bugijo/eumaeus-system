@@ -213,6 +213,34 @@ export class InvoiceService {
     });
   }
 
+  // Atualizar ID da NFS-e na fatura
+  async updateNFeId(invoiceId: number, nfeId: string) {
+    const invoice = await prisma.invoice.findUnique({
+      where: { id: invoiceId }
+    });
+
+    if (!invoice) {
+      throw new Error('Fatura não encontrada');
+    }
+
+    return await prisma.invoice.update({
+      where: { id: invoiceId },
+      data: { nfeId },
+      include: {
+        items: true,
+        appointment: {
+          include: {
+            pet: {
+              include: {
+                tutor: true
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
   // Estatísticas financeiras
   async getFinancialStats() {
     const [totalPending, totalPaid, totalCancelled, recentInvoices] = await Promise.all([

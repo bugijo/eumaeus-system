@@ -4,6 +4,7 @@ import { tutorPetRoutes } from './pet.routes';
 
 const tutorRoutes = Router();
 
+tutorRoutes.get('/tutors/stats', TutorController.getTutorStats);
 tutorRoutes.get('/tutors', TutorController.getAllTutors);
 tutorRoutes.get('/tutors/:id', TutorController.getTutorById);
 tutorRoutes.post('/tutors', TutorController.createTutor);

@@ -79,9 +79,11 @@ export function MedicalHistoryPage() {
         // Modo de criação
         const recordData: CreateMedicalRecordData = {
           petId: petIdNumber,
-          appointmentId: 1, // ID fixo para teste, como solicitado
+          symptoms: formData.notes, // Usando notes como symptoms temporariamente
+          diagnosis: 'Diagnóstico pendente', // Valor padrão
+          treatment: formData.prescription || 'Tratamento pendente', // Usando prescription como treatment
           notes: formData.notes,
-          prescription: formData.prescription
+          usedProducts: []
         };
 
         await createRecordMutation.mutateAsync({

@@ -3,8 +3,8 @@
 // Configurações padrão para desenvolvimento
 const defaultConfig = {
   NODE_ENV: 'development',
-  APP_URL: 'http://localhost:8080',
-  API_URL: 'http://localhost:3333/api',
+  APP_URL: 'http://localhost:3000',
+  API_URL: 'http://localhost:3333',
   APP_NAME: 'PulseVet System',
   APP_VERSION: '1.0.0',
   DEFAULT_PAGE_SIZE: '10',
@@ -47,7 +47,7 @@ function getEnvConfig() {
 export const env = getEnvConfig();
 
 // Exportação para compatibilidade com APIs
-export const API_BASE_URL = env.API_URL || 'http://localhost:3333/api';
+export const API_BASE_URL = env.API_URL || 'http://localhost:3333';
 
 // Tipos derivados
 export type Environment = typeof env;

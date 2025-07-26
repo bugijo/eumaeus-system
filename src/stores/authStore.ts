@@ -6,7 +6,8 @@ interface User {
   id: number;
   name: string;
   email: string;
-  role: string;
+  role?: string; // Opcional porque tutores não têm role
+  type: 'user' | 'tutor'; // Tipo de usuário para redirecionamento
 }
 
 interface AuthState {

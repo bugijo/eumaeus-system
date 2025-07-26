@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-export const LoginPage = () => {
+export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -27,8 +27,14 @@ export const LoginPage = () => {
       // Usa a ação da nossa store para salvar o estado do login com ambos os tokens
       login(data.accessToken, data.refreshToken, data.user);
 
-      // Redireciona para o dashboard após o login
-      navigate('/');
+      // Redirecionamento para funcionários (dashboard principal)
+      if (data.user.type === 'user') {
+        navigate('/');
+      } else {
+        // Acesso negado para não-funcionários
+        setError('Acesso restrito apenas para funcionários da clínica.');
+        return;
+      }
 
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Email ou senha incorretos. Tente novamente.');
@@ -88,4 +94,4 @@ export const LoginPage = () => {
 
     </div>
   );
-};
+}

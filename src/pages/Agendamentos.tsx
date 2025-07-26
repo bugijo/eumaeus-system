@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
@@ -10,67 +10,98 @@ import { useUpdateAppointmentStatus } from '../api/medicalRecordApi';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import { AppointmentFormModal } from '../components/forms/AppointmentForm';
 import { Button } from '../components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
-import { MedicalRecordForm } from '../components/forms/MedicalRecordForm';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../components/ui/dialog';
+import { LegacyMedicalRecordForm } from '../components/forms/MedicalRecordForm';
 import '../styles/calendar.css';
 
-const Agendamentos = () => {
-  const { data: appointments, isLoading, isError } = useAppointments();
+export default function Agendamentos() {
+  const { data: appointments = [], isLoading, isError } = useAppointments();
+  
+
   
   // States para controlar o modal de edição/criação
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
-  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
+  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
   const [isMedicalRecordModalOpen, setIsMedicalRecordModalOpen] = useState(false);
   
-  const updateStatusMutation = useUpdateAppointmentStatus();
+  const updateStatus = useUpdateAppointmentStatus();
 
   // Formata os dados para o formato que o FullCalendar entende
   const calendarEvents = useMemo(() => {
-    if (!appointments) return [];
-    return appointments.map(apt => ({
-      id: apt.id.toString(),
-      title: `${apt.serviceType} - Pet ID: ${apt.petId}`,
-      start: `${apt.date}T${apt.time}:00`, // Formato ISO
-      className: `event-${apt.status?.toLowerCase() || 'scheduled'}`, // Adiciona classe baseada no status
-      extendedProps: {
-        petId: apt.petId,
-        tutorId: apt.tutorId,
-        serviceType: apt.serviceType,
-        status: apt.status,
-        originalAppointment: apt
+    console.log('🔄 Recalculando eventos do calendário. Total de agendamentos:', appointments?.length);
+    if (!appointments?.length) return [];
+    
+    const events = appointments.map(apt => {
+      // Log para debug do agendamento ID 6 (ou outro que você está testando)
+      if (apt.id === 6) {
+        console.log('📋 Agendamento ID 6 - Status atual:', apt.status);
       }
-    }));
+      
+      // Mapeia o status do backend para as classes CSS
+      const statusMap = {
+        'SCHEDULED': 'scheduled',
+        'CONFIRMED': 'confirmed', 
+        'COMPLETED': 'completed',
+        'CANCELLED': 'cancelled',
+        'Agendado': 'scheduled',
+        'Confirmado': 'confirmed',
+        'Concluído': 'completed',
+        'Cancelado': 'cancelled'
+      };
+      
+      const cssStatus = statusMap[apt.status] || 'scheduled';
+      
+      const event = {
+        id: apt.id.toString(),
+        title: `${apt.serviceType} - Pet ID: ${apt.petId}`,
+        start: `${apt.date}T${apt.time}:00`,
+        className: `event-${cssStatus}`,
+        extendedProps: {
+          petId: apt.petId,
+          tutorId: apt.tutorId,
+          serviceType: apt.serviceType,
+          status: apt.status,
+          originalAppointment: apt
+        }
+      };
+      
+
+      
+      return event;
+    });
+    
+    return events;
   }, [appointments]);
 
   const handleDateClick = (arg) => {
     // Lógica para abrir o modal de CRIAÇÃO de agendamento
-    console.log('Criar novo agendamento em:', arg.dateStr);
     setSelectedEvent(null);
     setIsModalOpen(true);
   };
 
   const handleEventClick = (arg) => {
     // Lógica para abrir o modal de ações do agendamento
-    console.log('Visualizar agendamento:', arg.event.title);
     setSelectedAppointment(arg.event.extendedProps.originalAppointment);
     setIsStatusModalOpen(true);
   };
   
-  const handleStatusUpdate = async (status) => {
+  const handleStatusUpdate = (status) => {
     if (!selectedAppointment) return;
     
-    try {
-      await updateStatusMutation.mutateAsync({
-        appointmentId: selectedAppointment.id,
-        status
-      });
-      setIsStatusModalOpen(false);
-      setSelectedAppointment(null);
-    } catch (error) {
-      console.error('Erro ao atualizar status:', error);
-    }
+    updateStatus.mutate(
+      { appointmentId: selectedAppointment.id, status },
+      {
+        onSuccess: () => {
+          // Este código SÓ roda DEPOIS que a API respondeu
+          // e a invalidação padrão do hook já foi disparada.
+          console.log('✅ Mutação concluída, agora fechando o modal.');
+          setIsStatusModalOpen(false);
+          setSelectedAppointment(null);
+        },
+      }
+    );
   };
   
   const handleEditAppointment = () => {
@@ -94,7 +125,6 @@ const Agendamentos = () => {
   };
 
   const handleNewAppointment = () => {
-    console.log('✅ Botão de Novo Agendamento foi CLICADO!');
     setSelectedEvent(null);
     setIsModalOpen(true);
   };
@@ -180,6 +210,12 @@ const Agendamentos = () => {
             startTime: '08:00',
             endTime: '18:00'
           }}
+          eventDidMount={(info) => {
+            // Evento montado no calendário
+          }}
+          eventsSet={(events) => {
+            // Eventos definidos no calendário
+          }}
         />
       </div>
       
@@ -196,6 +232,9 @@ const Agendamentos = () => {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Ações do Agendamento</DialogTitle>
+            <DialogDescription>
+              Escolha uma ação para este agendamento. Você pode confirmar, finalizar, cancelar, criar prontuário ou editar os detalhes.
+            </DialogDescription>
           </DialogHeader>
           {selectedAppointment && (
             <div className="space-y-4">
@@ -210,7 +249,7 @@ const Agendamentos = () => {
                 <Button 
                   onClick={() => handleStatusUpdate('CONFIRMED')}
                   className="bg-blue-500 hover:bg-blue-600"
-                  disabled={updateStatusMutation.isPending}
+                  disabled={updateStatus.isPending}
                 >
                   Confirmar Agendamento
                 </Button>
@@ -218,7 +257,7 @@ const Agendamentos = () => {
                 <Button 
                   onClick={() => handleStatusUpdate('COMPLETED')}
                   className="bg-green-500 hover:bg-green-600"
-                  disabled={updateStatusMutation.isPending}
+                  disabled={updateStatus.isPending}
                 >
                   Finalizar Atendimento
                 </Button>
@@ -226,7 +265,7 @@ const Agendamentos = () => {
                 <Button 
                   onClick={() => handleStatusUpdate('CANCELLED')}
                   variant="destructive"
-                  disabled={updateStatusMutation.isPending}
+                  disabled={updateStatus.isPending}
                 >
                   Cancelar Agendamento
                 </Button>
@@ -252,7 +291,7 @@ const Agendamentos = () => {
        
        {/* Modal de formulário de prontuário médico */}
        {selectedAppointment && (
-         <MedicalRecordForm
+         <LegacyMedicalRecordForm
            isOpen={isMedicalRecordModalOpen}
            onClose={() => setIsMedicalRecordModalOpen(false)}
            appointmentId={selectedAppointment.id}
@@ -262,5 +301,3 @@ const Agendamentos = () => {
      </div>
    );
  };
- 
- export default Agendamentos;

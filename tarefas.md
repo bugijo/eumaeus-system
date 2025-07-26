@@ -1,106 +1,109 @@
-# PulseVet System - Roadmap de Desenvolvimento
+# PulseVet System - Roadmap Estratégico de Desenvolvimento
 
 ## Legenda de Status
 - ✅ **Concluído:** Tarefa finalizada e validada.
-- ⏳ **Em Andamento:** Tarefa que estamos executando agora.
-- 🔲 **A Fazer:** Próximas tarefas na fila.
-- 🚀 **Visão Futura:** Ideias para evoluções pós-V2.0.
+- ⏳ **Em Planejamento:** Próxima grande fase em discussão.
+- 🔲 **A Fazer:** Tarefas futuras na fila.
+- 🚀 **Visão Futura:** Ideias para o estado da arte.
 
 ---
 
-## FASE 1: FUNDAÇÃO E ESTRUTURA (O que já fizemos)
+## ✅ FASE 1: A BASE SÓLIDA (MVP V1.0)
+*Status: 100% CONCLUÍDO E EM PRODUÇÃO.*
+- [x] CRUDs Completos (Tutor, Pet, Estoque)
+- [x] Gestão de Agendamentos com Status
+- [x] Prontuário Eletrônico com integração de Estoque
+- [x] Módulo Financeiro Básico (Faturamento)
+- [x] Dashboard Dinâmico
+- [x] Sistema de Autenticação e Permissões (RBAC)
+- [x] Deploy e estabilização em ambiente de produção (Vercel + Render)
 
-Esta fase representa a base sólida que construímos para o projeto.
-
-- ✅ **1.1. Setup do Projeto e Banco de Dados:**
-  - [x] Configuração do monorepo (Frontend + Backend).
-  - [x] Instalação e configuração do Prisma com PostgreSQL.
-  - [x] Modelagem inicial de dados (Tutor, Pet, Appointment, etc.).
-- ✅ **1.2. Segurança e Estabilidade:**
-  - [x] Implementação do fluxo de autenticação com JWT e Refresh Tokens.
-  - [x] Criação de `ProtectedRoute` no frontend.
-  - [x] Implementação de `Error Boundaries` para resiliência da UI.
-- ✅ **1.3. UI e Infraestrutura Frontend:**
-  - [x] Configuração do Vite, TailwindCSS e `shadcn/ui`.
-  - [x] Implementação de `QueryClientProvider` para React Query.
-  - [x] Criação do `apiClient` com interceptors Axios.
-  - [x] Criação da página de Login e do Layout principal.
-- ✅ **1.4. CRUD de Tutores (Completo):**
-  - [x] **Read:** Tela de listagem de tutores com React Query.
-  - [x] **Create:** Formulário de criação de tutor com React Hook Form e Zod.
-  - [x] **Update:** Funcionalidade de edição com formulário inteligente.
-  - [x] **Delete:** Exclusão segura com modal de confirmação AlertDialog.
+### 🎨 MELHORIAS RECENTES IMPLEMENTADAS (Janeiro 2025)
+- [x] **Dashboard "Cockpit da Clínica"** - Transformação visual e funcional completa:
+  - [x] Cabeçalho renovado com indicador de atualização em tempo real
+  - [x] Cards de estatísticas com bordas coloridas, animações e indicadores de tendência
+  - [x] Lista de agendamentos interativa com modal de ações (confirmar/finalizar/cancelar)
+  - [x] Feed de atividades com ícones dinâmicos e categorização por cores
+  - [x] Interface moderna com gradientes, transições suaves e UX aprimorada
 
 ---
 
-## FASE 2: VERSÃO 1.0 (MVP PARA LANÇAMENTO)
+## ⏳ FASE 2: O ECOSSISTEMA (V2.0)
+*Status: EM ANDAMENTO - Foco no Módulo Fiscal.*
 
-Esta é a nossa lista de missões para ter uma versão funcional e lançável do sistema.
-
-- ✅ **2.1. Finalizar CRUD de Tutores:**
-  - ✅ **Update:** Criar a funcionalidade e a interface para editar um tutor existente.
-  - ✅ **Delete:** Implementar a funcionalidade de exclusão com modal de confirmação.
-
-- ⏳ **2.2. Implementar CRUD Completo de Pets:**
-  - 🔲 Create, Read, Update e Delete para Pets, com vínculo obrigatório ao Tutor.
-
-- 🔲 **2.3. Implementar Gestão de Agendamentos (Core):**
-  - 🔲 CRUD completo para Agendamentos.
-  - 🔲 Interface de calendário para visualização e criação de novos agendamentos.
-
-- 🔲 **2.4. Implementar Prontuário Eletrônico (Core):**
-  - 🔲 Capacidade de criar um registro de consulta a partir de um agendamento.
-  - 🔲 Visualização do histórico médico completo na página de detalhes do Pet.
-
-- 🔲 **2.5. Implementar Gestão de Estoque (Core):**
-  - 🔲 CRUD completo de Produtos (medicamentos e materiais).
-  - 🔲 Funcionalidade para dar baixa em itens do estoque durante um atendimento.
-
-- 🔲 **2.6. Deploy de Produção (Lançamento V1.0):**
-  - 🔲 Preparar e fazer o deploy do Backend no Render (com PostgreSQL).
-  - 🔲 Preparar e fazer o deploy do Frontend na Vercel.
-  - 🔲 Configurar o CI/CD básico no GitHub Actions.
+- `❌` **2.1. Portal do Cliente:** [REMOVIDO]
+  - `[x]` ~~Autenticação Dual para Tutores~~ - REMOVIDO DO SISTEMA.
+  - `[x]` ~~Visualização de histórico de pets~~ - REMOVIDO DO SISTEMA.
+  - `[x]` ~~Gestão de Perfil do Tutor~~ - REMOVIDO DO SISTEMA.
+  - Sistema simplificado para acesso exclusivo de funcionários.
+- `⏳` **2.2. Módulo Fiscal e de Conformidade:**
+  - `[ ]` Geração de Receituário Digital (com assinatura digital).
+  - `[ ]` Emissão de Nota Fiscal de Serviço (NFS-e).
+  - `[ ]` Geração de arquivo XML (SPED) para contabilidade.
+- `🔲` **2.3. Módulo de Marketing (CRM Básico):**
+  - `[ ]` Envio de lembretes automáticos (Consulta, Vacina) via E-mail/WhatsApp.
 
 ---
 
-## FASE 3: VERSÃO 2.0 (EVOLUÇÃO PÓS-LANÇAMENTO)
-
-Após o lançamento da V1.0, estas serão nossas prioridades para agregar mais valor.
-
-- 🔲 **3.1. Refatoração para Arquitetura Multi-Tenant (SaaS):**
-  - 🔲 Criar modelo `Clinic` no `schema.prisma`.
-  - 🔲 Adicionar `clinicId` às tabelas principais (User, Tutor, Pet, etc.) e executar migração.
-  - 🔲 Refatorar todas as queries do backend para filtrar por `clinicId` em cada requisição.
-  - 🔲 Implementar painel "Super Admin" para gerenciamento de clínicas.
-  - 🔲 Adaptar o fluxo de autenticação para o contexto multi-tenant.
-
-- 🔲 **3.2. Implementar Módulo Financeiro:**
-  - 🔲 Geração de faturamento a partir dos atendimentos.
-  - 🔲 Controle de pagamentos e fluxo de caixa.
-
-- 🔲 **3.3. Implementar Portal do Cliente:**
-  - 🔲 Criação do site público (Headless CMS).
-  - 🔲 Área de login para tutores.
-  - 🔲 Agendamento online.
-
-- 🔲 **3.4. Implementar Relatórios e Dashboard Avançado:**
-  - 🔲 Gráficos e métricas interativas no dashboard.
-  - 🔲 Módulo dedicado para relatórios gerenciais.
-
-- 🔲 **3.5. Notificações e Automações:**
-  - 🔲 Integração para enviar lembretes de consulta (E-mail/WhatsApp).
-
-- 🔲 **3.6. Refinamento Técnico:**
-  - 🔲 Otimizações de performance (Lazy Loading, Virtualização).
-  - 🔲 Aumentar a cobertura e estabilidade dos testes automatizados.
+## 🔲 FASE 3: A VANGUARDA (V3.0)
+*Status: A FAZER.*
+- `🔲` **3.1. Telemedicina Integrada:**
+  - `[ ]` Plataforma de teleconsulta por vídeo dentro do sistema.
+- `🚀` **3.2. Pulse AI (Co-Piloto Inteligente):**
+  - `[ ]` IA para suporte a diagnóstico e análise de prontuários.
+  - `[ ]` IA para gestão de estoque e previsão de demanda.
+- `🔲` **3.3. Planos de Saúde para Pets:**
+  - `[ ]` Módulo para gestão de planos e cobranças recorrentes.
+- `🔲` **3.4. Business Intelligence (BI) Avançado:**
+  - `[ ]` Dashboards com análises preditivas.
 
 ---
 
-## 🚀 FASE 4: VISÃO FUTURA (PULSE AI)
+## 🔲 FASE 4: NÍVEL ENTERPRISE (V4.0)
+*Status: A FAZER.*
+- `🔲` **4.1. Módulo de Internação:**
+  - `[ ]` Controle de leitos, planos de tratamento e faturamento de internação.
+- `🔲` **4.2. Gestão de Equipe Avançada:**
+  - `[ ]` Cálculo e controle de comissões.
+  - `[ ]` Agenda separada para Banho e Tosa.
+- `🔲` **4.3. Gestão Multi-Unidade:**
+  - `[ ]` Suporte para clínicas com múltiplas filiais.
+- `🔲` **4.4. Integrações Externas:**
+  - `[ ]` Integração com laboratórios para recebimento de resultados de exames.
 
-- 🚀 **4.1. Co-piloto de Gestão:** IA para análise de dados e sugestões de negócio.
-- 🚀 **4.2. Co-piloto Clínico:** IA para suporte a diagnóstico e análise de prontuários.
+---
 
-Este novo tarefas.md é o nosso mapa estratégico. Ele mostra o quão longe já chegamos e o caminho claro que temos pela frente.
+## 🎯 DECISÃO ESTRATÉGICA PARA V2.0 - REDEFINIDA
 
-Agora, vamos voltar ao nosso "zoom tático". A primeira tarefa não concluída (🔲) na nossa lista da V1.0 é "Finalizar CRUD de Tutores".
+**Situação Atual:** V1.0 concluída e em produção. **NOVA DECISÃO:** Módulo Fiscal como prioridade da V2.0.
+
+### 🏆 NOVA ESCOLHA: Módulo Fiscal e de Conformidade
+**Justificativa:** Necessidade regulatória e operacional
+- ✅ Atende exigências legais e fiscais
+- ✅ Melhora controle financeiro e contábil
+- ✅ Facilita gestão de receituários e documentos
+- ✅ Prepara para crescimento e auditoria
+- ❌ Portal do Cliente removido para simplificar arquitetura
+
+**Próximo Passo:** Implementar geração de receituário digital com assinatura eletrônica.
+
+---
+
+## 📊 STATUS ATUAL DO DESENVOLVIMENTO (Janeiro 2025)
+
+### ✅ Recém Concluído:
+- **Dashboard "Cockpit da Clínica"** - Interface completamente renovada com interatividade avançada
+- **Melhorias de UX/UI** - Animações, gradientes e feedback visual aprimorado
+- **Remoção do Portal do Cliente** - Sistema simplificado para acesso exclusivo de funcionários
+- **Limpeza de Arquitetura** - Remoção de código desnecessário e simplificação do sistema
+
+### ⏳ Em Andamento:
+- **Preparação para Módulo Fiscal** - Estruturação para implementação de funcionalidades fiscais
+- **Otimizações de Performance** - Melhorias contínuas na experiência do usuário
+
+### 🎯 Próximas Prioridades:
+1. Geração de Receituário Digital com assinatura eletrônica
+2. Emissão de Nota Fiscal de Serviço (NFS-e)
+3. Geração de arquivo XML (SPED) para contabilidade
+
+**Progresso Geral V2.0:** 25% concluído (redefinição de escopo)

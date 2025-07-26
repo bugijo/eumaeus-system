@@ -134,49 +134,63 @@ async function main() {
     }
   });
 
-  // 4. Criar usuário de teste
-  console.log('👤 Criando usuário de teste...');
+  // 4. Criar usuários de teste com nova estrutura AuthProfile
+  console.log('👤 Criando usuários de teste...');
   const hashedPassword = await bcrypt.hash('***REMOVIDO***', 10);
   
-  await prisma.user.upsert({
-    where: { email: 'admin@pulsevet.com' },
-    update: {},
-    create: {
+  // Definir usuários de teste
+  const testUsers = [
+    {
       email: 'admin@pulsevet.com',
       name: 'Dr. Admin PulseVet',
-      password: hashedPassword,
       roleName: 'DONO',
     },
-  });
-
-  // Criar mais alguns usuários de teste
-  const testUsers = [
     {
       email: 'veterinario@pulsevet.com',
       name: 'Dra. Maria Silva',
-      password: await bcrypt.hash('***REMOVIDO***', 10),
       roleName: 'VETERINARIO',
     },
     {
       email: 'funcionario@pulsevet.com',
       name: 'João Santos',
-      password: await bcrypt.hash('***REMOVIDO***', 10),
       roleName: 'FUNCIONARIO',
     },
     {
       email: 'financeiro@pulsevet.com',
       name: 'Ana Costa',
-      password: await bcrypt.hash('***REMOVIDO***', 10),
       roleName: 'FINANCEIRO',
     },
   ];
 
-  for (const user of testUsers) {
-    await prisma.user.upsert({
-      where: { email: user.email },
-      update: {},
-      create: user as any,
+  // Criar cada usuário com AuthProfile + User
+  for (const userData of testUsers) {
+    // Verificar se o AuthProfile já existe
+    const existingAuthProfile = await prisma.authProfile.findUnique({
+      where: { email: userData.email }
     });
+
+    if (!existingAuthProfile) {
+      // Criar AuthProfile
+      const authProfile = await prisma.authProfile.create({
+        data: {
+          email: userData.email,
+          password: hashedPassword,
+        }
+      });
+
+      // Criar User linkado ao AuthProfile
+      await prisma.user.create({
+        data: {
+          name: userData.name,
+          roleName: userData.roleName as any,
+          authProfileId: authProfile.id,
+        }
+      });
+
+      console.log(`✅ Usuário criado: ${userData.email}`);
+    } else {
+      console.log(`ℹ️  Usuário já existe: ${userData.email}`);
+    }
   }
 
   console.log('✅ Seed concluído com sucesso!');
