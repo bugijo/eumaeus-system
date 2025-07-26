@@ -59,9 +59,8 @@ function Sidebar({ isOpen, onClose, currentPath }: SidebarProps) {
   ];
 
   const handleNavigation = (href: string) => {
-    // Simple navigation - in a real app you'd use Next.js router or React Router
-    window.history.pushState({}, '', href);
-    window.dispatchEvent(new PopStateEvent('popstate'));
+    // Use React Router for navigation instead of manual history manipulation
+    window.location.href = href;
     onClose();
   };
 
@@ -203,15 +202,10 @@ export function Layout({ children, className }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
   
-  // Listen for navigation changes
+  // Update current path when location changes
   React.useEffect(() => {
-    const handlePopState = () => {
-      setCurrentPath(window.location.pathname);
-    };
-    
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, []);
+    setCurrentPath(window.location.pathname);
+  }, [window.location.pathname]);
   
   // Get page title based on current path
   const getPageTitle = (path: string) => {

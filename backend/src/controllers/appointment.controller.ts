@@ -9,9 +9,9 @@ const updateStatusSchema = z.object({
 });
 
 export class AppointmentController {
-  static getAllAppointments(req: Request, res: Response): Response | void {
+  static async getAllAppointments(req: Request, res: Response): Promise<Response | void> {
     try {
-      const appointments = AppointmentService.getAllAppointments();
+      const appointments = await AppointmentService.getAllAppointments();
       return res.status(200).json(appointments);
     } catch (error) {
       console.error('Erro ao buscar agendamentos:', error);
@@ -19,10 +19,10 @@ export class AppointmentController {
     }
   }
 
-  static createAppointment(req: Request, res: Response): Response | void {
+  static async createAppointment(req: Request, res: Response): Promise<Response | void> {
     try {
       const newAppointmentData = req.body;
-      const createdAppointment = AppointmentService.createAppointment(newAppointmentData);
+      const createdAppointment = await AppointmentService.createAppointment(newAppointmentData);
       return res.status(201).json(createdAppointment);
     } catch (error) {
       console.error('Erro ao criar agendamento:', error);
@@ -30,7 +30,7 @@ export class AppointmentController {
     }
   }
 
-  static getAppointmentById(req: Request, res: Response): Response | void {
+  static async getAppointmentById(req: Request, res: Response): Promise<Response | void> {
     try {
       const id = parseInt(req.params.id);
       
@@ -38,7 +38,7 @@ export class AppointmentController {
         return res.status(400).json({ error: 'ID inválido' });
       }
       
-      const appointment = AppointmentService.getAppointmentById(id);
+      const appointment = await AppointmentService.getAppointmentById(id);
       
       if (!appointment) {
         return res.status(404).json({ error: 'Agendamento não encontrado' });
@@ -51,7 +51,7 @@ export class AppointmentController {
     }
   }
 
-  static updateAppointment(req: Request, res: Response): Response | void {
+  static async updateAppointment(req: Request, res: Response): Promise<Response | void> {
     try {
       const id = parseInt(req.params.id);
       const updateData = req.body;
@@ -60,7 +60,7 @@ export class AppointmentController {
         return res.status(400).json({ error: 'ID inválido' });
       }
       
-      const updatedAppointment = AppointmentService.updateAppointment(id, updateData);
+      const updatedAppointment = await AppointmentService.updateAppointment(id, updateData);
       
       if (!updatedAppointment) {
         return res.status(404).json({ error: 'Agendamento não encontrado' });
@@ -73,7 +73,7 @@ export class AppointmentController {
     }
   }
 
-  static deleteAppointment(req: Request, res: Response): Response | void {
+  static async deleteAppointment(req: Request, res: Response): Promise<Response | void> {
     try {
       const id = parseInt(req.params.id);
       
@@ -81,7 +81,7 @@ export class AppointmentController {
         return res.status(400).json({ error: 'ID inválido' });
       }
       
-      const deleted = AppointmentService.deleteAppointment(id);
+      const deleted = await AppointmentService.deleteAppointment(id);
       
       if (!deleted) {
         return res.status(404).json({ error: 'Agendamento não encontrado' });
@@ -94,7 +94,7 @@ export class AppointmentController {
     }
   }
 
-  static updateAppointmentStatus(req: Request, res: Response): Response | void {
+  static async updateAppointmentStatus(req: Request, res: Response): Promise<Response | void> {
     try {
       const id = parseInt(req.params.id);
       
@@ -103,7 +103,7 @@ export class AppointmentController {
       }
 
       const validatedData = updateStatusSchema.parse(req.body);
-      const updatedAppointment = AppointmentService.updateAppointmentStatus(id, validatedData.status);
+      const updatedAppointment = await AppointmentService.updateAppointmentStatus(id, validatedData.status);
       
       if (!updatedAppointment) {
         return res.status(404).json({ error: 'Agendamento não encontrado' });

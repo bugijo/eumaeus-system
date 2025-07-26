@@ -59,7 +59,7 @@ const DiagnosticApp: React.FC = () => {
             border: '1px solid #0ea5e9',
             marginBottom: '10px'
           }}>
-            <strong>Frontend:</strong> ✅ Rodando em http://localhost:8080
+            <strong>Frontend:</strong> ✅ Rodando em http://localhost:3000
           </div>
           <div style={{
             padding: '15px',

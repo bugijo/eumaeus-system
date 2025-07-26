@@ -14,45 +14,28 @@ import {
   AlertTriangle,
   Eye,
   Check,
-  Edit
+  Edit,
+  Loader2
 } from 'lucide-react';
+import { useFinancialStats, useInvoices } from '../api/invoiceApi';
 
-const Financeiro = () => {
+export default function Financeiro() {
   const [selectedPeriod, setSelectedPeriod] = useState('Este Mês');
+  
+  // Buscar dados da API
+  const { data: financialStats, isLoading: statsLoading, error: statsError } = useFinancialStats();
+  const { data: invoices, isLoading: invoicesLoading, error: invoicesError } = useInvoices();
+  
+  // Transformar faturas em contas a receber
+  const contasReceber = invoices?.map(invoice => ({
+    id: invoice.id,
+    cliente: `${invoice.appointment.pet.tutor.name} - ${invoice.appointment.pet.name}`,
+    dataVencimento: invoice.createdAt,
+    valor: invoice.totalAmount,
+    status: invoice.status === 'PAID' ? 'Pago' : invoice.status === 'PENDING' ? 'Pendente' : 'Cancelado'
+  })) || [];
 
-  // Dados de exemplo para contas a receber
-  const contasReceber = [
-    {
-      id: 1,
-      cliente: "Fernanda Calixto - Consulta Rex",
-      dataVencimento: "2025-01-15",
-      valor: 150.00,
-      status: "Pago"
-    },
-    {
-      id: 2,
-      cliente: "João Silva - Castração Bella",
-      dataVencimento: "2025-01-18",
-      valor: 350.00,
-      status: "Pendente"
-    },
-    {
-      id: 3,
-      cliente: "Maria Santos - Vacinação Luna",
-      dataVencimento: "2025-01-12",
-      valor: 80.00,
-      status: "Atrasado"
-    },
-    {
-      id: 4,
-      cliente: "Carlos Oliveira - Exame Thor",
-      dataVencimento: "2025-01-20",
-      valor: 220.00,
-      status: "Pendente"
-    }
-  ];
-
-  // Dados de exemplo para contas a pagar
+  // Dados de exemplo para contas a pagar (mantidos como estático por enquanto)
   const contasPagar = [
     {
       id: 1,
@@ -87,6 +70,31 @@ const Financeiro = () => {
       status: "Pendente"
     }
   ];
+  
+  // Loading state
+  if (statsLoading || invoicesLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin" />
+        <span className="ml-2">Carregando dados financeiros...</span>
+      </div>
+    );
+  }
+  
+  // Error state
+  if (statsError || invoicesError) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <AlertTriangle className="h-8 w-8 text-red-500 mx-auto mb-2" />
+          <p className="text-red-600">Erro ao carregar dados financeiros</p>
+          <p className="text-sm text-gray-500 mt-1">
+            {statsError?.message || invoicesError?.message || 'Erro desconhecido'}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -161,52 +169,60 @@ const Financeiro = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Receitas no Período</CardTitle>
+            <CardTitle className="text-sm font-medium">Receitas Pagas</CardTitle>
             <TrendingUp className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">R$ 12.750,00</div>
+            <div className="text-2xl font-bold text-green-600">
+              {formatCurrency(financialStats?.paid?.amount || 0)}
+            </div>
             <p className="text-xs text-muted-foreground">
-              +12% em relação ao período anterior
+              {financialStats?.paid?.count || 0} faturas pagas
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Despesas no Período</CardTitle>
-            <TrendingDown className="h-4 w-4 text-red-600" />
+            <CardTitle className="text-sm font-medium">Receitas Pendentes</CardTitle>
+            <TrendingDown className="h-4 w-4 text-yellow-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">R$ 4.320,00</div>
+            <div className="text-2xl font-bold text-yellow-600">
+              {formatCurrency(financialStats?.pending?.amount || 0)}
+            </div>
             <p className="text-xs text-muted-foreground">
-              -5% em relação ao período anterior
+              {financialStats?.pending?.count || 0} faturas pendentes
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Saldo do Período</CardTitle>
+            <CardTitle className="text-sm font-medium">Total de Receitas</CardTitle>
             <DollarSign className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-primary">R$ 8.430,00</div>
+            <div className="text-2xl font-bold text-primary">
+              {formatCurrency((financialStats?.paid?.amount || 0) + (financialStats?.pending?.amount || 0))}
+            </div>
             <p className="text-xs text-muted-foreground">
-              Resultado positivo no período
+              {(financialStats?.paid?.count || 0) + (financialStats?.pending?.count || 0)} faturas no total
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Contas em Atraso</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-orange-600" />
+            <CardTitle className="text-sm font-medium">Faturas Canceladas</CardTitle>
+            <AlertTriangle className="h-4 w-4 text-red-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-600">R$ 890,00</div>
+            <div className="text-2xl font-bold text-red-600">
+              {formatCurrency(financialStats?.cancelled?.amount || 0)}
+            </div>
             <p className="text-xs text-muted-foreground">
-              3 contas pendentes
+              {financialStats?.cancelled?.count || 0} faturas canceladas
             </p>
           </CardContent>
         </Card>
@@ -313,6 +329,4 @@ const Financeiro = () => {
       </Card>
     </div>
   );
-};
-
-export default Financeiro;
+}

@@ -16,6 +16,7 @@ export const tutorKeys = {
   details: () => [...tutorKeys.all, 'detail'] as const,
   detail: (id: number) => [...tutorKeys.details(), id] as const,
   stats: () => [...tutorKeys.all, 'stats'] as const,
+  profile: () => [...tutorKeys.all, 'profile'] as const,
 };
 
 // Hooks para queries
@@ -157,4 +158,29 @@ export function prefetchTutor(queryClient: ReturnType<typeof useQueryClient>, id
 // Função utilitária para invalidar todas as queries de tutores
 export function invalidateTutorQueries(queryClient: ReturnType<typeof useQueryClient>) {
   return queryClient.invalidateQueries({ queryKey: tutorKeys.all });
+}
+
+// Hooks para perfil do tutor (portal)
+export function useMyProfile() {
+  return useQuery({
+    queryKey: tutorKeys.profile(),
+    queryFn: () => TutorService.getMyProfile(),
+    staleTime: 5 * 60 * 1000, // 5 minutos
+    gcTime: 10 * 60 * 1000, // 10 minutos
+  });
+}
+
+export function useUpdateMyProfile() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: (data: UpdateTutorData) => TutorService.updateMyProfile(data),
+    onSuccess: (updatedTutor) => {
+      // Atualizar o perfil no cache
+      queryClient.setQueryData(tutorKeys.profile(), updatedTutor);
+    },
+    onError: (error) => {
+      console.error('Erro ao atualizar perfil:', error);
+    },
+  });
 }

@@ -91,8 +91,7 @@ export class TutorService {
 
   static async getStats(): Promise<{
     total: number;
-    withPets: number;
-    withAppointments: number;
+    active: number;
   }> {
     try {
       const response = await apiClient.get('/tutors/stats');
@@ -100,6 +99,30 @@ export class TutorService {
     } catch (error) {
       console.error('Erro ao buscar estatísticas de tutores:', error);
       throw new Error('Falha ao buscar estatísticas');
+    }
+  }
+
+  // Métodos para o portal do tutor
+  static async getMyProfile(): Promise<Tutor> {
+    try {
+      const response = await apiClient.get('/portal/my-profile');
+      return response.data.data;
+    } catch (error) {
+      console.error('Erro ao buscar perfil do tutor:', error);
+      throw new Error('Falha ao buscar perfil');
+    }
+  }
+
+  static async updateMyProfile(data: UpdateTutorData): Promise<Tutor> {
+    try {
+      const response = await apiClient.put('/portal/my-profile', data);
+      return response.data.data;
+    } catch (error: any) {
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      }
+      console.error('Erro ao atualizar perfil do tutor:', error);
+      throw new Error('Falha ao atualizar perfil');
     }
   }
 }

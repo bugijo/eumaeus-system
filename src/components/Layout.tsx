@@ -16,7 +16,10 @@ import {
   Bell,
   User,
   Menu,
-  X
+  X,
+  Archive,
+  Dog,
+  Stethoscope
 } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 import { Button } from '@/components/ui/button';
@@ -47,12 +50,11 @@ const Layout = ({ children }: LayoutProps) => {
   const navigationItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
     { icon: Calendar, label: 'Agendamentos', path: '/agendamentos' },
-    // { icon: Users, label: 'Clientes', path: '/clientes' }, // Removido - usando apenas Tutores
-    { icon: UserCheck, label: 'Tutores', path: '/tutores' },
-    { icon: PawPrint, label: 'Pets', path: '/pets' },
-    { icon: FileText, label: 'Prontuários', path: '/prontuarios' },
+    { icon: Users, label: 'Tutores', path: '/tutores' },
+    { icon: Dog, label: 'Pets', path: '/pets' },
+    { icon: Stethoscope, label: 'Prontuários', path: '/prontuario' },
+    { icon: Archive, label: 'Estoque', path: '/estoque' },
     { icon: DollarSign, label: 'Financeiro', path: '/financeiro' },
-    { icon: Package, label: 'Estoque', path: '/estoque' },
     { icon: Settings, label: 'Configurações', path: '/configuracoes' },
   ];
 

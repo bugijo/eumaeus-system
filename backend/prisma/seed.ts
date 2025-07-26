@@ -1,5 +1,5 @@
 // Em prisma/seed.ts
-import { PrismaClient, RoleName } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
@@ -9,10 +9,10 @@ async function main() {
 
   // 1. Criar os Cargos (Roles) se eles não existirem
   const rolesToCreate = [
-    { name: RoleName.DONO, description: 'Acesso total ao sistema.' },
-    { name: RoleName.VETERINARIO, description: 'Acesso a agendamentos e prontuários.' },
-    { name: RoleName.FUNCIONARIO, description: 'Acesso a agendamentos e cadastros básicos.' },
-    { name: RoleName.FINANCEIRO, description: 'Acesso a relatórios e faturamento.' },
+    { name: 'DONO', description: 'Acesso total ao sistema.' },
+    { name: 'VETERINARIO', description: 'Acesso a agendamentos e prontuários.' },
+    { name: 'FUNCIONARIO', description: 'Acesso a agendamentos e cadastros básicos.' },
+    { name: 'FINANCEIRO', description: 'Acesso a relatórios e faturamento.' },
   ];
 
   for (const role of rolesToCreate) {
@@ -24,24 +24,39 @@ async function main() {
   }
   console.log('Cargos criados/verificados com sucesso.');
 
-  // 2. Criar um Usuário Administrador Padrão
+  // 2. Criar um Usuário Administrador Padrão com nova estrutura AuthProfile
   const adminEmail = 'admin@pulsevet.com';
   const plainPassword = '123456'; // Lembre-se, esta é uma senha apenas para desenvolvimento!
 
   const hashedPassword = await bcrypt.hash(plainPassword, 10);
 
-  const adminUser = await prisma.user.upsert({
-    where: { email: adminEmail },
-    update: {},
-    create: {
-      email: adminEmail,
-      name: 'Admin do Sistema',
-      password: hashedPassword,
-      roleName: RoleName.DONO,
-    },
+  // Verificar se o AuthProfile já existe
+  const existingAuthProfile = await prisma.authProfile.findUnique({
+    where: { email: adminEmail }
   });
 
-  console.log(`Usuário administrador criado/verificado: ${adminUser.email}`);
+  if (!existingAuthProfile) {
+    // Criar AuthProfile
+    const authProfile = await prisma.authProfile.create({
+      data: {
+        email: adminEmail,
+        password: hashedPassword,
+      }
+    });
+
+    // Criar User linkado ao AuthProfile
+    const adminUser = await prisma.user.create({
+      data: {
+        name: 'Admin do Sistema',
+        roleName: 'DONO',
+        authProfileId: authProfile.id,
+      }
+    });
+
+    console.log(`Usuário administrador criado: ${authProfile.email}`);
+  } else {
+    console.log(`Usuário administrador já existe: ${adminEmail}`);
+  }
   console.log('Seeding concluído com sucesso! 🌱');
 }
 

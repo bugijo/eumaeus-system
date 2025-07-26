@@ -14,6 +14,23 @@ const createMedicalRecordSchema = z.object({
   })).optional().default([])
 });
 
+// Schema para criação de prontuário direto para pet (sem agendamento)
+const createDirectMedicalRecordSchema = z.object({
+  petId: z.number().min(1, 'Pet ID é obrigatório'),
+  weight: z.number().optional(),
+  temperature: z.number().optional(),
+  heartRate: z.number().optional(),
+  respiratoryRate: z.number().optional(),
+  symptoms: z.string().min(1, 'Sintomas são obrigatórios'),
+  diagnosis: z.string().min(1, 'Diagnóstico é obrigatório'),
+  treatment: z.string().min(1, 'Tratamento é obrigatório'),
+  notes: z.string().optional(),
+  usedProducts: z.array(z.object({
+    productId: z.number(),
+    quantityUsed: z.number().min(1, 'Quantidade deve ser maior que 0')
+  })).optional().default([])
+});
+
 // Criar prontuário médico com transação
 export const createMedicalRecord = async (req: Request, res: Response): Promise<Response | void> => {
   try {
@@ -203,5 +220,111 @@ export const getAvailableProducts = async (req: Request, res: Response): Promise
   } catch (error) {
     console.error('Erro ao buscar produtos:', error);
     return res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+};
+
+// Criar prontuário médico diretamente para um pet (sem agendamento prévio)
+export const createDirectMedicalRecord = async (req: Request, res: Response): Promise<Response | void> => {
+  try {
+    const validatedData = createDirectMedicalRecordSchema.parse(req.body);
+
+    // Verificar se o pet existe
+    const pet = await prisma.pet.findUnique({
+      where: { id: validatedData.petId },
+      include: { tutor: true }
+    });
+
+    if (!pet) {
+      return res.status(404).json({ error: 'Pet não encontrado' });
+    }
+
+    // Usar transação para garantir atomicidade
+    const result = await prisma.$transaction(async (tx) => {
+      // 1. Criar um agendamento automático para este prontuário
+      const appointment = await tx.appointment.create({
+        data: {
+          appointmentDate: new Date(),
+          status: 'COMPLETED',
+          notes: 'Agendamento criado automaticamente para prontuário direto',
+          petId: validatedData.petId,
+          tutorId: pet.tutorId
+        }
+      });
+
+      // 2. Criar o prontuário médico
+      const medicalRecord = await tx.medicalRecord.create({
+        data: {
+          appointmentId: appointment.id,
+          symptoms: validatedData.symptoms,
+          diagnosis: validatedData.diagnosis,
+          treatment: validatedData.treatment,
+          notes: validatedData.notes
+        }
+      });
+
+      // 3. Processar produtos utilizados
+      if (validatedData.usedProducts.length > 0) {
+        // Verificar se todos os produtos existem e têm estoque suficiente
+        for (const productData of validatedData.usedProducts) {
+          const product = await tx.product.findUnique({
+            where: { id: productData.productId }
+          });
+
+          if (!product) {
+            throw new Error(`Produto com ID ${productData.productId} não encontrado`);
+          }
+
+          if (product.quantity < productData.quantityUsed) {
+            throw new Error(`Estoque insuficiente para o produto ${product.name}. Disponível: ${product.quantity}, Solicitado: ${productData.quantityUsed}`);
+          }
+        }
+
+        // Criar registros na tabela de junção
+        await tx.medicalRecordProduct.createMany({
+          data: validatedData.usedProducts.map(productData => ({
+            medicalRecordId: medicalRecord.id,
+            productId: productData.productId,
+            quantityUsed: productData.quantityUsed
+          }))
+        });
+
+        // Decrementar o estoque dos produtos
+        for (const productData of validatedData.usedProducts) {
+          await tx.product.update({
+            where: { id: productData.productId },
+            data: {
+              quantity: {
+                decrement: productData.quantityUsed
+              }
+            }
+          });
+        }
+      }
+
+      return { medicalRecord, appointment };
+    });
+
+    // Buscar o prontuário completo com relacionamentos
+    const completeMedicalRecord = await prisma.medicalRecord.findUnique({
+      where: { id: result.medicalRecord.id },
+      include: {
+        appointment: {
+          include: {
+            pet: { include: { tutor: true } }
+          }
+        },
+        products: {
+          include: { product: true }
+        }
+      }
+    });
+
+    return res.status(201).json(completeMedicalRecord);
+  } catch (error) {
+    console.error('Erro ao criar prontuário direto:', error);
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: 'Dados inválidos', details: error.errors });
+    }
+    return res.status(500).json({ error: error instanceof Error ? error.message : 'Erro interno do servidor' });
   }
 };

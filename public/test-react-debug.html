@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug React - Sistema Veterinário</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background-color: #0056b3; }
+        .log {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+            font-size: 12px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .section {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        .test-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 4px;
+            background-color: #f8f9fa;
+        }
+        .test-status {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .pass { background-color: #d4edda; color: #155724; }
+        .fail { background-color: #f8d7da; color: #721c24; }
+        .pending { background-color: #fff3cd; color: #856404; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Debug React - Sistema Veterinário</h1>
+        
+        <div class="status info">
+            <strong>Status:</strong> Iniciando diagnóstico detalhado da aplicação React...
+        </div>
+        
+        <div class="grid">
+            <div class="section">
+                <h3>🔧 Testes de Infraestrutura</h3>
+                <div id="infrastructure-tests"></div>
+                <button onclick="runInfrastructureTests()">🔄 Executar Testes</button>
+            </div>
+            
+            <div class="section">
+                <h3>⚛️ Testes React</h3>
+                <div id="react-tests"></div>
+                <button onclick="runReactTests()">🔄 Executar Testes</button>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h3>📊 Console e Erros</h3>
+            <button onclick="clearLogs()">🗑️ Limpar Logs</button>
+            <button onclick="captureConsoleErrors()">📝 Capturar Erros</button>
+            <button onclick="testMainApp()">🏠 Ir para App Principal</button>
+            <div id="logs" class="log"></div>
+        </div>
+    </div>
+
+    <script>
+        let logContainer = document.getElementById('logs');
+        let infrastructureContainer = document.getElementById('infrastructure-tests');
+        let reactContainer = document.getElementById('react-tests');
+        
+        let errorCount = 0;
+        let warningCount = 0;
+        let consoleErrors = [];
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            logContainer.textContent += `[${timestamp}] ${message}\n`;
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+        
+        function clearLogs() {
+            logContainer.textContent = '';
+            errorCount = 0;
+            warningCount = 0;
+            consoleErrors = [];
+        }
+        
+        function addTestResult(container, testName, status, details = '') {
+            const testItem = document.createElement('div');
+            testItem.className = 'test-item';
+            
+            const statusClass = status === 'pass' ? 'pass' : status === 'fail' ? 'fail' : 'pending';
+            const statusIcon = status === 'pass' ? '✅' : status === 'fail' ? '❌' : '⏳';
+            
+            testItem.innerHTML = `
+                <span>${testName}</span>
+                <span class="test-status ${statusClass}">${statusIcon} ${status.toUpperCase()}</span>
+            `;
+            
+            if (details) {
+                testItem.title = details;
+            }
+            
+            container.appendChild(testItem);
+        }
+        
+        async function runInfrastructureTests() {
+            infrastructureContainer.innerHTML = '';
+            log('🔍 Iniciando testes de infraestrutura...');
+            
+            // Teste 1: Frontend disponível
+            try {
+                const response = await fetch('/');
+                if (response.ok) {
+                    addTestResult(infrastructureContainer, 'Frontend Disponível', 'pass');
+                    log('✅ Frontend: Disponível');
+                } else {
+                    addTestResult(infrastructureContainer, 'Frontend Disponível', 'fail', `Status: ${response.status}`);
+                    log(`❌ Frontend: Erro ${response.status}`);
+                }
+            } catch (error) {
+                addTestResult(infrastructureContainer, 'Frontend Disponível', 'fail', error.message);
+                log(`❌ Frontend: ${error.message}`);
+            }
+            
+            // Teste 2: Backend Health
+            try {
+                const response = await fetch('http://localhost:3333/api/health');
+                if (response.ok) {
+                    addTestResult(infrastructureContainer, 'Backend Health', 'pass');
+                    log('✅ Backend Health: OK');
+                } else {
+                    addTestResult(infrastructureContainer, 'Backend Health', 'fail', `Status: ${response.status}`);
+                    log(`❌ Backend Health: Erro ${response.status}`);
+                }
+            } catch (error) {
+                addTestResult(infrastructureContainer, 'Backend Health', 'fail', error.message);
+                log(`❌ Backend Health: ${error.message}`);
+            }
+            
+            // Teste 3: API Dashboard Stats
+            try {
+                const response = await fetch('http://localhost:3333/api/dashboard/stats');
+                if (response.ok) {
+                    const data = await response.json();
+                    addTestResult(infrastructureContainer, 'API Dashboard Stats', 'pass', JSON.stringify(data));
+                    log(`✅ API Dashboard Stats: ${JSON.stringify(data)}`);
+                } else {
+                    addTestResult(infrastructureContainer, 'API Dashboard Stats', 'fail', `Status: ${response.status}`);
+                    log(`❌ API Dashboard Stats: Erro ${response.status}`);
+                }
+            } catch (error) {
+                addTestResult(infrastructureContainer, 'API Dashboard Stats', 'fail', error.message);
+                log(`❌ API Dashboard Stats: ${error.message}`);
+            }
+            
+            // Teste 4: CORS
+            try {
+                const response = await fetch('http://localhost:3333/api/health', {
+                    method: 'OPTIONS'
+                });
+                addTestResult(infrastructureContainer, 'CORS Configuration', 'pass');
+                log('✅ CORS: Configurado corretamente');
+            } catch (error) {
+                addTestResult(infrastructureContainer, 'CORS Configuration', 'fail', error.message);
+                log(`❌ CORS: ${error.message}`);
+            }
+            
+            log('🏁 Testes de infraestrutura concluídos');
+        }
+        
+        function runReactTests() {
+            reactContainer.innerHTML = '';
+            log('⚛️ Iniciando testes React...');
+            
+            // Teste 1: React disponível
+            if (typeof React !== 'undefined') {
+                addTestResult(reactContainer, 'React Library', 'pass');
+                log('✅ React: Biblioteca disponível');
+            } else {
+                addTestResult(reactContainer, 'React Library', 'fail', 'React não encontrado');
+                log('❌ React: Biblioteca não encontrada');
+            }
+            
+            // Teste 2: DOM Root
+            const rootElement = document.getElementById('root');
+            if (rootElement) {
+                addTestResult(reactContainer, 'DOM Root Element', 'pass');
+                log('✅ DOM: Elemento root encontrado');
+            } else {
+                addTestResult(reactContainer, 'DOM Root Element', 'fail', 'Elemento #root não encontrado');
+                log('❌ DOM: Elemento #root não encontrado');
+            }
+            
+            // Teste 3: Vite HMR
+            if (typeof import.meta !== 'undefined' && import.meta.hot) {
+                addTestResult(reactContainer, 'Vite HMR', 'pass');
+                log('✅ Vite: HMR ativo');
+            } else {
+                addTestResult(reactContainer, 'Vite HMR', 'pending', 'HMR não detectado (normal em produção)');
+                log('⏳ Vite: HMR não detectado');
+            }
+            
+            // Teste 4: Console Errors
+            if (errorCount === 0) {
+                addTestResult(reactContainer, 'Console Errors', 'pass');
+                log('✅ Console: Sem erros detectados');
+            } else {
+                addTestResult(reactContainer, 'Console Errors', 'fail', `${errorCount} erros encontrados`);
+                log(`❌ Console: ${errorCount} erros encontrados`);
+            }
+            
+            // Teste 5: Network Requests
+            addTestResult(reactContainer, 'Network Requests', 'pending', 'Verificar na aba Network');
+            log('⏳ Network: Verificar requisições na aba Network do DevTools');
+            
+            log('🏁 Testes React concluídos');
+        }
+        
+        function captureConsoleErrors() {
+            log('📝 Capturando erros do console...');
+            
+            // Interceptar console.error
+            const originalError = console.error;
+            console.error = function(...args) {
+                errorCount++;
+                const errorMsg = args.join(' ');
+                consoleErrors.push(errorMsg);
+                log(`❌ Console Error #${errorCount}: ${errorMsg}`);
+                originalError.apply(console, args);
+            };
+            
+            // Interceptar console.warn
+            const originalWarn = console.warn;
+            console.warn = function(...args) {
+                warningCount++;
+                const warnMsg = args.join(' ');
+                log(`⚠️ Console Warning #${warningCount}: ${warnMsg}`);
+                originalWarn.apply(console, args);
+            };
+            
+            // Capturar erros globais
+            window.addEventListener('error', (event) => {
+                errorCount++;
+                const errorMsg = `${event.error?.name}: ${event.error?.message} at ${event.filename}:${event.lineno}`;
+                consoleErrors.push(errorMsg);
+                log(`❌ Global Error #${errorCount}: ${errorMsg}`);
+            });
+            
+            // Capturar promises rejeitadas
+            window.addEventListener('unhandledrejection', (event) => {
+                errorCount++;
+                const errorMsg = `Unhandled Promise Rejection: ${event.reason}`;
+                consoleErrors.push(errorMsg);
+                log(`❌ Promise Rejection #${errorCount}: ${errorMsg}`);
+            });
+            
+            log('✅ Interceptadores de erro configurados');
+        }
+        
+        function testMainApp() {
+            log('🏠 Redirecionando para aplicação principal...');
+            
+            // Aguardar um pouco para capturar erros iniciais
+            setTimeout(() => {
+                try {
+                    window.location.href = '/';
+                } catch (error) {
+                    log(`❌ Erro ao redirecionar: ${error.message}`);
+                }
+            }, 2000);
+            
+            log('⏳ Aguardando 2 segundos para capturar erros...');
+        }
+        
+        // Executar testes automáticos ao carregar
+        window.addEventListener('load', () => {
+            log('🚀 Página de debug carregada');
+            captureConsoleErrors();
+            
+            // Executar testes após um breve delay
+            setTimeout(() => {
+                runInfrastructureTests();
+                setTimeout(() => {
+                    runReactTests();
+                }, 2000);
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Simples</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debug Sistema Veterinário</h1>
+    <div id="status">Verificando...</div>
+    
+    <script>
+        const statusDiv = document.getElementById('status');
+        
+        async function checkSystem() {
+            let html = '';
+            
+            // Teste 1: Frontend
+            try {
+                html += '<div class="status success">✅ Frontend: Carregado com sucesso</div>';
+            } catch (e) {
+                html += `<div class="status error">❌ Frontend: ${e.message}</div>`;
+            }
+            
+            // Teste 2: Backend Health
+            try {
+                const response = await fetch('http://localhost:3333/api/dashboard/stats');
+                if (response.ok) {
+                    const data = await response.json();
+                    html += '<div class="status success">✅ Backend: Conectado e respondendo</div>';
+                    html += `<div class="status info">📊 Stats: ${JSON.stringify(data)}</div>`;
+                } else {
+                    html += `<div class="status error">❌ Backend: Status ${response.status}</div>`;
+                }
+            } catch (e) {
+                html += `<div class="status error">❌ Backend: ${e.message}</div>`;
+            }
+            
+            // Teste 3: CORS
+            try {
+                const response = await fetch('http://localhost:3333/api/health', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                if (response.ok) {
+                    html += '<div class="status success">✅ CORS: Configurado corretamente</div>';
+                } else {
+                    html += `<div class="status error">❌ CORS: Problema detectado</div>`;
+                }
+            } catch (e) {
+                if (e.message.includes('CORS')) {
+                    html += `<div class="status error">❌ CORS: ${e.message}</div>`;
+                } else {
+                    html += `<div class="status info">ℹ️ CORS: Teste inconclusivo</div>`;
+                }
+            }
+            
+            // Teste 4: Variáveis de ambiente
+            html += '<div class="status info">🔧 Configurações:</div>';
+            html += '<div class="status info">• Frontend: http://localhost:3000</div>';
+            html += '<div class="status info">• Backend: http://localhost:3333</div>';
+            
+            statusDiv.innerHTML = html;
+        }
+        
+        checkSystem();
+    </script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Conectividade</title>
+</head>
+<body>
+    <h1>Teste de Conectividade Backend</h1>
+    <button onclick="testConnection()">Testar Conexão</button>
+    <div id="result"></div>
+
+    <script>
+        async function testConnection() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testando...';
+            
+            try {
+                // Teste 1: Dashboard Stats
+                const response1 = await fetch('http://localhost:3333/api/dashboard/stats');
+                const data1 = await response1.json();
+                
+                // Teste 2: Health Check
+                const response2 = await fetch('http://localhost:3333/api/health');
+                const data2 = await response2.text();
+                
+                resultDiv.innerHTML = `
+                    <h3>✅ Conexão OK!</h3>
+                    <p><strong>Dashboard Stats:</strong> ${JSON.stringify(data1)}</p>
+                    <p><strong>Health Check:</strong> ${data2}</p>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <h3>❌ Erro de Conexão</h3>
+                    <p><strong>Erro:</strong> ${error.message}</p>
+                    <p><strong>Possíveis causas:</strong></p>
+                    <ul>
+                        <li>Backend não está rodando na porta 3333</li>
+                        <li>Problema de CORS</li>
+                        <li>Firewall bloqueando a conexão</li>
+                    </ul>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 describe('Teste Básico de Conectividade', () => {
   it('deve conseguir acessar a aplicação', () => {
     // Tentar acessar a página principal
-    cy.visit('http://localhost:8080/', {
+    cy.visit('http://localhost:3000/', {
       retryOnStatusCodeFailure: true,
       retryOnNetworkFailure: true,
       timeout: 120000
@@ -23,7 +23,7 @@ describe('Teste Básico de Conectividade', () => {
   });
   
   it('deve verificar se elementos básicos estão presentes', () => {
-    cy.visit('http://localhost:8080/', {
+    cy.visit('http://localhost:3000/', {
       retryOnStatusCodeFailure: true,
       retryOnNetworkFailure: true,
       timeout: 120000

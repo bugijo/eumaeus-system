@@ -98,9 +98,18 @@ export interface UpdateAppointmentData extends Partial<CreateAppointmentData> {
 
 export interface CreateMedicalRecordData {
   petId: number;
-  appointmentId: number;
-  notes: string;
-  prescription: string;
+  weight?: number;
+  temperature?: number;
+  heartRate?: number;
+  respiratoryRate?: number;
+  symptoms: string;
+  diagnosis: string;
+  treatment: string;
+  notes?: string;
+  usedProducts?: {
+    productId: number;
+    quantityUsed: number;
+  }[];
 }
 
 export interface UpdateMedicalRecordData extends Partial<Omit<CreateMedicalRecordData, 'petId' | 'appointmentId'>> {}

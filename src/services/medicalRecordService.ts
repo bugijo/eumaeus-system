@@ -3,9 +3,9 @@ import type { MedicalRecord, CreateMedicalRecordData, UpdateMedicalRecordData } 
 
 export class MedicalRecordService {
 
-  static async findByPetId(petId: number): Promise<MedicalRecord[]> {
+  static async getRecordsByPetId(petId: number): Promise<MedicalRecord[]> {
     try {
-      const response = await apiClient.get(`/pets/${petId}/medical-records`);
+      const response = await apiClient.get(`/records/pets/${petId}/records`);
       return response.data;
     } catch (error) {
       console.error('Erro ao buscar prontuários do pet:', error);
@@ -13,9 +13,9 @@ export class MedicalRecordService {
     }
   }
 
-  static async create(data: CreateMedicalRecordData): Promise<MedicalRecord> {
+  static async createRecord(appointmentId: number, data: CreateMedicalRecordData): Promise<MedicalRecord> {
     try {
-      const response = await apiClient.post('/medical-records', data);
+      const response = await apiClient.post('/records/direct', data);
       return response.data;
     } catch (error) {
       console.error('Erro ao criar prontuário:', error);
@@ -23,9 +23,9 @@ export class MedicalRecordService {
     }
   }
 
-  static async findById(id: number): Promise<MedicalRecord | null> {
+  static async getRecordById(id: number): Promise<MedicalRecord | null> {
     try {
-      const response = await apiClient.get(`/medical-records/${id}`);
+      const response = await apiClient.get(`/records/${id}`);
       return response.data;
     } catch (error: any) {
       if (error.response?.status === 404) {
@@ -36,9 +36,9 @@ export class MedicalRecordService {
     }
   }
 
-  static async findAll(): Promise<MedicalRecord[]> {
+  static async getAllRecords(): Promise<MedicalRecord[]> {
     try {
-      const response = await apiClient.get('/medical-records');
+      const response = await apiClient.get('/records');
       return response.data;
     } catch (error) {
       console.error('Erro ao buscar todos os prontuários:', error);
@@ -46,9 +46,9 @@ export class MedicalRecordService {
     }
   }
 
-  static async update(id: number, data: UpdateMedicalRecordData): Promise<MedicalRecord> {
+  static async updateMedicalRecord(id: number, data: { notes: string; prescription: string }): Promise<MedicalRecord> {
     try {
-      const response = await apiClient.put(`/medical-records/${id}`, data);
+      const response = await apiClient.put(`/records/${id}`, data);
       return response.data;
     } catch (error: any) {
       if (error.response?.status === 404) {
@@ -64,7 +64,7 @@ export class MedicalRecordService {
 
   static async delete(id: number): Promise<void> {
     try {
-      await apiClient.delete(`/medical-records/${id}`);
+      await apiClient.delete(`/records/${id}`);
     } catch (error: any) {
       if (error.response?.status === 404) {
         throw new Error('Prontuário não encontrado');

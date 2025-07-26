@@ -258,7 +258,7 @@ const MedicalRecordsPage = () => {
                                   Qtd: {productRecord.quantityUsed}
                                 </p>
                                 <p className="text-xs text-gray-500">
-                                  R$ {(productRecord.product.price * productRecord.quantityUsed).toFixed(2)}
+                                  R$ {((productRecord.product.price ?? 0) * productRecord.quantityUsed).toFixed(2)}
                                 </p>
                               </div>
                             </div>

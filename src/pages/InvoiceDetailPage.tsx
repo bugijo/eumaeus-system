@@ -6,6 +6,7 @@ import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { Separator } from '../components/ui/separator';
 import { ArrowLeft, Calendar, User, Phone, Mail, DollarSign, FileText, Package } from 'lucide-react';
+import NFSeControls from '../components/fiscal/NFSeControls';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -202,12 +203,12 @@ const InvoiceDetailPage: React.FC = () => {
                     <div className="flex-1">
                       <div className="font-medium">{item.description}</div>
                       <div className="text-sm text-gray-600">
-                        Quantidade: {item.quantity} × R$ {item.unitPrice.toFixed(2)}
+                        Quantidade: {item.quantity} × R$ {(item.unitPrice ?? 0).toFixed(2)}
                       </div>
                     </div>
                     <div className="text-right">
                       <div className="font-semibold">
-                        R$ {item.totalPrice.toFixed(2)}
+                        R$ {(item.totalPrice ?? 0).toFixed(2)}
                       </div>
                     </div>
                   </div>
@@ -224,11 +225,14 @@ const InvoiceDetailPage: React.FC = () => {
             <div className="flex items-center justify-between text-xl font-bold">
               <span>Total da Fatura:</span>
               <span className="text-green-600">
-                R$ {invoice.totalAmount.toFixed(2)}
+                R$ {(invoice.totalAmount ?? 0).toFixed(2)}
               </span>
             </div>
           </CardContent>
         </Card>
+
+        {/* Módulo Fiscal - NFS-e */}
+        <NFSeControls invoice={invoice} />
       </div>
     </div>
   );
