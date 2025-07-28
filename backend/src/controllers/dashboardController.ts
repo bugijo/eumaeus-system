@@ -103,9 +103,7 @@ export const dashboardController = {
         include: {
           pet: { 
             include: { 
-              tutor: {
-                where: { deletedAt: null } // Apenas tutores não excluídos
-              }
+              tutor: true // Incluir dados do tutor
             }
           }
         }
