@@ -1,74 +1,178 @@
 import { MedicalRecord, CreateMedicalRecordRequest } from '../models/medicalRecord.model';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 export class MedicalRecordService {
-  private static records: MedicalRecord[] = [
-    {
-      id: 1,
-      petId: 1,
-      appointmentId: 1,
-      recordDate: '2024-01-15',
-      notes: 'Consulta de rotina. Pet apresenta boa saúde geral. Peso: 5.2kg. Temperatura: 38.5°C. Vacinação em dia.',
-      prescription: 'Vermífugo - Drontal Plus 1 comprimido via oral a cada 3 meses'
-    },
-    {
-      id: 2,
-      petId: 1,
-      appointmentId: 2,
-      recordDate: '2024-02-20',
-      notes: 'Retorno para avaliação. Pet com leve irritação na pele. Recomendado banho com shampoo medicinal.',
-      prescription: 'Shampoo Dermatológico - uso 2x por semana por 15 dias'
-    },
-    {
-      id: 3,
-      petId: 2,
-      appointmentId: 3,
-      recordDate: '2024-01-10',
-      notes: 'Primeira consulta. Filhote de 3 meses. Aplicação de vacinas múltiplas. Orientações sobre alimentação.',
-      prescription: 'Ração Premium Filhote - 3x ao dia, 50g por refeição'
+
+  static async getRecordsByPetId(petId: number): Promise<MedicalRecord[]> {
+    try {
+      const records = await prisma.medicalRecord.findMany({
+        where: {
+          appointment: {
+            petId: petId
+          }
+        },
+        include: {
+          appointment: {
+            include: {
+              pet: true
+            }
+          }
+        },
+        orderBy: {
+          createdAt: 'desc'
+        }
+      });
+
+      return records.map(record => ({
+        id: record.id,
+        appointmentId: record.appointmentId,
+        symptoms: record.symptoms,
+        diagnosis: record.diagnosis,
+        treatment: record.treatment,
+        notes: record.notes,
+        createdAt: record.createdAt,
+        updatedAt: record.updatedAt
+      }));
+    } catch (error) {
+      console.error('Erro ao buscar prontuários por pet:', error);
+      throw error;
     }
-  ];
-
-  static getRecordsByPetId(petId: number): MedicalRecord[] {
-    return this.records
-      .filter(record => record.petId === petId)
-      .sort((a, b) => new Date(b.recordDate).getTime() - new Date(a.recordDate).getTime());
   }
 
-  static createRecord(appointmentId: number, data: CreateMedicalRecordRequest): MedicalRecord {
-    const newRecord: MedicalRecord = {
-      id: Math.floor(Math.random() * 10000) + 1000,
-      petId: data.petId,
-      appointmentId: appointmentId,
-      recordDate: new Date().toISOString().split('T')[0],
-      notes: data.notes,
-      prescription: data.prescription
-    };
+  static async createRecord(appointmentId: number, data: CreateMedicalRecordRequest): Promise<MedicalRecord> {
+    try {
+      const newRecord = await prisma.medicalRecord.create({
+        data: {
+          appointmentId: appointmentId,
+          symptoms: data.symptoms,
+          diagnosis: data.diagnosis,
+          treatment: data.treatment,
+          notes: data.notes
+        },
+        include: {
+          appointment: {
+            include: {
+              pet: true
+            }
+          }
+        }
+      });
 
-    this.records.push(newRecord);
-    return newRecord;
-  }
-
-  static getRecordById(id: number): MedicalRecord | undefined {
-    return this.records.find(record => record.id === id);
-  }
-
-  static getAllRecords(): MedicalRecord[] {
-    return this.records.sort((a, b) => new Date(b.recordDate).getTime() - new Date(a.recordDate).getTime());
-  }
-
-  static updateRecord(recordId: number, updateData: { notes: string; prescription: string }): MedicalRecord | null {
-    const recordIndex = this.records.findIndex(record => record.id === recordId);
-    
-    if (recordIndex === -1) {
-      return null;
+      return {
+        id: newRecord.id,
+        appointmentId: newRecord.appointmentId,
+        symptoms: newRecord.symptoms,
+        diagnosis: newRecord.diagnosis,
+        treatment: newRecord.treatment,
+        notes: newRecord.notes,
+        createdAt: newRecord.createdAt,
+        updatedAt: newRecord.updatedAt
+      };
+    } catch (error) {
+      console.error('Erro ao criar prontuário:', error);
+      throw error;
     }
+  }
 
-    this.records[recordIndex] = {
-      ...this.records[recordIndex],
-      notes: updateData.notes,
-      prescription: updateData.prescription
-    };
+  static async getRecordById(id: number): Promise<MedicalRecord | null> {
+    try {
+      const record = await prisma.medicalRecord.findUnique({
+        where: { id },
+        include: {
+          appointment: {
+            include: {
+              pet: true
+            }
+          }
+        }
+      });
 
-    return this.records[recordIndex];
+      if (!record) return null;
+
+      return {
+        id: record.id,
+        appointmentId: record.appointmentId,
+        symptoms: record.symptoms,
+        diagnosis: record.diagnosis,
+        treatment: record.treatment,
+        notes: record.notes,
+        createdAt: record.createdAt,
+        updatedAt: record.updatedAt
+      };
+    } catch (error) {
+      console.error('Erro ao buscar prontuário por ID:', error);
+      throw error;
+    }
+  }
+
+  static async getAllRecords(): Promise<MedicalRecord[]> {
+    try {
+      const records = await prisma.medicalRecord.findMany({
+        include: {
+          appointment: {
+            include: {
+              pet: true
+            }
+          }
+        },
+        orderBy: {
+          createdAt: 'desc'
+        }
+      });
+
+      return records.map(record => ({
+        id: record.id,
+        appointmentId: record.appointmentId,
+        symptoms: record.symptoms,
+        diagnosis: record.diagnosis,
+        treatment: record.treatment,
+        notes: record.notes,
+        createdAt: record.createdAt,
+        updatedAt: record.updatedAt
+      }));
+    } catch (error) {
+      console.error('Erro ao buscar todos os prontuários:', error);
+      throw error;
+    }
+  }
+
+  static async updateRecord(recordId: number, updateData: { symptoms: string; diagnosis: string; treatment: string; notes?: string }): Promise<MedicalRecord | null> {
+    try {
+      const updatedRecord = await prisma.medicalRecord.update({
+        where: { id: recordId },
+        data: {
+          symptoms: updateData.symptoms,
+          diagnosis: updateData.diagnosis,
+          treatment: updateData.treatment,
+          notes: updateData.notes
+        },
+        include: {
+          appointment: {
+            include: {
+              pet: true
+            }
+          }
+        }
+      });
+
+      return {
+        id: updatedRecord.id,
+        appointmentId: updatedRecord.appointmentId,
+        symptoms: updatedRecord.symptoms,
+        diagnosis: updatedRecord.diagnosis,
+        treatment: updatedRecord.treatment,
+        notes: updatedRecord.notes,
+        createdAt: updatedRecord.createdAt,
+        updatedAt: updatedRecord.updatedAt
+      };
+    } catch (error) {
+      console.error('Erro ao atualizar prontuário:', error);
+      if (error.code === 'P2025') {
+        return null; // Registro não encontrado
+      }
+      throw error;
+    }
   }
 }

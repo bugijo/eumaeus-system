@@ -3,7 +3,7 @@ import { MedicalRecordService } from '../services/medicalRecord.service';
 import { CreateMedicalRecordRequest } from '../models/medicalRecord.model';
 
 export class MedicalRecordController {
-  static getRecordsByPetId(req: Request, res: Response): Response | void {
+  static async getRecordsByPetId(req: Request, res: Response): Promise<Response | void> {
     try {
       const petId = parseInt(req.params.petId);
       
@@ -11,7 +11,7 @@ export class MedicalRecordController {
         return res.status(400).json({ error: 'ID do pet inválido' });
       }
 
-      const records = MedicalRecordService.getRecordsByPetId(petId);
+      const records = await MedicalRecordService.getRecordsByPetId(petId);
       return res.json(records);
     } catch (error) {
       console.error('Erro ao buscar prontuários:', error);
@@ -19,7 +19,7 @@ export class MedicalRecordController {
     }
   }
 
-  static createRecord(req: Request, res: Response): Response | void {
+  static async createRecord(req: Request, res: Response): Promise<Response | void> {
     try {
       const appointmentId = parseInt(req.params.appointmentId);
       
@@ -27,20 +27,20 @@ export class MedicalRecordController {
         return res.status(400).json({ error: 'ID do agendamento inválido' });
       }
 
-      const { petId, notes, prescription }: CreateMedicalRecordRequest = req.body;
+      const { symptoms, diagnosis, treatment, notes }: CreateMedicalRecordRequest = req.body;
 
-      if (!petId || !notes) {
-        return res.status(400).json({ error: 'Pet ID e anotações são obrigatórios' });
+      if (!symptoms || !diagnosis || !treatment) {
+        return res.status(400).json({ error: 'Sintomas, diagnóstico e tratamento são obrigatórios' });
       }
 
       const recordData: CreateMedicalRecordRequest = {
-        petId,
-        appointmentId,
-        notes,
-        prescription: prescription || ''
+        symptoms,
+        diagnosis,
+        treatment,
+        notes: notes || ''
       };
 
-      const newRecord = MedicalRecordService.createRecord(appointmentId, recordData);
+      const newRecord = await MedicalRecordService.createRecord(appointmentId, recordData);
       return res.status(201).json(newRecord);
     } catch (error) {
       console.error('Erro ao criar prontuário:', error);
@@ -48,7 +48,7 @@ export class MedicalRecordController {
     }
   }
 
-  static getRecordById(req: Request, res: Response): Response | void {
+  static async getRecordById(req: Request, res: Response): Promise<Response | void> {
     try {
       const recordId = parseInt(req.params.recordId || req.params.id);
       
@@ -56,7 +56,7 @@ export class MedicalRecordController {
         return res.status(400).json({ error: 'ID do prontuário inválido' });
       }
 
-      const record = MedicalRecordService.getRecordById(recordId);
+      const record = await MedicalRecordService.getRecordById(recordId);
       
       if (!record) {
         return res.status(404).json({ error: 'Prontuário não encontrado' });
@@ -69,9 +69,9 @@ export class MedicalRecordController {
     }
   }
 
-  static getAllRecords(req: Request, res: Response): Response | void {
+  static async getAllRecords(req: Request, res: Response): Promise<Response | void> {
     try {
-      const records = MedicalRecordService.getAllRecords();
+      const records = await MedicalRecordService.getAllRecords();
       return res.json(records);
     } catch (error) {
       console.error('Erro ao buscar todos os prontuários:', error);
