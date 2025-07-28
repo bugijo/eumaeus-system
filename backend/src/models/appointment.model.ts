@@ -9,4 +9,28 @@ export interface Appointment {
   notes?: string; // Notas opcionais
   createdAt: Date;
   updatedAt: Date;
+  
+  // Propriedades de relacionamento (opcionais, incluídas via Prisma include)
+  pet?: {
+    id: number;
+    name: string;
+    species?: string;
+    breed?: string;
+    tutor?: {
+      id: number;
+      name: string;
+      email?: string;
+      phone?: string;
+    };
+  };
+  tutor?: {
+    id: number;
+    name: string;
+    email?: string;
+    phone?: string;
+  };
+  services?: {
+    name: string;
+    price: number;
+  }[];
 }
