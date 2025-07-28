@@ -2,8 +2,11 @@ export interface Appointment {
   id: number;
   petId: number;
   tutorId: number;
-  date: string; // formato "YYYY-MM-DD"
+  appointmentDate: Date; // Campo principal do Prisma
+  date: Date; // Campo adicional para compatibilidade
   time: string; // formato "HH:mm"
-  serviceType: string; // ex: "Consulta", "Vacina", "Cirurgia"
-  status: string; // ex: "Agendado", "Confirmado", "Cancelado"
+  status: string; // ex: "SCHEDULED", "CONFIRMED", "CANCELLED", "COMPLETED"
+  notes?: string; // Notas opcionais
+  createdAt: Date;
+  updatedAt: Date;
 }

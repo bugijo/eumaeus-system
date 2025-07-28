@@ -1,20 +1,25 @@
 export interface MedicalRecord {
   id: number;
-  petId: number;
   appointmentId: number;
-  recordDate: string;
-  notes: string;
-  prescription: string;
+  symptoms: string;
+  diagnosis: string;
+  treatment: string;
+  notes?: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface CreateMedicalRecordRequest {
-  petId: number;
   appointmentId: number;
-  notes: string;
-  prescription: string;
+  symptoms: string;
+  diagnosis: string;
+  treatment: string;
+  notes?: string;
 }
 
 export interface UpdateMedicalRecordRequest {
+  symptoms?: string;
+  diagnosis?: string;
+  treatment?: string;
   notes?: string;
-  prescription?: string;
 }
