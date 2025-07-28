@@ -40,7 +40,7 @@ class ReminderService {
 
       const appointments = await prisma.appointment.findMany({
         where: {
-          date: {
+          appointmentDate: {
             gte: tomorrow,
             lte: endOfTomorrow
           },
@@ -60,12 +60,12 @@ class ReminderService {
       const reminders: AppointmentReminder[] = appointments
         .filter(appointment => appointment.pet?.tutor?.email) // Apenas tutores com e-mail
         .map(appointment => ({
-          id: appointment.id,
+          id: appointment.id.toString(),
           petName: appointment.pet?.name || 'Pet',
           tutorName: appointment.pet?.tutor?.name || 'Tutor',
           tutorEmail: appointment.pet?.tutor?.email || '',
-          appointmentDate: appointment.date,
-          appointmentTime: appointment.time,
+          appointmentDate: appointment.appointmentDate,
+          appointmentTime: appointment.time || '00:00',
           status: appointment.status
         }));
 
@@ -80,9 +80,15 @@ class ReminderService {
   /**
    * Busca pets que precisam de lembrete de vacinação
    * (vacinas que vencem nos próximos 7 dias)
+   * TODO: Implementar quando os modelos Vaccination e Vaccine forem criados
    */
   async findPetsNeedingVaccineReminders(): Promise<VaccineReminder[]> {
     try {
+      console.log('⚠️ Funcionalidade de lembretes de vacina temporariamente desabilitada - modelos não encontrados');
+      return [];
+      
+      // TODO: Descomentar quando os modelos Vaccination e Vaccine forem adicionados ao schema
+      /*
       const today = new Date();
       const sevenDaysFromNow = new Date();
       sevenDaysFromNow.setDate(today.getDate() + 7);
@@ -107,8 +113,8 @@ class ReminderService {
       const petVaccines = new Map<string, Map<string, any>>();
       
       vaccinations.forEach(vaccination => {
-        const petId = vaccination.petId;
-        const vaccineId = vaccination.vaccineId;
+        const petId = vaccination.petId.toString();
+        const vaccineId = vaccination.vaccineId.toString();
         
         if (!petVaccines.has(petId)) {
           petVaccines.set(petId, new Map());
@@ -132,7 +138,7 @@ class ReminderService {
           // Verifica se vence nos próximos 7 dias
           if (dueDate >= today && dueDate <= sevenDaysFromNow) {
             reminders.push({
-              id: vaccination.id,
+              id: vaccination.id.toString(),
               petName: vaccination.pet.name,
               tutorName: vaccination.pet.tutor.name,
               tutorEmail: vaccination.pet.tutor.email,
@@ -146,6 +152,7 @@ class ReminderService {
 
       console.log(`💉 Encontradas ${reminders.length} vacinas próximas do vencimento`);
       return reminders;
+      */
     } catch (error) {
       console.error('❌ Erro ao buscar vacinas para lembrete:', error);
       return [];
