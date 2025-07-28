@@ -70,6 +70,8 @@ model Appointment {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   appointmentDate DateTime
+  date            DateTime // Campo adicional para compatibilidade
+  time            String   // Campo adicional para horário (HH:MM)
   status          String @default("SCHEDULED")
   notes           String?
 
@@ -217,6 +219,7 @@ model Invoice {
   totalAmount   Float
   status        String @default("PENDING")
   createdAt     DateTime      @default(now())
+  nfeId         String?       // ID da NFS-e emitida (opcional)
 
   appointmentId Int           @unique // Cada fatura está ligada a um único agendamento
   appointment   Appointment   @relation(fields: [appointmentId], references: [id])
