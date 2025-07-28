@@ -104,8 +104,8 @@ VITE_NODE_ENV=production
 - [x] Todas as variáveis listadas
 - [x] Valores de produção definidos
 - [x] Guia de configuração criado (GUIA_DEPLOY_PRODUCAO.md)
-- [ ] Secrets configurados no Render
-- [ ] Environment variables no Vercel
+- [ ] Secrets configurados no Render (PRÓXIMO PASSO)
+- [ ] Environment variables no Vercel (PRÓXIMO PASSO)
 
 ---
 
@@ -136,9 +136,9 @@ VITE_NODE_ENV=production
 ### 📤 Deploy
 1. [x] `git add .`
 2. [x] `git commit -m "feat: V2.0 - Receituário, NFS-e e Automação"`
-3. [ ] `git push origin main`
-4. [ ] Monitorar build Vercel
-5. [ ] Monitorar build Render
+3. [x] `git push origin main` ✅ CONCLUÍDO (26/07/2025 22:44)
+4. [ ] Monitorar build Vercel (EM ANDAMENTO)
+5. [ ] Monitorar build Render (EM ANDAMENTO)
 
 ### 🔄 Pós-Deploy
 1. [ ] Executar migração de dados
