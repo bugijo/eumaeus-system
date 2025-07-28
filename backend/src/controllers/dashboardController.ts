@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
+import { AppointmentWithRelations } from '../types';
 
 const prisma = new PrismaClient();
 
@@ -30,7 +31,7 @@ export const dashboardController = {
   async getUpcomingAppointments(req: Request, res: Response): Promise<Response | void> {
     try {
       const now = new Date();
-      const upcomingAppointments = await prisma.appointment.findMany({
+      const upcomingAppointments: AppointmentWithRelations[] = await prisma.appointment.findMany({
         where: {
           appointmentDate: {
             gte: now, // gte = "greater than or equal to" (maior ou igual a)
@@ -46,10 +47,9 @@ export const dashboardController = {
           appointmentDate: 'asc', // Ordenar pelos mais próximos
         },
         take: 5, // Pegar apenas os próximos 5
-        include: { // Incluir dados do pet para exibir o nome
-          pet: {
-            select: { name: true },
-          },
+        include: {
+          pet: true,
+          tutor: true
         },
       });
       return res.json(upcomingAppointments);
@@ -92,7 +92,7 @@ export const dashboardController = {
 
   async getRecentActivity(req: Request, res: Response) {
     try {
-      const recentAppointments = await prisma.appointment.findMany({
+      const recentAppointments: AppointmentWithRelations[] = await prisma.appointment.findMany({
         where: {
           pet: {
             deletedAt: null // Apenas pets não excluídos
@@ -101,19 +101,16 @@ export const dashboardController = {
         take: 5,
         orderBy: { createdAt: 'desc' },
         include: {
-          pet: { 
-            include: { 
-              tutor: true // Incluir dados do tutor
-            }
-          }
+          pet: true,
+          tutor: true
         }
       });
 
       const activities = recentAppointments.map(appointment => ({
         id: appointment.id,
         type: 'appointment',
-        title: `Agendamento para ${appointment.pet.name}`,
-        description: `Tutor: ${appointment.pet.tutor.name}`,
+        title: `Agendamento para ${appointment.pet?.name || 'Pet não informado'}`,
+        description: `Tutor: ${appointment.tutor?.name || 'Tutor não informado'}`,
         date: appointment.appointmentDate,
         status: appointment.status
       }));
