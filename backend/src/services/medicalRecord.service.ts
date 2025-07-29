@@ -1,5 +1,6 @@
 import { MedicalRecord, CreateMedicalRecordRequest } from '../models/medicalRecord.model';
 import { PrismaClient } from '@prisma/client';
+import { MedicalRecordWithRelations } from '../types';
 
 const prisma = new PrismaClient();
 
@@ -7,7 +8,7 @@ export class MedicalRecordService {
 
   static async getRecordsByPetId(petId: number): Promise<MedicalRecord[]> {
     try {
-      const records = await prisma.medicalRecord.findMany({
+      const records: MedicalRecordWithRelations[] = await prisma.medicalRecord.findMany({
         where: {
           appointment: {
             petId: petId
@@ -16,7 +17,7 @@ export class MedicalRecordService {
         include: {
           appointment: {
             include: {
-              pet: true
+              pet: { include: { tutor: true } }
             }
           }
         },
@@ -109,11 +110,11 @@ export class MedicalRecordService {
 
   static async getAllRecords(): Promise<MedicalRecord[]> {
     try {
-      const records = await prisma.medicalRecord.findMany({
+      const records: MedicalRecordWithRelations[] = await prisma.medicalRecord.findMany({
         include: {
           appointment: {
             include: {
-              pet: true
+              pet: { include: { tutor: true } }
             }
           }
         },

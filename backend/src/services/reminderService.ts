@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { emailService, ReminderEmailData, VaccineReminderData } from './emailService';
+import { AppointmentWithRelations } from '../types';
 
 const prisma = new PrismaClient();
 
@@ -38,7 +39,7 @@ class ReminderService {
 
       console.log(`🔍 Buscando agendamentos para: ${tomorrow.toLocaleDateString()}`);
 
-      const appointments = await prisma.appointment.findMany({
+      const appointments: AppointmentWithRelations[] = await prisma.appointment.findMany({
         where: {
           appointmentDate: {
             gte: tomorrow,
@@ -49,21 +50,18 @@ class ReminderService {
           }
         },
         include: {
-          pet: {
-            include: {
-              tutor: true
-            }
-          }
+          pet: true,
+          tutor: true
         }
       });
 
       const reminders: AppointmentReminder[] = appointments
-        .filter(appointment => appointment.pet?.tutor?.email) // Apenas tutores com e-mail
+        .filter(appointment => appointment.tutor?.email) // Apenas tutores com e-mail
         .map(appointment => ({
           id: appointment.id.toString(),
           petName: appointment.pet?.name || 'Pet',
-          tutorName: appointment.pet?.tutor?.name || 'Tutor',
-          tutorEmail: appointment.pet?.tutor?.email || '',
+          tutorName: appointment.tutor?.name || 'Tutor',
+          tutorEmail: appointment.tutor?.email || '',
           appointmentDate: appointment.appointmentDate,
           appointmentTime: appointment.time || '00:00',
           status: appointment.status

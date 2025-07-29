@@ -182,6 +182,30 @@ class InvoiceService {
             }
         });
     }
+    async updateNFeId(invoiceId, nfeId) {
+        const invoice = await prisma.invoice.findUnique({
+            where: { id: invoiceId }
+        });
+        if (!invoice) {
+            throw new Error('Fatura não encontrada');
+        }
+        return await prisma.invoice.update({
+            where: { id: invoiceId },
+            data: { nfeId },
+            include: {
+                items: true,
+                appointment: {
+                    include: {
+                        pet: {
+                            include: {
+                                tutor: true
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
     async getFinancialStats() {
         const [totalPending, totalPaid, totalCancelled, recentInvoices] = await Promise.all([
             prisma.invoice.aggregate({

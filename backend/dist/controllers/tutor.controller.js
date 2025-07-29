@@ -3,9 +3,19 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.TutorController = void 0;
 const tutor_service_1 = require("../services/tutor.service");
 class TutorController {
-    static getAllTutors(req, res) {
+    static async getTutorStats(req, res) {
         try {
-            const tutors = tutor_service_1.TutorService.getAllTutors();
+            const stats = await tutor_service_1.TutorService.getTutorStats();
+            return res.status(200).json(stats);
+        }
+        catch (error) {
+            console.error('Erro ao buscar estatísticas de tutores:', error);
+            return res.status(500).json({ error: 'Erro interno do servidor' });
+        }
+    }
+    static async getAllTutors(req, res) {
+        try {
+            const tutors = await tutor_service_1.TutorService.getAllTutors();
             return res.status(200).json(tutors);
         }
         catch (error) {
@@ -13,10 +23,10 @@ class TutorController {
             return res.status(500).json({ error: 'Erro interno do servidor' });
         }
     }
-    static createTutor(req, res) {
+    static async createTutor(req, res) {
         try {
             const newTutorData = req.body;
-            const createdTutor = tutor_service_1.TutorService.createTutor(newTutorData);
+            const createdTutor = await tutor_service_1.TutorService.createTutor(newTutorData);
             return res.status(201).json(createdTutor);
         }
         catch (error) {
@@ -24,13 +34,13 @@ class TutorController {
             return res.status(500).json({ error: 'Erro interno do servidor' });
         }
     }
-    static getTutorById(req, res) {
+    static async getTutorById(req, res) {
         try {
             const id = parseInt(req.params.id);
             if (isNaN(id)) {
                 return res.status(400).json({ error: 'ID inválido' });
             }
-            const tutor = tutor_service_1.TutorService.getTutorById(id);
+            const tutor = await tutor_service_1.TutorService.getTutorById(id);
             if (!tutor) {
                 return res.status(404).json({ error: 'Tutor não encontrado' });
             }
@@ -41,14 +51,14 @@ class TutorController {
             return res.status(500).json({ error: 'Erro interno do servidor' });
         }
     }
-    static updateTutor(req, res) {
+    static async updateTutor(req, res) {
         try {
             const id = parseInt(req.params.id);
             const updatedData = req.body;
             if (isNaN(id)) {
                 return res.status(400).json({ error: 'ID inválido' });
             }
-            const updatedTutor = tutor_service_1.TutorService.updateTutor(id, updatedData);
+            const updatedTutor = await tutor_service_1.TutorService.updateTutor(id, updatedData);
             if (!updatedTutor) {
                 return res.status(404).json({ error: 'Tutor não encontrado' });
             }
@@ -59,13 +69,13 @@ class TutorController {
             return res.status(500).json({ error: 'Erro interno do servidor' });
         }
     }
-    static deleteTutor(req, res) {
+    static async deleteTutor(req, res) {
         try {
             const id = parseInt(req.params.id);
             if (isNaN(id)) {
                 return res.status(400).json({ error: 'ID inválido' });
             }
-            const deleted = tutor_service_1.TutorService.deleteTutor(id);
+            const deleted = await tutor_service_1.TutorService.deleteTutor(id);
             if (!deleted) {
                 return res.status(404).json({ error: 'Tutor não encontrado' });
             }
