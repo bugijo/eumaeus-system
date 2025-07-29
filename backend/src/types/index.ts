@@ -28,3 +28,33 @@ const medicalRecordWithRelations = Prisma.validator<Prisma.MedicalRecordDefaultA
 });
 
 export type MedicalRecordWithRelations = Prisma.MedicalRecordGetPayload<typeof medicalRecordWithRelations>;
+
+// Nota: Prescription não existe no schema atual, removido temporariamente
+
+// Tipo para Invoice com relacionamentos incluídos
+const invoiceWithRelations = Prisma.validator<Prisma.InvoiceDefaultArgs>()({
+  include: {
+    items: true,
+    appointment: {
+      include: {
+        pet: {
+          include: {
+            tutor: true
+          }
+        }
+      }
+    }
+  },
+});
+
+export type InvoiceWithRelations = Prisma.InvoiceGetPayload<typeof invoiceWithRelations>;
+
+// Tipo para Tutor com relacionamentos incluídos
+const tutorWithRelations = Prisma.validator<Prisma.TutorDefaultArgs>()({
+  include: {
+    pets: true,
+    appointments: true
+  },
+});
+
+export type TutorWithRelations = Prisma.TutorGetPayload<typeof tutorWithRelations>;

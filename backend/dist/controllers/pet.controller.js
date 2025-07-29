@@ -3,9 +3,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.PetController = void 0;
 const pet_service_1 = require("../services/pet.service");
 class PetController {
-    static getAllPets(req, res) {
+    static async getAllPets(req, res) {
         try {
-            const pets = pet_service_1.PetService.getAllPets();
+            const pets = await pet_service_1.PetService.getAllPets();
             return res.status(200).json(pets);
         }
         catch (error) {
@@ -13,10 +13,10 @@ class PetController {
             return res.status(500).json({ error: 'Erro interno do servidor' });
         }
     }
-    static createPet(req, res) {
+    static async createPet(req, res) {
         try {
             const newPetData = req.body;
-            const createdPet = pet_service_1.PetService.createPet(newPetData);
+            const createdPet = await pet_service_1.PetService.createPet(newPetData);
             return res.status(201).json(createdPet);
         }
         catch (error) {
@@ -24,13 +24,13 @@ class PetController {
             return res.status(500).json({ error: 'Erro interno do servidor' });
         }
     }
-    static getPetById(req, res) {
+    static async getPetById(req, res) {
         try {
             const id = parseInt(req.params.id);
             if (isNaN(id)) {
                 return res.status(400).json({ error: 'ID inválido' });
             }
-            const pet = pet_service_1.PetService.getPetById(id);
+            const pet = await pet_service_1.PetService.getPetById(id);
             if (!pet) {
                 return res.status(404).json({ error: 'Pet não encontrado' });
             }
@@ -41,14 +41,14 @@ class PetController {
             return res.status(500).json({ error: 'Erro interno do servidor' });
         }
     }
-    static updatePet(req, res) {
+    static async updatePet(req, res) {
         try {
             const id = parseInt(req.params.id);
             const updateData = req.body;
             if (isNaN(id)) {
                 return res.status(400).json({ error: 'ID inválido' });
             }
-            const updatedPet = pet_service_1.PetService.updatePet(id, updateData);
+            const updatedPet = await pet_service_1.PetService.updatePet(id, updateData);
             if (!updatedPet) {
                 return res.status(404).json({ error: 'Pet não encontrado' });
             }
@@ -59,13 +59,13 @@ class PetController {
             return res.status(500).json({ error: 'Erro interno do servidor' });
         }
     }
-    static deletePet(req, res) {
+    static async deletePet(req, res) {
         try {
             const id = parseInt(req.params.id);
             if (isNaN(id)) {
                 return res.status(400).json({ error: 'ID inválido' });
             }
-            const deleted = pet_service_1.PetService.deletePet(id);
+            const deleted = await pet_service_1.PetService.deletePet(id);
             if (!deleted) {
                 return res.status(404).json({ error: 'Pet não encontrado' });
             }
@@ -79,13 +79,13 @@ class PetController {
             return res.status(500).json({ error: 'Erro interno do servidor' });
         }
     }
-    static getPetsByTutor(req, res) {
+    static async getPetsByTutor(req, res) {
         try {
             const tutorId = parseInt(req.params.tutorId);
             if (isNaN(tutorId)) {
                 return res.status(400).json({ error: 'ID do tutor inválido' });
             }
-            const pets = pet_service_1.PetService.getPetsByTutorId(tutorId);
+            const pets = await pet_service_1.PetService.getPetsByTutorId(tutorId);
             return res.status(200).json(pets);
         }
         catch (error) {
@@ -93,7 +93,7 @@ class PetController {
             return res.status(500).json({ error: 'Erro interno do servidor' });
         }
     }
-    static createPetForTutor(req, res) {
+    static async createPetForTutor(req, res) {
         try {
             const tutorId = parseInt(req.params.tutorId);
             if (isNaN(tutorId)) {
@@ -103,7 +103,7 @@ class PetController {
                 ...req.body,
                 tutorId: tutorId
             };
-            const createdPet = pet_service_1.PetService.createPet(newPetData);
+            const createdPet = await pet_service_1.PetService.createPet(newPetData);
             return res.status(201).json(createdPet);
         }
         catch (error) {

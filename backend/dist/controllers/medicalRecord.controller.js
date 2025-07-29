@@ -3,13 +3,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.MedicalRecordController = void 0;
 const medicalRecord_service_1 = require("../services/medicalRecord.service");
 class MedicalRecordController {
-    static getRecordsByPetId(req, res) {
+    static async getRecordsByPetId(req, res) {
         try {
             const petId = parseInt(req.params.petId);
             if (isNaN(petId)) {
                 return res.status(400).json({ error: 'ID do pet inválido' });
             }
-            const records = medicalRecord_service_1.MedicalRecordService.getRecordsByPetId(petId);
+            const records = await medicalRecord_service_1.MedicalRecordService.getRecordsByPetId(petId);
             return res.json(records);
         }
         catch (error) {
@@ -17,23 +17,23 @@ class MedicalRecordController {
             return res.status(500).json({ error: 'Erro interno do servidor' });
         }
     }
-    static createRecord(req, res) {
+    static async createRecord(req, res) {
         try {
             const appointmentId = parseInt(req.params.appointmentId);
             if (isNaN(appointmentId)) {
                 return res.status(400).json({ error: 'ID do agendamento inválido' });
             }
-            const { petId, notes, prescription } = req.body;
-            if (!petId || !notes) {
-                return res.status(400).json({ error: 'Pet ID e anotações são obrigatórios' });
+            const { symptoms, diagnosis, treatment, notes } = req.body;
+            if (!symptoms || !diagnosis || !treatment) {
+                return res.status(400).json({ error: 'Sintomas, diagnóstico e tratamento são obrigatórios' });
             }
             const recordData = {
-                petId,
-                appointmentId,
-                notes,
-                prescription: prescription || ''
+                symptoms,
+                diagnosis,
+                treatment,
+                notes: notes || ''
             };
-            const newRecord = medicalRecord_service_1.MedicalRecordService.createRecord(appointmentId, recordData);
+            const newRecord = await medicalRecord_service_1.MedicalRecordService.createRecord(appointmentId, recordData);
             return res.status(201).json(newRecord);
         }
         catch (error) {
@@ -41,13 +41,13 @@ class MedicalRecordController {
             return res.status(500).json({ error: 'Erro interno do servidor' });
         }
     }
-    static getRecordById(req, res) {
+    static async getRecordById(req, res) {
         try {
             const recordId = parseInt(req.params.recordId || req.params.id);
             if (isNaN(recordId)) {
                 return res.status(400).json({ error: 'ID do prontuário inválido' });
             }
-            const record = medicalRecord_service_1.MedicalRecordService.getRecordById(recordId);
+            const record = await medicalRecord_service_1.MedicalRecordService.getRecordById(recordId);
             if (!record) {
                 return res.status(404).json({ error: 'Prontuário não encontrado' });
             }
@@ -58,9 +58,9 @@ class MedicalRecordController {
             return res.status(500).json({ error: 'Erro interno do servidor' });
         }
     }
-    static getAllRecords(req, res) {
+    static async getAllRecords(req, res) {
         try {
-            const records = medicalRecord_service_1.MedicalRecordService.getAllRecords();
+            const records = await medicalRecord_service_1.MedicalRecordService.getAllRecords();
             return res.json(records);
         }
         catch (error) {

@@ -3,6 +3,6 @@ export interface Tutor {
     name: string;
     email: string;
     phone: string;
-    address: string;
+    address: string | null;
 }
 //# sourceMappingURL=tutor.model.d.ts.map

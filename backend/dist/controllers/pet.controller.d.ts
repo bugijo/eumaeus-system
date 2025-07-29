@@ -1,11 +1,11 @@
 import { Request, Response } from 'express';
 export declare class PetController {
-    static getAllPets(req: Request, res: Response): Response | void;
-    static createPet(req: Request, res: Response): Response | void;
-    static getPetById(req: Request, res: Response): Response | void;
-    static updatePet(req: Request, res: Response): Response | void;
-    static deletePet(req: Request, res: Response): Response | void;
-    static getPetsByTutor(req: Request, res: Response): Response | void;
-    static createPetForTutor(req: Request, res: Response): Response | void;
+    static getAllPets(req: Request, res: Response): Promise<Response>;
+    static createPet(req: Request, res: Response): Promise<Response>;
+    static getPetById(req: Request, res: Response): Promise<Response>;
+    static updatePet(req: Request, res: Response): Promise<Response>;
+    static deletePet(req: Request, res: Response): Promise<Response>;
+    static getPetsByTutor(req: Request, res: Response): Promise<Response>;
+    static createPetForTutor(req: Request, res: Response): Promise<Response>;
 }
 //# sourceMappingURL=pet.controller.d.ts.map

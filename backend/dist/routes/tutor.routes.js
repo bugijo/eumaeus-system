@@ -6,6 +6,7 @@ const tutor_controller_1 = require("../controllers/tutor.controller");
 const pet_routes_1 = require("./pet.routes");
 const tutorRoutes = (0, express_1.Router)();
 exports.tutorRoutes = tutorRoutes;
+tutorRoutes.get('/tutors/stats', tutor_controller_1.TutorController.getTutorStats);
 tutorRoutes.get('/tutors', tutor_controller_1.TutorController.getAllTutors);
 tutorRoutes.get('/tutors/:id', tutor_controller_1.TutorController.getTutorById);
 tutorRoutes.post('/tutors', tutor_controller_1.TutorController.createTutor);

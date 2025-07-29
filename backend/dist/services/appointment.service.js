@@ -1,99 +1,282 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppointmentService = void 0;
+const client_1 = require("@prisma/client");
+const prisma = new client_1.PrismaClient();
 class AppointmentService {
-    static getAllAppointments() {
-        return [
-            {
-                id: 1,
-                petId: 1,
-                tutorId: 1,
-                date: '2025-01-15',
-                time: '09:00',
-                serviceType: 'Consulta',
-                status: 'Agendado'
-            },
-            {
-                id: 2,
-                petId: 2,
-                tutorId: 2,
-                date: '2025-01-16',
-                time: '14:30',
-                serviceType: 'Vacina',
-                status: 'Confirmado'
-            },
-            {
-                id: 3,
-                petId: 3,
-                tutorId: 1,
-                date: '2025-01-17',
-                time: '10:15',
-                serviceType: 'Cirurgia',
-                status: 'Agendado'
-            },
-            {
-                id: 4,
-                petId: 4,
-                tutorId: 3,
-                date: '2025-01-18',
-                time: '16:00',
-                serviceType: 'Consulta',
-                status: 'Confirmado'
+    static async getAllAppointments() {
+        try {
+            const appointments = await prisma.appointment.findMany({
+                include: {
+                    pet: {
+                        select: {
+                            id: true,
+                            name: true
+                        }
+                    },
+                    tutor: {
+                        select: {
+                            id: true,
+                            name: true
+                        }
+                    },
+                    services: {
+                        select: {
+                            name: true,
+                            price: true
+                        }
+                    }
+                },
+                orderBy: {
+                    appointmentDate: 'asc'
+                }
+            });
+            return appointments.map(appointment => ({
+                id: appointment.id,
+                petId: appointment.petId,
+                tutorId: appointment.tutorId,
+                date: appointment.appointmentDate.toISOString().split('T')[0],
+                time: appointment.appointmentDate.toTimeString().slice(0, 5),
+                serviceType: appointment.services[0]?.name || 'Consulta',
+                status: this.mapStatusToLegacy(appointment.status)
+            }));
+        }
+        catch (error) {
+            console.error('Erro ao buscar agendamentos:', error);
+            throw error;
+        }
+    }
+    static async createAppointment(newAppointmentData) {
+        try {
+            console.log('Recebido para criação de agendamento:', newAppointmentData);
+            const appointmentDateTime = new Date(`${newAppointmentData.date}T${newAppointmentData.time}:00`);
+            const createdAppointment = await prisma.appointment.create({
+                data: {
+                    petId: newAppointmentData.petId,
+                    tutorId: newAppointmentData.tutorId,
+                    appointmentDate: appointmentDateTime,
+                    status: 'SCHEDULED',
+                    notes: newAppointmentData.notes || null
+                },
+                include: {
+                    pet: {
+                        select: {
+                            id: true,
+                            name: true
+                        }
+                    },
+                    tutor: {
+                        select: {
+                            id: true,
+                            name: true
+                        }
+                    }
+                }
+            });
+            if (newAppointmentData.serviceType) {
+                await prisma.service.create({
+                    data: {
+                        name: newAppointmentData.serviceType,
+                        price: 50.0,
+                        appointmentId: createdAppointment.id
+                    }
+                });
             }
-        ];
+            console.log('Agendamento criado no banco:', createdAppointment);
+            return {
+                id: createdAppointment.id,
+                petId: createdAppointment.petId,
+                tutorId: createdAppointment.tutorId,
+                date: createdAppointment.appointmentDate.toISOString().split('T')[0],
+                time: createdAppointment.appointmentDate.toTimeString().slice(0, 5),
+                serviceType: newAppointmentData.serviceType || 'Consulta',
+                status: this.mapStatusToLegacy(createdAppointment.status)
+            };
+        }
+        catch (error) {
+            console.error('Erro ao criar agendamento:', error);
+            throw error;
+        }
     }
-    static createAppointment(newAppointmentData) {
-        console.log('Recebido para criação de agendamento:', newAppointmentData);
-        const createdAppointment = {
-            id: Math.floor(Math.random() * 1000) + 100,
-            ...newAppointmentData
+    static mapStatusToLegacy(status) {
+        const statusMap = {
+            'SCHEDULED': 'Agendado',
+            'CONFIRMED': 'Confirmado',
+            'COMPLETED': 'Concluído',
+            'CANCELLED': 'Cancelado'
         };
-        console.log('Agendamento criado:', createdAppointment);
-        return createdAppointment;
+        return statusMap[status] || 'Agendado';
     }
-    static getAppointmentById(id) {
-        const appointments = this.getAllAppointments();
-        const appointment = appointments.find(appointment => appointment.id === id);
-        if (!appointment) {
-            return null;
+    static async getAppointmentById(id) {
+        try {
+            const appointment = await prisma.appointment.findUnique({
+                where: { id },
+                include: {
+                    pet: {
+                        select: {
+                            id: true,
+                            name: true
+                        }
+                    },
+                    tutor: {
+                        select: {
+                            id: true,
+                            name: true
+                        }
+                    },
+                    services: {
+                        select: {
+                            name: true,
+                            price: true
+                        }
+                    }
+                }
+            });
+            if (!appointment)
+                return null;
+            return {
+                id: appointment.id,
+                petId: appointment.petId,
+                tutorId: appointment.tutorId,
+                date: appointment.appointmentDate.toISOString().split('T')[0],
+                time: appointment.appointmentDate.toTimeString().slice(0, 5),
+                serviceType: appointment.services[0]?.name || 'Consulta',
+                status: this.mapStatusToLegacy(appointment.status)
+            };
         }
-        console.log('Agendamento encontrado:', appointment);
-        return appointment;
+        catch (error) {
+            console.error('Erro ao buscar agendamento por ID:', error);
+            throw error;
+        }
     }
-    static updateAppointment(id, updateData) {
-        const appointments = this.getAllAppointments();
-        const appointmentIndex = appointments.findIndex(appointment => appointment.id === id);
-        if (appointmentIndex === -1) {
-            return null;
+    static async updateAppointment(id, updateData) {
+        try {
+            console.log(`Atualizando agendamento ${id}:`, updateData);
+            const updatePayload = {};
+            if (updateData.date && updateData.time) {
+                updatePayload.appointmentDate = new Date(`${updateData.date}T${updateData.time}:00`);
+            }
+            if (updateData.status) {
+                const statusMap = {
+                    'Agendado': 'SCHEDULED',
+                    'Confirmado': 'CONFIRMED',
+                    'Concluído': 'COMPLETED',
+                    'Cancelado': 'CANCELLED'
+                };
+                updatePayload.status = statusMap[updateData.status] || 'SCHEDULED';
+            }
+            const updatedAppointment = await prisma.appointment.update({
+                where: { id },
+                data: updatePayload,
+                include: {
+                    pet: {
+                        select: {
+                            id: true,
+                            name: true
+                        }
+                    },
+                    tutor: {
+                        select: {
+                            id: true,
+                            name: true
+                        }
+                    },
+                    services: {
+                        select: {
+                            name: true,
+                            price: true
+                        }
+                    }
+                }
+            });
+            return {
+                id: updatedAppointment.id,
+                petId: updatedAppointment.petId,
+                tutorId: updatedAppointment.tutorId,
+                date: updatedAppointment.appointmentDate.toISOString().split('T')[0],
+                time: updatedAppointment.appointmentDate.toTimeString().slice(0, 5),
+                serviceType: updatedAppointment.services[0]?.name || 'Consulta',
+                status: this.mapStatusToLegacy(updatedAppointment.status)
+            };
         }
-        const updatedAppointment = {
-            ...appointments[appointmentIndex],
-            ...updateData
-        };
-        console.log('Agendamento atualizado:', updatedAppointment);
-        return updatedAppointment;
+        catch (error) {
+            console.error('Erro ao atualizar agendamento:', error);
+            if (error.code === 'P2025') {
+                return null;
+            }
+            throw error;
+        }
     }
-    static deleteAppointment(id) {
-        const appointments = this.getAllAppointments();
-        const appointmentIndex = appointments.findIndex(appointment => appointment.id === id);
-        if (appointmentIndex === -1) {
-            return false;
+    static async deleteAppointment(id) {
+        try {
+            console.log(`Deletando agendamento ${id}`);
+            await prisma.service.deleteMany({
+                where: { appointmentId: id }
+            });
+            await prisma.appointment.delete({
+                where: { id }
+            });
+            return true;
         }
-        console.log('Agendamento deletado com ID:', id);
-        return true;
+        catch (error) {
+            console.error('Erro ao deletar agendamento:', error);
+            if (error.code === 'P2025') {
+                return false;
+            }
+            throw error;
+        }
     }
-    static updateAppointmentStatus(id, status) {
-        const appointments = this.getAllAppointments();
-        const appointmentIndex = appointments.findIndex(appointment => appointment.id === id);
-        if (appointmentIndex === -1) {
-            return null;
+    static async updateAppointmentStatus(id, status) {
+        try {
+            console.log(`Atualizando status do agendamento ${id} para:`, status);
+            const statusMap = {
+                'Agendado': 'SCHEDULED',
+                'Confirmado': 'CONFIRMED',
+                'Concluído': 'COMPLETED',
+                'Cancelado': 'CANCELLED'
+            };
+            const prismaStatus = statusMap[status] || 'SCHEDULED';
+            const updatedAppointment = await prisma.appointment.update({
+                where: { id },
+                data: { status: prismaStatus },
+                include: {
+                    pet: {
+                        select: {
+                            id: true,
+                            name: true
+                        }
+                    },
+                    tutor: {
+                        select: {
+                            id: true,
+                            name: true
+                        }
+                    },
+                    services: {
+                        select: {
+                            name: true,
+                            price: true
+                        }
+                    }
+                }
+            });
+            return {
+                id: updatedAppointment.id,
+                petId: updatedAppointment.petId,
+                tutorId: updatedAppointment.tutorId,
+                date: updatedAppointment.appointmentDate.toISOString().split('T')[0],
+                time: updatedAppointment.appointmentDate.toTimeString().slice(0, 5),
+                serviceType: updatedAppointment.services[0]?.name || 'Consulta',
+                status: this.mapStatusToLegacy(updatedAppointment.status)
+            };
         }
-        const updatedAppointment = {
-            ...appointments[appointmentIndex],
-            status
-        };
-        console.log('Status do agendamento atualizado:', updatedAppointment);
-        return updatedAppointment;
+        catch (error) {
+            console.error('Erro ao atualizar status do agendamento:', error);
+            if (error.code === 'P2025') {
+                return null;
+            }
+            throw error;
+        }
     }
 }
 exports.AppointmentService = AppointmentService;

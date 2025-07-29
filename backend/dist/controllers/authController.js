@@ -13,34 +13,35 @@ exports.default = {
     async login(req, res) {
         try {
             const { email, password } = req.body;
-            const user = await prisma.user.findUnique({ where: { email } });
-            if (!user) {
+            const authProfile = await prisma.authProfile.findUnique({
+                where: { email },
+                include: {
+                    user: { include: { role: true } },
+                },
+            });
+            if (!authProfile) {
                 return res.status(401).json({ message: 'Credenciais inválidas' });
             }
-            const isPasswordValid = await bcrypt_1.default.compare(password, user.password);
+            const isPasswordValid = await bcrypt_1.default.compare(password, authProfile.password);
             if (!isPasswordValid) {
                 return res.status(401).json({ message: 'Credenciais inválidas' });
             }
-            const accessToken = jsonwebtoken_1.default.sign({ userId: user.id, role: user.roleName }, JWT_SECRET, { expiresIn: '15m' });
-            const refreshToken = jsonwebtoken_1.default.sign({ userId: user.id }, REFRESH_TOKEN_SECRET, { expiresIn: '30d' });
-            await prisma.user.update({
-                where: { id: user.id },
-                data: { refreshToken: refreshToken },
+            if (!authProfile.user) {
+                return res.status(403).json({ message: 'Acesso negado. Apenas funcionários podem fazer login.' });
+            }
+            const tokenPayload = { id: authProfile.user.id, type: 'user', role: authProfile.user.role.name };
+            const userPayload = { id: authProfile.user.id, name: authProfile.user.name, email: authProfile.email, role: authProfile.user.role.name, type: 'user' };
+            const accessToken = jsonwebtoken_1.default.sign(tokenPayload, process.env.JWT_SECRET, { expiresIn: '15m' });
+            const refreshToken = jsonwebtoken_1.default.sign({ authProfileId: authProfile.id }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '30d' });
+            await prisma.authProfile.update({
+                where: { id: authProfile.id },
+                data: { refreshToken },
             });
-            return res.status(200).json({
-                accessToken,
-                refreshToken,
-                user: {
-                    id: user.id,
-                    name: user.name,
-                    email: user.email,
-                    role: user.roleName,
-                },
-            });
+            return res.status(200).json({ accessToken, refreshToken, user: userPayload });
         }
         catch (error) {
-            console.error('Erro no login:', error);
-            return res.status(500).json({ message: 'Erro interno do servidor' });
+            console.error("Erro no login:", error);
+            return res.status(500).json({ message: "Erro interno do servidor" });
         }
     },
     async refresh(req, res) {
@@ -51,35 +52,38 @@ exports.default = {
             }
             let decoded;
             try {
-                decoded = jsonwebtoken_1.default.verify(refreshToken, REFRESH_TOKEN_SECRET);
+                decoded = jsonwebtoken_1.default.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
             }
             catch (error) {
                 return res.status(401).json({ message: 'Refresh token inválido' });
             }
-            const user = await prisma.user.findFirst({
+            const authProfile = await prisma.authProfile.findFirst({
                 where: {
-                    id: decoded.userId,
+                    id: decoded.authProfileId,
                     refreshToken: refreshToken,
                 },
+                include: {
+                    user: { include: { role: true } },
+                },
             });
-            if (!user) {
+            if (!authProfile) {
                 return res.status(401).json({ message: 'Refresh token não encontrado' });
             }
-            const newAccessToken = jsonwebtoken_1.default.sign({ userId: user.id, role: user.roleName }, JWT_SECRET, { expiresIn: '15m' });
-            const newRefreshToken = jsonwebtoken_1.default.sign({ userId: user.id }, REFRESH_TOKEN_SECRET, { expiresIn: '30d' });
-            await prisma.user.update({
-                where: { id: user.id },
+            if (!authProfile.user) {
+                return res.status(403).json({ message: 'Acesso negado. Apenas funcionários podem fazer login.' });
+            }
+            const tokenPayload = { id: authProfile.user.id, type: 'user', role: authProfile.user.role.name };
+            const userPayload = { id: authProfile.user.id, name: authProfile.user.name, email: authProfile.email, role: authProfile.user.role.name, type: 'user' };
+            const newAccessToken = jsonwebtoken_1.default.sign(tokenPayload, process.env.JWT_SECRET, { expiresIn: '15m' });
+            const newRefreshToken = jsonwebtoken_1.default.sign({ authProfileId: authProfile.id }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '30d' });
+            await prisma.authProfile.update({
+                where: { id: authProfile.id },
                 data: { refreshToken: newRefreshToken },
             });
             return res.status(200).json({
                 accessToken: newAccessToken,
                 refreshToken: newRefreshToken,
-                user: {
-                    id: user.id,
-                    name: user.name,
-                    email: user.email,
-                    role: user.roleName,
-                },
+                user: userPayload,
             });
         }
         catch (error) {
