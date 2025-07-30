@@ -1,4 +1,5 @@
 import { AvailabilityRequest, AvailabilityResponse, TimeSlot, ClinicSettings } from '../models/availability.model';
+import { Appointment } from '../models/appointment.model';
 import { AppointmentService } from './appointment.service';
 
 export class AvailabilityService {
@@ -103,10 +104,10 @@ export class AvailabilityService {
   /**
    * Busca agendamentos existentes para um mês específico
    */
-  private static getAppointmentsForMonth(year: number, month: number) {
-    const allAppointments = AppointmentService.getAllAppointments();
+  private static async getAppointmentsForMonth(year: number, month: number) {
+    const allAppointments = await AppointmentService.getAllAppointments();
     
-    return allAppointments.filter(appointment => {
+    return allAppointments.filter((appointment: Appointment) => {
       const appointmentDate = new Date(appointment.date);
       return appointmentDate.getFullYear() === year && 
              appointmentDate.getMonth() === month - 1;
