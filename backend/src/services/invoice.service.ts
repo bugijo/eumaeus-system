@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { InvoiceWithRelations } from '../types';
 
 const prisma = new PrismaClient();
 
@@ -127,7 +128,7 @@ export class InvoiceService {
   }
 
   // Buscar fatura por ID
-  async getById(invoiceId: number) {
+  async getById(invoiceId: number): Promise<InvoiceWithRelations | null> {
     return await prisma.invoice.findUnique({
       where: { id: invoiceId },
       include: {
@@ -146,7 +147,7 @@ export class InvoiceService {
   }
 
   // Buscar fatura por ID do agendamento
-  async getByAppointmentId(appointmentId: number) {
+  async getByAppointmentId(appointmentId: number): Promise<InvoiceWithRelations | null> {
     return await prisma.invoice.findUnique({
       where: { appointmentId },
       include: {
@@ -165,7 +166,7 @@ export class InvoiceService {
   }
 
   // Atualizar status da fatura
-  async updateStatus(invoiceId: number, status: 'PENDING' | 'PAID' | 'CANCELLED') {
+  async updateStatus(invoiceId: number, status: 'PENDING' | 'PAID' | 'CANCELLED'): Promise<InvoiceWithRelations> {
     const invoice = await prisma.invoice.findUnique({
       where: { id: invoiceId }
     });
@@ -193,7 +194,7 @@ export class InvoiceService {
   }
 
   // Listar todas as faturas
-  async getAll() {
+  async getAll(): Promise<InvoiceWithRelations[]> {
     return await prisma.invoice.findMany({
       include: {
         items: true,
@@ -214,7 +215,7 @@ export class InvoiceService {
   }
 
   // Atualizar ID da NFS-e na fatura
-  async updateNFeId(invoiceId: number, nfeId: string) {
+  async updateNFeId(invoiceId: number, nfeId: string): Promise<InvoiceWithRelations> {
     const invoice = await prisma.invoice.findUnique({
       where: { id: invoiceId }
     });
