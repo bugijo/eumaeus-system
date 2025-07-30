@@ -1,5 +1,6 @@
 import { Tutor } from '../models/tutor.model';
 import { PrismaClient } from '@prisma/client';
+import { TutorWithRelations } from '../types';
 
 const prisma = new PrismaClient();
 
