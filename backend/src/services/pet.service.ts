@@ -40,9 +40,10 @@ export class PetService {
       let formattedBirthDate: Date | null = null;
       
       if (newPetData.birthDate && typeof newPetData.birthDate === 'string') {
+        const birthDateStr = newPetData.birthDate as string;
         // Verifica se está no formato brasileiro DD/MM/YYYY
-        if (newPetData.birthDate.includes('/')) {
-          const [day, month, year] = newPetData.birthDate.split('/');
+        if (birthDateStr.includes('/')) {
+          const [day, month, year] = birthDateStr.split('/');
           // Cria um objeto Date no formato YYYY-MM-DD
           formattedBirthDate = new Date(`${year}-${month}-${day}`);
         } else {
@@ -124,9 +125,10 @@ export class PetService {
       let formattedUpdateData = { ...updateData };
       
       if (updateData.birthDate && typeof updateData.birthDate === 'string') {
+        const birthDateStr = updateData.birthDate as string;
         // Verifica se está no formato brasileiro DD/MM/YYYY
-        if (updateData.birthDate.includes('/')) {
-          const [day, month, year] = updateData.birthDate.split('/');
+        if (birthDateStr.includes('/')) {
+          const [day, month, year] = birthDateStr.split('/');
           // Cria um objeto Date no formato YYYY-MM-DD
           formattedUpdateData.birthDate = new Date(`${year}-${month}-${day}`);
         } else {
