@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { Appointment } from '../models/appointment.model';
 import { AppointmentService } from '../services/appointment.service';
 import { z } from 'zod';
+import { handleError, handleValidationError } from '../utils/errorHandler';
 
 // Schema de validação para atualização de status
 const updateStatusSchema = z.object({
@@ -14,8 +15,7 @@ export class AppointmentController {
       const appointments = await AppointmentService.getAllAppointments();
       return res.status(200).json(appointments);
     } catch (error) {
-      console.error('Erro ao buscar agendamentos:', error);
-      return res.status(500).json({ error: 'Erro interno do servidor' });
+      return handleError(error, res, 'Erro ao buscar agendamentos');
     }
   }
 
@@ -25,8 +25,7 @@ export class AppointmentController {
       const createdAppointment = await AppointmentService.createAppointment(newAppointmentData);
       return res.status(201).json(createdAppointment);
     } catch (error) {
-      console.error('Erro ao criar agendamento:', error);
-      return res.status(500).json({ error: 'Erro interno do servidor' });
+      return handleValidationError(error, res);
     }
   }
 
@@ -46,8 +45,7 @@ export class AppointmentController {
       
       return res.status(200).json(appointment);
     } catch (error) {
-      console.error('Erro ao buscar agendamento:', error);
-      return res.status(500).json({ error: 'Erro interno do servidor' });
+      return handleError(error, res, 'Erro ao buscar agendamento');
     }
   }
 
@@ -68,8 +66,7 @@ export class AppointmentController {
       
       return res.status(200).json(updatedAppointment);
     } catch (error) {
-      console.error('Erro ao atualizar agendamento:', error);
-      return res.status(500).json({ error: 'Erro interno do servidor' });
+      return handleValidationError(error, res);
     }
   }
 
@@ -89,8 +86,7 @@ export class AppointmentController {
       
       return res.status(200).json({ message: 'Agendamento deletado com sucesso' });
     } catch (error) {
-      console.error('Erro ao deletar agendamento:', error);
-      return res.status(500).json({ error: 'Erro interno do servidor' });
+      return handleError(error, res, 'Erro ao deletar agendamento');
     }
   }
 
@@ -111,11 +107,7 @@ export class AppointmentController {
       
       return res.status(200).json(updatedAppointment);
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ error: 'Status inválido', details: error.errors });
-      }
-      console.error('Erro ao atualizar status do agendamento:', error);
-      return res.status(500).json({ error: 'Erro interno do servidor' });
+      return handleValidationError(error, res);
     }
   }
 }

@@ -210,14 +210,14 @@ export class AppointmentService {
         id: updatedAppointment.id,
         petId: updatedAppointment.petId,
         tutorId: updatedAppointment.tutorId,
-        date: updatedAppointment.appointmentDate.toISOString().split('T')[0],
+        date: updatedAppointment.appointmentDate,
         time: updatedAppointment.appointmentDate.toTimeString().slice(0, 5),
         serviceType: updatedAppointment.services[0]?.name || 'Consulta',
         status: this.mapStatusToLegacy(updatedAppointment.status)
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao atualizar agendamento:', error);
-      if (error.code === 'P2025') {
+      if (error?.code === 'P2025') {
         return null; // Registro não encontrado
       }
       throw error;
@@ -239,9 +239,9 @@ export class AppointmentService {
       });
       
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao deletar agendamento:', error);
-      if (error.code === 'P2025') {
+      if (error?.code === 'P2025') {
         return false; // Registro não encontrado
       }
       throw error;
@@ -295,9 +295,9 @@ export class AppointmentService {
         serviceType: updatedAppointment.services[0]?.name || 'Consulta',
         status: this.mapStatusToLegacy(updatedAppointment.status)
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao atualizar status do agendamento:', error);
-      if (error.code === 'P2025') {
+      if (error?.code === 'P2025') {
         return null; // Registro não encontrado
       }
       throw error;

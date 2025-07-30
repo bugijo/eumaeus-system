@@ -20,7 +20,7 @@ export class AvailabilityService {
   /**
    * Calcula os horários disponíveis para um determinado mês/ano
    */
-  static getAvailability(request: AvailabilityRequest): AvailabilityResponse {
+  static async getAvailability(request: AvailabilityRequest): Promise<AvailabilityResponse> {
     const { year, month, serviceType } = request;
     const settings = this.DEFAULT_CLINIC_SETTINGS;
     
@@ -28,7 +28,7 @@ export class AvailabilityService {
     const allSlots = this.generateAllSlotsForMonth(year, month, settings);
     
     // Busca agendamentos existentes do mês
-    const existingAppointments = this.getAppointmentsForMonth(year, month);
+    const existingAppointments = await this.getAppointmentsForMonth(year, month);
     
     // Marca slots ocupados
     const availableSlots = this.markOccupiedSlots(allSlots, existingAppointments);
