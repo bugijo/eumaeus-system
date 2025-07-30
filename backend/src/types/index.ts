@@ -58,3 +58,22 @@ const tutorWithRelations = Prisma.validator<Prisma.TutorDefaultArgs>()({
 });
 
 export type TutorWithRelations = Prisma.TutorGetPayload<typeof tutorWithRelations>;
+
+// Tipo para Invoice com relacionamentos completos (para casos específicos)
+const invoiceWithFullRelations = Prisma.validator<Prisma.InvoiceDefaultArgs>()({
+  include: {
+    items: true,
+    appointment: {
+      include: {
+        pet: {
+          include: {
+            tutor: true
+          }
+        },
+        tutor: true
+      }
+    }
+  },
+});
+
+export type InvoiceWithFullRelations = Prisma.InvoiceGetPayload<typeof invoiceWithFullRelations>;

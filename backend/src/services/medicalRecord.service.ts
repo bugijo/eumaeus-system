@@ -170,7 +170,7 @@ export class MedicalRecordService {
       };
     } catch (error: any) {
       console.error('Erro ao atualizar prontuário:', error);
-      if (error.code === 'P2025') {
+      if (error?.code === 'P2025') {
         return null; // Registro não encontrado
       }
       throw error;
