@@ -37,10 +37,12 @@ export class AppointmentService {
         id: appointment.id,
         petId: appointment.petId,
         tutorId: appointment.tutorId,
-        date: appointment.appointmentDate.toISOString().split('T')[0],
+        appointmentDate: appointment.appointmentDate,
+        date: appointment.appointmentDate,
         time: appointment.appointmentDate.toTimeString().slice(0, 5),
-        serviceType: appointment.services[0]?.name || 'Consulta',
-        status: this.mapStatusToLegacy(appointment.status)
+        status: this.mapStatusToLegacy(appointment.status),
+        createdAt: appointment.createdAt,
+        updatedAt: appointment.updatedAt
       }));
     } catch (error) {
       console.error('Erro ao buscar agendamentos:', error);
@@ -60,6 +62,8 @@ export class AppointmentService {
           petId: newAppointmentData.petId,
           tutorId: newAppointmentData.tutorId,
           appointmentDate: appointmentDateTime,
+          date: appointmentDateTime,
+          time: newAppointmentData.time,
           status: 'SCHEDULED',
           notes: newAppointmentData.notes || null
         },
@@ -97,10 +101,12 @@ export class AppointmentService {
         id: createdAppointment.id,
         petId: createdAppointment.petId,
         tutorId: createdAppointment.tutorId,
-        date: createdAppointment.appointmentDate.toISOString().split('T')[0],
+        appointmentDate: createdAppointment.appointmentDate,
+        date: createdAppointment.appointmentDate,
         time: createdAppointment.appointmentDate.toTimeString().slice(0, 5),
-        serviceType: newAppointmentData.serviceType || 'Consulta',
-        status: this.mapStatusToLegacy(createdAppointment.status)
+        status: this.mapStatusToLegacy(createdAppointment.status),
+        createdAt: createdAppointment.createdAt,
+        updatedAt: createdAppointment.updatedAt
       };
     } catch (error) {
       console.error('Erro ao criar agendamento:', error);
@@ -150,10 +156,12 @@ export class AppointmentService {
         id: appointment.id,
         petId: appointment.petId,
         tutorId: appointment.tutorId,
-        date: appointment.appointmentDate.toISOString().split('T')[0],
+        appointmentDate: appointment.appointmentDate,
+        date: appointment.appointmentDate,
         time: appointment.appointmentDate.toTimeString().slice(0, 5),
-        serviceType: appointment.services[0]?.name || 'Consulta',
-        status: this.mapStatusToLegacy(appointment.status)
+        status: this.mapStatusToLegacy(appointment.status),
+        createdAt: appointment.createdAt,
+        updatedAt: appointment.updatedAt
       };
     } catch (error) {
       console.error('Erro ao buscar agendamento por ID:', error);
@@ -210,10 +218,12 @@ export class AppointmentService {
         id: updatedAppointment.id,
         petId: updatedAppointment.petId,
         tutorId: updatedAppointment.tutorId,
+        appointmentDate: updatedAppointment.appointmentDate,
         date: updatedAppointment.appointmentDate,
         time: updatedAppointment.appointmentDate.toTimeString().slice(0, 5),
-        serviceType: updatedAppointment.services[0]?.name || 'Consulta',
-        status: this.mapStatusToLegacy(updatedAppointment.status)
+        status: this.mapStatusToLegacy(updatedAppointment.status),
+        createdAt: updatedAppointment.createdAt,
+        updatedAt: updatedAppointment.updatedAt
       };
     } catch (error: any) {
       console.error('Erro ao atualizar agendamento:', error);
@@ -290,10 +300,12 @@ export class AppointmentService {
         id: updatedAppointment.id,
         petId: updatedAppointment.petId,
         tutorId: updatedAppointment.tutorId,
-        date: updatedAppointment.appointmentDate.toISOString().split('T')[0],
+        appointmentDate: updatedAppointment.appointmentDate,
+        date: updatedAppointment.appointmentDate,
         time: updatedAppointment.appointmentDate.toTimeString().slice(0, 5),
-        serviceType: updatedAppointment.services[0]?.name || 'Consulta',
-        status: this.mapStatusToLegacy(updatedAppointment.status)
+        status: this.mapStatusToLegacy(updatedAppointment.status),
+        createdAt: updatedAppointment.createdAt,
+        updatedAt: updatedAppointment.updatedAt
       };
     } catch (error: any) {
       console.error('Erro ao atualizar status do agendamento:', error);
