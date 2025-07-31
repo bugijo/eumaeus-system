@@ -36,8 +36,9 @@ class PetService {
             console.log('Recebido para criação:', newPetData);
             let formattedBirthDate = null;
             if (newPetData.birthDate && typeof newPetData.birthDate === 'string') {
-                if (newPetData.birthDate.includes('/')) {
-                    const [day, month, year] = newPetData.birthDate.split('/');
+                const birthDateStr = newPetData.birthDate;
+                if (birthDateStr.includes('/')) {
+                    const [day, month, year] = birthDateStr.split('/');
                     formattedBirthDate = new Date(`${year}-${month}-${day}`);
                 }
                 else {
@@ -111,8 +112,9 @@ class PetService {
             }
             let formattedUpdateData = { ...updateData };
             if (updateData.birthDate && typeof updateData.birthDate === 'string') {
-                if (updateData.birthDate.includes('/')) {
-                    const [day, month, year] = updateData.birthDate.split('/');
+                const birthDateStr = updateData.birthDate;
+                if (birthDateStr.includes('/')) {
+                    const [day, month, year] = birthDateStr.split('/');
                     formattedUpdateData.birthDate = new Date(`${year}-${month}-${day}`);
                 }
                 else {

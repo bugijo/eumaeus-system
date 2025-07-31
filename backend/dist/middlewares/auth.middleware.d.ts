@@ -7,7 +7,7 @@ interface AuthenticatedRequest extends Request {
     };
 }
 export declare const authenticateToken: (req: AuthenticatedRequest, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined;
-export declare const authenticateTutor: (req: AuthenticatedRequest, res: Response, next: NextFunction) => void;
-export declare const authenticateUser: (req: AuthenticatedRequest, res: Response, next: NextFunction) => void;
+export declare const authenticateTutor: (req: AuthenticatedRequest, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined;
+export declare const authenticateUser: (req: AuthenticatedRequest, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined;
 export { AuthenticatedRequest };
 //# sourceMappingURL=auth.middleware.d.ts.map

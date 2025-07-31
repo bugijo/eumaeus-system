@@ -1,13 +1,14 @@
+import { InvoiceWithRelations } from '../types';
 export declare class InvoiceService {
     createFromAppointment(appointmentId: number): Promise<{
         appointment: {
             pet: {
                 tutor: {
-                    deletedAt: Date | null;
+                    name: string;
                     id: number;
                     createdAt: Date;
                     updatedAt: Date;
-                    name: string;
+                    deletedAt: Date | null;
                     email: string;
                     phone: string;
                     address: string | null;
@@ -15,27 +16,27 @@ export declare class InvoiceService {
                     authProfileId: number | null;
                 };
             } & {
-                deletedAt: Date | null;
+                name: string;
                 id: number;
                 createdAt: Date;
                 updatedAt: Date;
-                name: string;
+                tutorId: number;
                 species: string;
                 breed: string;
                 birthDate: Date | null;
-                tutorId: number;
+                deletedAt: Date | null;
             };
         } & {
             id: number;
             createdAt: Date;
             updatedAt: Date;
-            tutorId: number;
-            notes: string | null;
             appointmentDate: Date;
             date: Date;
             time: string;
             status: string;
+            notes: string | null;
             petId: number;
+            tutorId: number;
         };
         items: {
             id: number;
@@ -53,276 +54,11 @@ export declare class InvoiceService {
         totalAmount: number;
         nfeId: string | null;
     }>;
-    getById(invoiceId: number): Promise<({
-        appointment: {
-            pet: {
-                tutor: {
-                    deletedAt: Date | null;
-                    id: number;
-                    createdAt: Date;
-                    updatedAt: Date;
-                    name: string;
-                    email: string;
-                    phone: string;
-                    address: string | null;
-                    clinicId: number;
-                    authProfileId: number | null;
-                };
-            } & {
-                deletedAt: Date | null;
-                id: number;
-                createdAt: Date;
-                updatedAt: Date;
-                name: string;
-                species: string;
-                breed: string;
-                birthDate: Date | null;
-                tutorId: number;
-            };
-        } & {
-            id: number;
-            createdAt: Date;
-            updatedAt: Date;
-            tutorId: number;
-            notes: string | null;
-            appointmentDate: Date;
-            date: Date;
-            time: string;
-            status: string;
-            petId: number;
-        };
-        items: {
-            id: number;
-            description: string;
-            quantity: number;
-            unitPrice: number;
-            totalPrice: number;
-            invoiceId: number;
-        }[];
-    } & {
-        id: number;
-        createdAt: Date;
-        status: string;
-        appointmentId: number;
-        totalAmount: number;
-        nfeId: string | null;
-    }) | null>;
-    getByAppointmentId(appointmentId: number): Promise<({
-        appointment: {
-            pet: {
-                tutor: {
-                    deletedAt: Date | null;
-                    id: number;
-                    createdAt: Date;
-                    updatedAt: Date;
-                    name: string;
-                    email: string;
-                    phone: string;
-                    address: string | null;
-                    clinicId: number;
-                    authProfileId: number | null;
-                };
-            } & {
-                deletedAt: Date | null;
-                id: number;
-                createdAt: Date;
-                updatedAt: Date;
-                name: string;
-                species: string;
-                breed: string;
-                birthDate: Date | null;
-                tutorId: number;
-            };
-        } & {
-            id: number;
-            createdAt: Date;
-            updatedAt: Date;
-            tutorId: number;
-            notes: string | null;
-            appointmentDate: Date;
-            date: Date;
-            time: string;
-            status: string;
-            petId: number;
-        };
-        items: {
-            id: number;
-            description: string;
-            quantity: number;
-            unitPrice: number;
-            totalPrice: number;
-            invoiceId: number;
-        }[];
-    } & {
-        id: number;
-        createdAt: Date;
-        status: string;
-        appointmentId: number;
-        totalAmount: number;
-        nfeId: string | null;
-    }) | null>;
-    updateStatus(invoiceId: number, status: 'PENDING' | 'PAID' | 'CANCELLED'): Promise<{
-        appointment: {
-            pet: {
-                tutor: {
-                    deletedAt: Date | null;
-                    id: number;
-                    createdAt: Date;
-                    updatedAt: Date;
-                    name: string;
-                    email: string;
-                    phone: string;
-                    address: string | null;
-                    clinicId: number;
-                    authProfileId: number | null;
-                };
-            } & {
-                deletedAt: Date | null;
-                id: number;
-                createdAt: Date;
-                updatedAt: Date;
-                name: string;
-                species: string;
-                breed: string;
-                birthDate: Date | null;
-                tutorId: number;
-            };
-        } & {
-            id: number;
-            createdAt: Date;
-            updatedAt: Date;
-            tutorId: number;
-            notes: string | null;
-            appointmentDate: Date;
-            date: Date;
-            time: string;
-            status: string;
-            petId: number;
-        };
-        items: {
-            id: number;
-            description: string;
-            quantity: number;
-            unitPrice: number;
-            totalPrice: number;
-            invoiceId: number;
-        }[];
-    } & {
-        id: number;
-        createdAt: Date;
-        status: string;
-        appointmentId: number;
-        totalAmount: number;
-        nfeId: string | null;
-    }>;
-    getAll(): Promise<({
-        appointment: {
-            pet: {
-                tutor: {
-                    deletedAt: Date | null;
-                    id: number;
-                    createdAt: Date;
-                    updatedAt: Date;
-                    name: string;
-                    email: string;
-                    phone: string;
-                    address: string | null;
-                    clinicId: number;
-                    authProfileId: number | null;
-                };
-            } & {
-                deletedAt: Date | null;
-                id: number;
-                createdAt: Date;
-                updatedAt: Date;
-                name: string;
-                species: string;
-                breed: string;
-                birthDate: Date | null;
-                tutorId: number;
-            };
-        } & {
-            id: number;
-            createdAt: Date;
-            updatedAt: Date;
-            tutorId: number;
-            notes: string | null;
-            appointmentDate: Date;
-            date: Date;
-            time: string;
-            status: string;
-            petId: number;
-        };
-        items: {
-            id: number;
-            description: string;
-            quantity: number;
-            unitPrice: number;
-            totalPrice: number;
-            invoiceId: number;
-        }[];
-    } & {
-        id: number;
-        createdAt: Date;
-        status: string;
-        appointmentId: number;
-        totalAmount: number;
-        nfeId: string | null;
-    })[]>;
-    updateNFeId(invoiceId: number, nfeId: string): Promise<{
-        appointment: {
-            pet: {
-                tutor: {
-                    deletedAt: Date | null;
-                    id: number;
-                    createdAt: Date;
-                    updatedAt: Date;
-                    name: string;
-                    email: string;
-                    phone: string;
-                    address: string | null;
-                    clinicId: number;
-                    authProfileId: number | null;
-                };
-            } & {
-                deletedAt: Date | null;
-                id: number;
-                createdAt: Date;
-                updatedAt: Date;
-                name: string;
-                species: string;
-                breed: string;
-                birthDate: Date | null;
-                tutorId: number;
-            };
-        } & {
-            id: number;
-            createdAt: Date;
-            updatedAt: Date;
-            tutorId: number;
-            notes: string | null;
-            appointmentDate: Date;
-            date: Date;
-            time: string;
-            status: string;
-            petId: number;
-        };
-        items: {
-            id: number;
-            description: string;
-            quantity: number;
-            unitPrice: number;
-            totalPrice: number;
-            invoiceId: number;
-        }[];
-    } & {
-        id: number;
-        createdAt: Date;
-        status: string;
-        appointmentId: number;
-        totalAmount: number;
-        nfeId: string | null;
-    }>;
+    getById(invoiceId: number): Promise<InvoiceWithRelations | null>;
+    getByAppointmentId(appointmentId: number): Promise<InvoiceWithRelations | null>;
+    updateStatus(invoiceId: number, status: 'PENDING' | 'PAID' | 'CANCELLED'): Promise<InvoiceWithRelations>;
+    getAll(): Promise<InvoiceWithRelations[]>;
+    updateNFeId(invoiceId: number, nfeId: string): Promise<InvoiceWithRelations>;
     getFinancialStats(): Promise<{
         pending: {
             count: number;
@@ -340,11 +76,11 @@ export declare class InvoiceService {
             appointment: {
                 pet: {
                     tutor: {
-                        deletedAt: Date | null;
+                        name: string;
                         id: number;
                         createdAt: Date;
                         updatedAt: Date;
-                        name: string;
+                        deletedAt: Date | null;
                         email: string;
                         phone: string;
                         address: string | null;
@@ -352,27 +88,27 @@ export declare class InvoiceService {
                         authProfileId: number | null;
                     };
                 } & {
-                    deletedAt: Date | null;
+                    name: string;
                     id: number;
                     createdAt: Date;
                     updatedAt: Date;
-                    name: string;
+                    tutorId: number;
                     species: string;
                     breed: string;
                     birthDate: Date | null;
-                    tutorId: number;
+                    deletedAt: Date | null;
                 };
             } & {
                 id: number;
                 createdAt: Date;
                 updatedAt: Date;
-                tutorId: number;
-                notes: string | null;
                 appointmentDate: Date;
                 date: Date;
                 time: string;
                 status: string;
+                notes: string | null;
                 petId: number;
+                tutorId: number;
             };
         } & {
             id: number;

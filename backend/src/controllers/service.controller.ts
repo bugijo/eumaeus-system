@@ -87,7 +87,7 @@ export class ServiceController {
         });
       }
       
-      res.json({
+      return res.json({
         success: true,
         data: service,
         message: 'Serviço encontrado com sucesso'

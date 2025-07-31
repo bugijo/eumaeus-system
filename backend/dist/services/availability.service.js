@@ -3,11 +3,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AvailabilityService = void 0;
 const appointment_service_1 = require("./appointment.service");
 class AvailabilityService {
-    static getAvailability(request) {
+    static async getAvailability(request) {
         const { year, month, serviceType } = request;
         const settings = this.DEFAULT_CLINIC_SETTINGS;
         const allSlots = this.generateAllSlotsForMonth(year, month, settings);
-        const existingAppointments = this.getAppointmentsForMonth(year, month);
+        const existingAppointments = await this.getAppointmentsForMonth(year, month);
         const availableSlots = this.markOccupiedSlots(allSlots, existingAppointments);
         return {
             year,
@@ -56,9 +56,9 @@ class AvailabilityService {
         }
         return slots;
     }
-    static getAppointmentsForMonth(year, month) {
-        const allAppointments = appointment_service_1.AppointmentService.getAllAppointments();
-        return allAppointments.filter(appointment => {
+    static async getAppointmentsForMonth(year, month) {
+        const allAppointments = await appointment_service_1.AppointmentService.getAllAppointments();
+        return allAppointments.filter((appointment) => {
             const appointmentDate = new Date(appointment.date);
             return appointmentDate.getFullYear() === year &&
                 appointmentDate.getMonth() === month - 1;
@@ -73,12 +73,12 @@ class AvailabilityService {
             };
         });
     }
-    static isSlotAvailable(date, time) {
+    static async isSlotAvailable(date, time) {
         const dateObj = new Date(date);
         const year = dateObj.getFullYear();
         const month = dateObj.getMonth() + 1;
-        const availability = this.getAvailability({ year, month });
-        const slot = availability.availableSlots.find(s => s.date === date && s.time === time);
+        const availability = await this.getAvailability({ year, month });
+        const slot = availability.availableSlots.find((s) => s.date === date && s.time === time);
         return slot ? slot.available : false;
     }
     static parseTime(timeString) {

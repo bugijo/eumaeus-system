@@ -18,7 +18,7 @@ class DashboardService {
             const currentMonth = new Date().getMonth();
             const monthlyRevenue = appointments
                 .filter(apt => new Date(apt.date).getMonth() === currentMonth)
-                .reduce((total, apt) => total + (apt.price || 150), 0);
+                .reduce((total, apt) => total + 150, 0);
             return {
                 tutorCount: tutors.length,
                 petCount: pets.length,
@@ -42,7 +42,7 @@ class DashboardService {
                 .map(apt => ({
                 id: apt.id,
                 type: 'appointment',
-                description: `Consulta agendada para ${apt.petName}`,
+                description: `Consulta agendada para ${apt.pet?.name || 'Pet'}`,
                 date: apt.date,
                 status: apt.status
             }));

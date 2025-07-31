@@ -48,5 +48,21 @@ declare const tutorWithRelations: {
     };
 };
 export type TutorWithRelations = Prisma.TutorGetPayload<typeof tutorWithRelations>;
+declare const invoiceWithFullRelations: {
+    include: {
+        items: true;
+        appointment: {
+            include: {
+                pet: {
+                    include: {
+                        tutor: true;
+                    };
+                };
+                tutor: true;
+            };
+        };
+    };
+};
+export type InvoiceWithFullRelations = Prisma.InvoiceGetPayload<typeof invoiceWithFullRelations>;
 export {};
 //# sourceMappingURL=index.d.ts.map

@@ -36,4 +36,19 @@ const tutorWithRelations = client_1.Prisma.validator()({
         appointments: true
     },
 });
+const invoiceWithFullRelations = client_1.Prisma.validator()({
+    include: {
+        items: true,
+        appointment: {
+            include: {
+                pet: {
+                    include: {
+                        tutor: true
+                    }
+                },
+                tutor: true
+            }
+        }
+    },
+});
 //# sourceMappingURL=index.js.map

@@ -23,7 +23,7 @@ const authenticateToken = (req, res, next) => {
 };
 exports.authenticateToken = authenticateToken;
 const authenticateTutor = (req, res, next) => {
-    (0, exports.authenticateToken)(req, res, () => {
+    return (0, exports.authenticateToken)(req, res, () => {
         if (req.user?.type !== 'tutor') {
             return res.status(403).json({ message: 'Acesso restrito a tutores' });
         }
@@ -32,7 +32,7 @@ const authenticateTutor = (req, res, next) => {
 };
 exports.authenticateTutor = authenticateTutor;
 const authenticateUser = (req, res, next) => {
-    (0, exports.authenticateToken)(req, res, () => {
+    return (0, exports.authenticateToken)(req, res, () => {
         if (req.user?.type !== 'user') {
             return res.status(403).json({ message: 'Acesso restrito a funcionários' });
         }

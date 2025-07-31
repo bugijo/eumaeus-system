@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppointmentController = void 0;
 const appointment_service_1 = require("../services/appointment.service");
 const zod_1 = require("zod");
+const errorHandler_1 = require("../utils/errorHandler");
 const updateStatusSchema = zod_1.z.object({
     status: zod_1.z.enum(['SCHEDULED', 'CONFIRMED', 'COMPLETED', 'CANCELLED'])
 });
@@ -13,8 +14,7 @@ class AppointmentController {
             return res.status(200).json(appointments);
         }
         catch (error) {
-            console.error('Erro ao buscar agendamentos:', error);
-            return res.status(500).json({ error: 'Erro interno do servidor' });
+            return (0, errorHandler_1.handleError)(error, res, 'Erro ao buscar agendamentos');
         }
     }
     static async createAppointment(req, res) {
@@ -24,8 +24,7 @@ class AppointmentController {
             return res.status(201).json(createdAppointment);
         }
         catch (error) {
-            console.error('Erro ao criar agendamento:', error);
-            return res.status(500).json({ error: 'Erro interno do servidor' });
+            return (0, errorHandler_1.handleValidationError)(error, res);
         }
     }
     static async getAppointmentById(req, res) {
@@ -41,8 +40,7 @@ class AppointmentController {
             return res.status(200).json(appointment);
         }
         catch (error) {
-            console.error('Erro ao buscar agendamento:', error);
-            return res.status(500).json({ error: 'Erro interno do servidor' });
+            return (0, errorHandler_1.handleError)(error, res, 'Erro ao buscar agendamento');
         }
     }
     static async updateAppointment(req, res) {
@@ -59,8 +57,7 @@ class AppointmentController {
             return res.status(200).json(updatedAppointment);
         }
         catch (error) {
-            console.error('Erro ao atualizar agendamento:', error);
-            return res.status(500).json({ error: 'Erro interno do servidor' });
+            return (0, errorHandler_1.handleValidationError)(error, res);
         }
     }
     static async deleteAppointment(req, res) {
@@ -76,8 +73,7 @@ class AppointmentController {
             return res.status(200).json({ message: 'Agendamento deletado com sucesso' });
         }
         catch (error) {
-            console.error('Erro ao deletar agendamento:', error);
-            return res.status(500).json({ error: 'Erro interno do servidor' });
+            return (0, errorHandler_1.handleError)(error, res, 'Erro ao deletar agendamento');
         }
     }
     static async updateAppointmentStatus(req, res) {
@@ -94,11 +90,7 @@ class AppointmentController {
             return res.status(200).json(updatedAppointment);
         }
         catch (error) {
-            if (error instanceof zod_1.z.ZodError) {
-                return res.status(400).json({ error: 'Status inválido', details: error.errors });
-            }
-            console.error('Erro ao atualizar status do agendamento:', error);
-            return res.status(500).json({ error: 'Erro interno do servidor' });
+            return (0, errorHandler_1.handleValidationError)(error, res);
         }
     }
 }
