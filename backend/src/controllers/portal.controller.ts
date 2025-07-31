@@ -74,7 +74,6 @@ export default {
           name: true,
           species: true,
           breed: true,
-          color: true,
           createdAt: true,
           updatedAt: true
         },

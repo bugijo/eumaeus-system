@@ -93,14 +93,14 @@ class ClinicSettingsController {
       
       console.log('✅ Configurações atualizadas com sucesso');
       
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         message: 'Configurações atualizadas com sucesso',
         data: updatedSettings
       });
     } catch (error) {
       console.error('❌ Erro ao atualizar configurações:', error);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Erro interno do servidor ao atualizar configurações',
         error: error instanceof Error ? error.message : 'Erro desconhecido'
