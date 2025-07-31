@@ -133,13 +133,13 @@ export class AvailabilityService {
   /**
    * Verifica se um horário específico está disponível
    */
-  static isSlotAvailable(date: string, time: string): boolean {
+  static async isSlotAvailable(date: string, time: string): Promise<boolean> {
     const dateObj = new Date(date);
     const year = dateObj.getFullYear();
     const month = dateObj.getMonth() + 1;
     
-    const availability = this.getAvailability({ year, month });
-    const slot = availability.availableSlots.find(s => 
+    const availability = await this.getAvailability({ year, month });
+    const slot = availability.availableSlots.find((s: any) => 
       s.date === date && s.time === time
     );
     
