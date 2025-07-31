@@ -28,7 +28,7 @@ export const authenticateToken = (req: AuthenticatedRequest, res: Response, next
     };
 
     req.user = decoded;
-    next();
+    return next();
   } catch (error) {
     return res.status(403).json({ message: 'Token inválido' });
   }
@@ -40,7 +40,7 @@ export const authenticateTutor = (req: AuthenticatedRequest, res: Response, next
     if (req.user?.type !== 'tutor') {
       return res.status(403).json({ message: 'Acesso restrito a tutores' });
     }
-    next();
+    return next();
   });
 };
 
@@ -50,7 +50,7 @@ export const authenticateUser = (req: AuthenticatedRequest, res: Response, next:
     if (req.user?.type !== 'user') {
       return res.status(403).json({ message: 'Acesso restrito a funcionários' });
     }
-    next();
+    return next();
   });
 };
 

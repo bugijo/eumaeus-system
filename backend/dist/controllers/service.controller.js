@@ -72,7 +72,7 @@ class ServiceController {
         }
         catch (error) {
             console.error('Erro ao buscar serviço por ID:', error);
-            res.status(500).json({
+            return res.status(500).json({
                 error: 'Erro interno do servidor ao buscar serviço',
                 details: process.env.NODE_ENV === 'development' ? error : undefined
             });

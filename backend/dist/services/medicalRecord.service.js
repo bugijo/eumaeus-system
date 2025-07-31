@@ -29,7 +29,7 @@ class MedicalRecordService {
                 symptoms: record.symptoms,
                 diagnosis: record.diagnosis,
                 treatment: record.treatment,
-                notes: record.notes,
+                notes: record.notes || undefined,
                 createdAt: record.createdAt,
                 updatedAt: record.updatedAt
             }));
@@ -63,7 +63,7 @@ class MedicalRecordService {
                 symptoms: newRecord.symptoms,
                 diagnosis: newRecord.diagnosis,
                 treatment: newRecord.treatment,
-                notes: newRecord.notes,
+                notes: newRecord.notes || undefined,
                 createdAt: newRecord.createdAt,
                 updatedAt: newRecord.updatedAt
             };
@@ -93,7 +93,7 @@ class MedicalRecordService {
                 symptoms: record.symptoms,
                 diagnosis: record.diagnosis,
                 treatment: record.treatment,
-                notes: record.notes,
+                notes: record.notes || undefined,
                 createdAt: record.createdAt,
                 updatedAt: record.updatedAt
             };
@@ -123,7 +123,7 @@ class MedicalRecordService {
                 symptoms: record.symptoms,
                 diagnosis: record.diagnosis,
                 treatment: record.treatment,
-                notes: record.notes,
+                notes: record.notes || undefined,
                 createdAt: record.createdAt,
                 updatedAt: record.updatedAt
             }));
@@ -157,14 +157,14 @@ class MedicalRecordService {
                 symptoms: updatedRecord.symptoms,
                 diagnosis: updatedRecord.diagnosis,
                 treatment: updatedRecord.treatment,
-                notes: updatedRecord.notes,
+                notes: updatedRecord.notes || undefined,
                 createdAt: updatedRecord.createdAt,
                 updatedAt: updatedRecord.updatedAt
             };
         }
         catch (error) {
             console.error('Erro ao atualizar prontuário:', error);
-            if (error.code === 'P2025') {
+            if (error?.code === 'P2025') {
                 return null;
             }
             throw error;

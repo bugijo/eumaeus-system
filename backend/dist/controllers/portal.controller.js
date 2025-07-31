@@ -226,18 +226,19 @@ exports.default = {
         try {
             const tutorId = req.user?.id;
             const { petId } = req.params;
+            const petIdNum = parseInt(petId);
             if (!tutorId || req.user?.type !== 'tutor') {
                 return res.status(403).json({ message: 'Acesso negado' });
             }
-            if (!petId) {
+            if (!petId || isNaN(petIdNum)) {
                 return res.status(400).json({
                     success: false,
-                    message: 'ID do pet é obrigatório'
+                    message: 'ID do pet é obrigatório e deve ser um número válido'
                 });
             }
             const pet = await prisma.pet.findFirst({
                 where: {
-                    id: petId,
+                    id: petIdNum,
                     tutorId: tutorId,
                     deletedAt: null
                 }
@@ -251,7 +252,7 @@ exports.default = {
             const medicalRecords = await prisma.medicalRecord.findMany({
                 where: {
                     appointment: {
-                        petId: petId
+                        petId: petIdNum
                     }
                 },
                 include: {
@@ -266,9 +267,12 @@ exports.default = {
                     products: {
                         select: {
                             id: true,
-                            name: true,
-                            quantity: true,
-                            unitPrice: true
+                            unitPrice: true,
+                            product: {
+                                select: {
+                                    name: true
+                                }
+                            }
                         }
                     }
                 },
