@@ -55,7 +55,7 @@ export class AvailabilityController {
       
       const availability = AvailabilityService.getAvailability(request);
       
-      res.json({
+      return res.json({
         success: true,
         data: availability,
         message: `Disponibilidade para ${monthNum}/${yearNum} calculada com sucesso`
@@ -63,7 +63,7 @@ export class AvailabilityController {
       
     } catch (error) {
       console.error('Erro ao buscar disponibilidade:', error);
-      res.status(500).json({
+      return res.status(500).json({
         error: 'Erro interno do servidor ao calcular disponibilidade',
         details: process.env.NODE_ENV === 'development' ? error : undefined
       });
@@ -102,12 +102,12 @@ export class AvailabilityController {
         });
       }
       
-      const isAvailable = AvailabilityService.isSlotAvailable(
+      const isAvailable = await AvailabilityService.isSlotAvailable(
         date as string, 
         time as string
       );
       
-      res.json({
+      return res.json({
         success: true,
         data: {
           date,
@@ -119,7 +119,7 @@ export class AvailabilityController {
       
     } catch (error) {
       console.error('Erro ao verificar disponibilidade do slot:', error);
-      res.status(500).json({
+      return res.status(500).json({
         error: 'Erro interno do servidor ao verificar disponibilidade',
         details: process.env.NODE_ENV === 'development' ? error : undefined
       });

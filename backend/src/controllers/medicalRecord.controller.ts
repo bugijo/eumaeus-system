@@ -34,6 +34,7 @@ export class MedicalRecordController {
       }
 
       const recordData: CreateMedicalRecordRequest = {
+        appointmentId,
         symptoms,
         diagnosis,
         treatment,
@@ -79,7 +80,7 @@ export class MedicalRecordController {
     }
   }
 
-  static updateRecord(req: Request, res: Response): Response | void {
+  static async updateRecord(req: Request, res: Response): Promise<Response | void> {
     try {
       const recordId = parseInt(req.params.recordId);
       
@@ -87,15 +88,17 @@ export class MedicalRecordController {
         return res.status(400).json({ error: 'ID do prontuário inválido' });
       }
 
-      const { notes, prescription } = req.body;
+      const { symptoms, diagnosis, treatment, notes } = req.body;
 
-      if (!notes) {
-        return res.status(400).json({ error: 'Anotações são obrigatórias' });
+      if (!symptoms || !diagnosis || !treatment) {
+        return res.status(400).json({ error: 'Sintomas, diagnóstico e tratamento são obrigatórios' });
       }
 
-      const updatedRecord = MedicalRecordService.updateRecord(recordId, {
-        notes,
-        prescription: prescription || ''
+      const updatedRecord = await MedicalRecordService.updateRecord(recordId, {
+        symptoms,
+        diagnosis,
+        treatment,
+        notes
       });
 
       if (!updatedRecord) {
