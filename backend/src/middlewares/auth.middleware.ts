@@ -36,7 +36,7 @@ export const authenticateToken = (req: AuthenticatedRequest, res: Response, next
 
 // Middleware específico para tutores
 export const authenticateTutor = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-  authenticateToken(req, res, () => {
+  return authenticateToken(req, res, () => {
     if (req.user?.type !== 'tutor') {
       return res.status(403).json({ message: 'Acesso restrito a tutores' });
     }
@@ -46,7 +46,7 @@ export const authenticateTutor = (req: AuthenticatedRequest, res: Response, next
 
 // Middleware específico para funcionários
 export const authenticateUser = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-  authenticateToken(req, res, () => {
+  return authenticateToken(req, res, () => {
     if (req.user?.type !== 'user') {
       return res.status(403).json({ message: 'Acesso restrito a funcionários' });
     }
