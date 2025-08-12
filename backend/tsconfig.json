@@ -30,7 +30,8 @@
     "emitDecoratorMetadata": true
   },
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "load-env.js"
   ],
   "exclude": [
     "node_modules",
