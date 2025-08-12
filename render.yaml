@@ -1,12 +1,10 @@
-# Certidão de Nascimento do VetSystem na Render (v2 - Corrigida)
+# Certidão de Nascimento do VetSystem na Render (v3 - A Finalíssima)
 
 services:
   # --- O Banco de Dados ---
-  - type: db # CORREÇÃO: O tipo correto para um banco de dados gerenciado
+  - type: pserv       # CORREÇÃO: O tipo volta a ser 'pserv' (Serviço Privado)
     name: pulsevet-db 
-    # O nome do banco de dados e do usuário que serão criados
-    databaseName: pulsevet_db 
-    databaseUser: pulsevet_db_user
+    runtime: postgres # A LINHA MÁGICA: Aqui dizemos que é um serviço do tipo PostgreSQL
     plan: free 
 
   # --- O Backend (Nosso Aplicativo) ---
@@ -20,6 +18,6 @@ services:
     envVars:
       - key: DATABASE_URL
         fromService:
-          type: db # CORREÇÃO: Apontando para o tipo de serviço correto
+          type: pserv # CORREÇÃO: Apontando para o tipo de serviço correto
           name: pulsevet-db
           property: connectionString
