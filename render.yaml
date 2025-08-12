@@ -1,14 +1,12 @@
-# Certidão de Nascimento do VetSystem na Render (v3 - A Finalíssima)
+# A estrutura correta, separando databases e services.
+
+databases:
+  - name: pulsevet-db      # Define o banco de dados aqui
+    plan: free
+    # Não precisa de tipo, a seção 'databases' já diz o que é.
 
 services:
-  # --- O Banco de Dados ---
-  - type: pserv       # CORREÇÃO: O tipo volta a ser 'pserv' (Serviço Privado)
-    name: pulsevet-db 
-    runtime: postgres # A LINHA MÁGICA: Aqui dizemos que é um serviço do tipo PostgreSQL
-    plan: free 
-
-  # --- O Backend (Nosso Aplicativo) ---
-  - type: web
+  - type: web             # Define o serviço web aqui
     name: pulsevet-backend
     plan: free
     env: node
@@ -17,7 +15,6 @@ services:
     startCommand: "npm start"
     envVars:
       - key: DATABASE_URL
-        fromService:
-          type: pserv # CORREÇÃO: Apontando para o tipo de serviço correto
+        fromDatabase:         # A FORMA CORRETA DE CONECTAR
           name: pulsevet-db
           property: connectionString
