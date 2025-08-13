@@ -32,20 +32,28 @@ const app = express();
 const PORT = Number(process.env.PORT) || 3333;
 const HOST = '0.0.0.0'; // Aceitar conexões de qualquer endereço na rede
 
-// Configuração de CORS
-const corsOptions = {
-  origin: [
-    'http://localhost:3000',
-    'http://192.168.3.12:3000',
-    'https://vet-system-frontend-blitz.vercel.app'
-  ],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-};
+// Configuração de CORS com origens permitidas
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://192.168.3.12:3000',
+  'https://vet-system-frontend-blitz.vercel.app',
+  'https://vet-system-frontend-blitz-git-db1174-giovanni-pereiras-projects.vercel.app'
+];
+
+app.use((req, res, next) => {
+  const origin = req.headers.origin || '';
+  if (allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Vary', 'Origin');
+  }
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,PATCH,OPTIONS');
+  if (req.method === 'OPTIONS') return res.sendStatus(204);
+  next();
+});
 
 // Middlewares
-app.use(cors(corsOptions));
 app.use(express.json());
 
 // Rotas
