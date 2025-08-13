@@ -1,22 +1,25 @@
-databases:
-  - name: pulsevet-db
-    plan: free
-
 services:
   - type: web
     name: pulsevet-backend
-    plan: free
     env: node
+    plan: free
     rootDir: backend
-    # O build continua o mesmo, simples e limpo.
-    buildCommand: "npm install && npm run build"
-    # O start volta a ser simples, pois a lógica está no código.
-    startCommand: "npm start"
+    buildCommand: |
+      npm ci
+      npm run build
+    startCommand: |
+      npm run prisma:generate
+      npm run start
     envVars:
       - key: DATABASE_URL
         fromDatabase:
           name: pulsevet-db
           property: connectionString
-      # Adicionamos a variável NODE_ENV para o código saber que está em produção
-      - key: NODE_ENV
-        value: production
+      - key: PRISMA_SKIP_POSTINSTALL_GENERATE
+        value: "true"
+
+# Se ainda não existir, a Render cria este DB ao aplicar o render.yaml
+# ou você aponta para um DB existente com o mesmo name.
+databases:
+  - name: pulsevet-db
+    plan: free

@@ -1,19 +1,3 @@
-import { execSync } from 'child_process';
-
-// Este bloco vai rodar ANTES de tudo, garantindo que o Prisma Client exista.
-try {
-  // Nós só precisamos rodar isso em produção. No desenvolvimento local, rodamos manualmente.
-  if (process.env.NODE_ENV === 'production') {
-    console.log('--- VetDev: Forcing prisma generate on startup... ---');
-    execSync('npx prisma generate', { stdio: 'inherit' });
-    console.log('--- VetDev: Prisma generate completed successfully. ---');
-  }
-} catch (error) {
-  console.error('--- VetDev: CRITICAL ERROR running prisma generate:', error);
-  process.exit(1); // Se o generate falhar, desliga o servidor.
-}
-
-// --- O RESTO DO SEU CÓDIGO COMEÇA AQUI ---
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -32,6 +16,7 @@ import serviceRoutes from './routes/service.routes';
 import prescriptionRoutes from './routes/prescription.routes';
 import clinicSettingsRoutes from './routes/clinicSettings.routes';
 import { reminderService } from './services/reminderService';
+import { prisma } from './lib/prisma';
 
 // Carrega variáveis de ambiente
 dotenv.config();
@@ -74,6 +59,16 @@ app.use('/api/settings', clinicSettingsRoutes);
 // Rota de teste
 app.get('/', (req, res) => {
   res.json({ message: 'VetSystem API está funcionando!' });
+});
+
+// Endpoint de saúde (útil p/ frontend)
+app.get('/health', async (_req, res) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ ok: false });
+  }
 });
 
 // Configuração do Sistema de Lembretes Automáticos
