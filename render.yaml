@@ -4,9 +4,9 @@ databases:
 
 services:
   - type: web
-    name: pulsevet-backend
-    plan: free
+    name: pulsevet-backend-oregon
     env: node
+    plan: free
     rootDir: backend
     buildCommand: |
       npm ci
@@ -20,3 +20,5 @@ services:
         fromDatabase:
           name: pulsevet-db
           property: connectionString
+      - key: NODE_ENV
+        value: production
