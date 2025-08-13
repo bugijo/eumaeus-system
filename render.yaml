@@ -8,10 +8,13 @@ services:
     plan: free
     env: node
     rootDir: backend
-    # AQUI ESTÁ A MUDANÇA: O prisma generate vem para o build
-    buildCommand: "npm install && npx prisma generate && npm run build"
-    # O start volta a ser apenas para iniciar o servidor
-    startCommand: "npm start"
+    buildCommand: |
+      npm ci
+      npx prisma generate
+      npm run build
+    startCommand: |
+      npx prisma migrate deploy || npx prisma db push
+      npm start
     envVars:
       - key: DATABASE_URL
         fromDatabase:
