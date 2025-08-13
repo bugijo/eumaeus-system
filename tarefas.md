@@ -40,14 +40,7 @@
   - `[ ]` Geração de Receituário Digital (com assinatura digital).
   - `[ ]` Emissão de Nota Fiscal de Serviço (NFS-e).
   - `[ ]` Geração de arquivo XML (SPED) para contabilidade.
-- `✅` **2.3. Agente Executor v2.0 (Sistema de Automação):**
-  - `[x]` Refatoração do endpoint `/execute-git` para `/execute-action`
-  - `[x]` Sistema genérico de ações com payload JSON
-  - `[x]` Manutenção da funcionalidade `create_branch`
-  - `[x]` Nova funcionalidade `run_tests` para execução de testes Playwright
-  - `[x]` Tratamento robusto de erros e captura de stdout/stderr
-  - `[x]` Documentação completa e testes automatizados
-- `🔲` **2.4. Módulo de Marketing (CRM Básico):**
+- `🔲` **2.3. Módulo de Marketing (CRM Básico):**
   - `[ ]` Envio de lembretes automáticos (Consulta, Vacina) via E-mail/WhatsApp.
 
 ---
