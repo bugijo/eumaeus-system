@@ -19,7 +19,6 @@ import { reminderService } from './services/reminderService';
 
 // Carrega variáveis de ambiente
 dotenv.config();
-console.log('--- VETDEV DEBUG --- DATABASE_URL SENDO USADA:', process.env.DATABASE_URL);
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3333;

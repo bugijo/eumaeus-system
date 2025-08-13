@@ -27,12 +27,10 @@
     },
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "allowJs": true
+    "emitDecoratorMetadata": true
   },
   "include": [
-    "src/**/*",
-    "load-env.js"
+    "src/**/*"
   ],
   "exclude": [
     "node_modules",
