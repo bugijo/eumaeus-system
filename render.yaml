@@ -1,22 +1,22 @@
-# A estrutura correta, separando databases e services.
-
 databases:
-  - name: pulsevet-db      # Define o banco de dados aqui
+  - name: pulsevet-db
     plan: free
-    # Não precisa de tipo, a seção 'databases' já diz o que é.
 
 services:
-  - type: web             # Define o serviço web aqui
+  - type: web
     name: pulsevet-backend
     plan: free
     env: node
     rootDir: backend
+    # O build continua o mesmo, simples e limpo.
     buildCommand: "npm install && npm run build"
-    startCommand: |
-      npm run prisma:generate
-      npm start
+    # O start volta a ser simples, pois a lógica está no código.
+    startCommand: "npm start"
     envVars:
       - key: DATABASE_URL
-        fromDatabase:         # A FORMA CORRETA DE CONECTAR
+        fromDatabase:
           name: pulsevet-db
           property: connectionString
+      # Adicionamos a variável NODE_ENV para o código saber que está em produção
+      - key: NODE_ENV
+        value: production

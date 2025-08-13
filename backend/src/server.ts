@@ -1,3 +1,19 @@
+import { execSync } from 'child_process';
+
+// Este bloco vai rodar ANTES de tudo, garantindo que o Prisma Client exista.
+try {
+  // Nós só precisamos rodar isso em produção. No desenvolvimento local, rodamos manualmente.
+  if (process.env.NODE_ENV === 'production') {
+    console.log('--- VetDev: Forcing prisma generate on startup... ---');
+    execSync('npx prisma generate', { stdio: 'inherit' });
+    console.log('--- VetDev: Prisma generate completed successfully. ---');
+  }
+} catch (error) {
+  console.error('--- VetDev: CRITICAL ERROR running prisma generate:', error);
+  process.exit(1); // Se o generate falhar, desliga o servidor.
+}
+
+// --- O RESTO DO SEU CÓDIGO COMEÇA AQUI ---
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
