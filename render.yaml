@@ -7,17 +7,13 @@ services:
     name: pulsevet-backend
     plan: free
     env: node
-    # Mantém a região atual (Ohio). A conexão será EXTERNA.
     rootDir: backend
-    buildCommand: |
-      npm ci
-      npx prisma generate
-      npm run build
+    # AQUI ESTÁ A MUDANÇA: O prisma generate vem para o build
+    buildCommand: "npm install && npx prisma generate && npm run build"
+    # O start volta a ser apenas para iniciar o servidor
     startCommand: "npm start"
     envVars:
       - key: DATABASE_URL
         fromDatabase:
           name: pulsevet-db
           property: connectionString
-      - key: NODE_ENV
-        value: production
