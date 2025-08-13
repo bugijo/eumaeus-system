@@ -7,6 +7,7 @@ services:
     name: pulsevet-backend
     plan: free
     env: node
+    # Mantém a região atual (Ohio). A conexão será EXTERNA.
     rootDir: backend
     buildCommand: |
       npm ci
