@@ -12,7 +12,9 @@ services:
     env: node
     rootDir: backend
     buildCommand: "npm install && npm run build"
-    startCommand: "npm start"
+    startCommand: |
+      npm run prisma:generate
+      npm start
     envVars:
       - key: DATABASE_URL
         fromDatabase:         # A FORMA CORRETA DE CONECTAR
