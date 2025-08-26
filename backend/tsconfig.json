@@ -30,7 +30,8 @@
     "emitDecoratorMetadata": true
   },
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "prisma/seed.ts"
   ],
   "exclude": [
     "node_modules",
