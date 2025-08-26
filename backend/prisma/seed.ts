@@ -26,7 +26,7 @@ async function main() {
 
   // 2. Criar um Usuário Administrador Padrão com nova estrutura AuthProfile
   const adminEmail = 'admin@pulsevet.com';
-  const plainPassword = '123456'; // Lembre-se, esta é uma senha apenas para desenvolvimento!
+  const plainPassword = 'admin123'; // Lembre-se, esta é uma senha apenas para desenvolvimento!
 
   const hashedPassword = await bcrypt.hash(plainPassword, 10);
 
