@@ -106,7 +106,10 @@ const createMedicalRecord = async (req, res) => {
     catch (error) {
         console.error('Erro ao criar prontuário:', error);
         if (error instanceof zod_1.z.ZodError) {
-            return res.status(400).json({ error: 'Dados inválidos', details: error.errors });
+            const errorMessages = error.issues.map(issue => ({
+                message: `${issue.path.join('.')}: ${issue.message}`
+            }));
+            return res.status(400).json({ error: 'Dados inválidos', details: errorMessages });
         }
         return res.status(500).json({ error: error instanceof Error ? error.message : 'Erro interno do servidor' });
     }
@@ -206,6 +209,8 @@ const createDirectMedicalRecord = async (req, res) => {
             const appointment = await tx.appointment.create({
                 data: {
                     appointmentDate: new Date(),
+                    date: new Date().toISOString().split('T')[0],
+                    time: new Date().toTimeString().split(' ')[0].substring(0, 5),
                     status: 'COMPLETED',
                     notes: 'Agendamento criado automaticamente para prontuário direto',
                     petId: validatedData.petId,
@@ -271,7 +276,10 @@ const createDirectMedicalRecord = async (req, res) => {
     catch (error) {
         console.error('Erro ao criar prontuário direto:', error);
         if (error instanceof zod_1.z.ZodError) {
-            return res.status(400).json({ error: 'Dados inválidos', details: error.errors });
+            const errorMessages = error.issues.map(issue => ({
+                message: `${issue.path.join('.')}: ${issue.message}`
+            }));
+            return res.status(400).json({ error: 'Dados inválidos', details: errorMessages });
         }
         return res.status(500).json({ error: error instanceof Error ? error.message : 'Erro interno do servidor' });
     }

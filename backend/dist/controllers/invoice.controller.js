@@ -159,12 +159,12 @@ class InvoiceController {
                         codigoMunicipio: process.env.EMPRESA_CODIGO_MUNICIPIO
                     },
                     tomador: {
-                        cpf: invoice.appointment?.tutor?.cpf,
-                        cnpj: invoice.appointment?.tutor?.cnpj,
-                        razaoSocial: invoice.appointment?.tutor?.name || 'Cliente',
-                        email: invoice.appointment?.tutor?.email || '',
+                        cpf: '',
+                        cnpj: '',
+                        razaoSocial: invoice.appointment?.pet?.tutor?.name || 'Cliente',
+                        email: invoice.appointment?.pet?.tutor?.email || '',
                         endereco: {
-                            logradouro: invoice.appointment?.tutor?.address || 'Não informado',
+                            logradouro: invoice.appointment?.pet?.tutor?.address || 'Não informado',
                             numero: '0',
                             bairro: 'Centro',
                             codigoMunicipio: process.env.EMPRESA_CODIGO_MUNICIPIO || '3543402',

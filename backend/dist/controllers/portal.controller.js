@@ -9,18 +9,19 @@ exports.default = {
         try {
             const tutorId = req.user?.id;
             const { petId } = req.params;
+            const petIdNum = parseInt(petId);
             if (!tutorId || req.user?.type !== 'tutor') {
                 return res.status(403).json({ message: 'Acesso negado' });
             }
-            if (!petId) {
+            if (!petId || isNaN(petIdNum)) {
                 return res.status(400).json({
                     success: false,
-                    message: 'ID do pet é obrigatório'
+                    message: 'ID do pet deve ser um número válido'
                 });
             }
             const pet = await prisma.pet.findFirst({
                 where: {
-                    id: petId,
+                    id: petIdNum,
                     tutorId: tutorId,
                     deletedAt: null
                 }
@@ -60,9 +61,6 @@ exports.default = {
                     name: true,
                     species: true,
                     breed: true,
-                    age: true,
-                    weight: true,
-                    color: true,
                     createdAt: true,
                     updatedAt: true
                 },
@@ -107,13 +105,13 @@ exports.default = {
                     }
                 },
                 orderBy: {
-                    dateTime: 'desc'
+                    appointmentDate: 'desc'
                 },
                 take: 10
             });
             const now = new Date();
-            const upcomingAppointments = appointments.filter(apt => new Date(apt.dateTime) > now);
-            const pastAppointments = appointments.filter(apt => new Date(apt.dateTime) <= now);
+            const upcomingAppointments = appointments.filter(apt => new Date(apt.appointmentDate) > now);
+            const pastAppointments = appointments.filter(apt => new Date(apt.appointmentDate) <= now);
             return res.status(200).json({
                 success: true,
                 data: {
@@ -181,6 +179,8 @@ exports.default = {
                     petId: petId,
                     tutorId: tutorId,
                     appointmentDate: appointmentDateTime,
+                    date: date,
+                    time: time,
                     status: 'SCHEDULED',
                     notes: `Agendamento online - ${service.name}`
                 },
@@ -267,7 +267,6 @@ exports.default = {
                     products: {
                         select: {
                             id: true,
-                            unitPrice: true,
                             product: {
                                 select: {
                                     name: true

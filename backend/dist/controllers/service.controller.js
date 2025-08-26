@@ -64,7 +64,7 @@ class ServiceController {
                     error: 'Serviço não encontrado'
                 });
             }
-            res.json({
+            return res.json({
                 success: true,
                 data: service,
                 message: 'Serviço encontrado com sucesso'
