@@ -1,1 +1,0 @@
-{"version":3,"file":"service.controller.d.ts","sourceRoot":"","sources":["../../src/controllers/service.controller.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,OAAO,EAAE,QAAQ,EAAE,MAAM,SAAS,CAAC;AAG5C,qBAAa,iBAAiB;WAMf,cAAc,CAAC,GAAG,EAAE,OAAO,EAAE,GAAG,EAAE,QAAQ;WAqC1C,qBAAqB,CAAC,GAAG,EAAE,OAAO,EAAE,GAAG,EAAE,QAAQ;WAwBjD,cAAc,CAAC,GAAG,EAAE,OAAO,EAAE,GAAG,EAAE,QAAQ;CAiCxD"}
