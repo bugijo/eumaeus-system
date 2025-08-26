@@ -130,7 +130,7 @@ cron.schedule('55 7 * * *', async () => {
   timezone: 'America/Sao_Paulo'
 });
 
-// Inicia o servidor
+image.pngimage.png// Inicia o servidor
 const server = app.listen(PORT, HOST, () => {
   console.log(`🚀 Backend rodando e acessível na rede em http://192.168.3.12:${PORT}`);
   console.log(`📋 API disponível localmente em: http://localhost:${PORT}`);
