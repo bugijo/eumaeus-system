@@ -3,9 +3,9 @@ import { PrismaClient } from '@prisma/client';
 const url = process.env.DATABASE_URL ?? '';
 
 // Confirma que a URL tem o protocolo correto e existe
-if (!/^postgres(ql)?:\/\//.test(url)) {
+if (!url || (!/^postgres(ql)?:\/\//.test(url) && !/^file:/.test(url))) {
   throw new Error(
-    'DATABASE_URL inválida/ausente em runtime; deve começar com postgres:// ou postgresql://'
+    'DATABASE_URL inválida/ausente em runtime; deve começar com postgres://, postgresql:// ou file:'
   );
 }
 
