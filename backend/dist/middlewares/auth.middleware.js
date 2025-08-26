@@ -15,7 +15,7 @@ const authenticateToken = (req, res, next) => {
     try {
         const decoded = jsonwebtoken_1.default.verify(token, JWT_SECRET);
         req.user = decoded;
-        next();
+        return next();
     }
     catch (error) {
         return res.status(403).json({ message: 'Token inválido' });
@@ -27,7 +27,7 @@ const authenticateTutor = (req, res, next) => {
         if (req.user?.type !== 'tutor') {
             return res.status(403).json({ message: 'Acesso restrito a tutores' });
         }
-        next();
+        return next();
     });
 };
 exports.authenticateTutor = authenticateTutor;
@@ -36,7 +36,7 @@ const authenticateUser = (req, res, next) => {
         if (req.user?.type !== 'user') {
             return res.status(403).json({ message: 'Acesso restrito a funcionários' });
         }
-        next();
+        return next();
     });
 };
 exports.authenticateUser = authenticateUser;

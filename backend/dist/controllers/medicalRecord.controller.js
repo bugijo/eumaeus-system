@@ -28,6 +28,7 @@ class MedicalRecordController {
                 return res.status(400).json({ error: 'Sintomas, diagnóstico e tratamento são obrigatórios' });
             }
             const recordData = {
+                appointmentId,
                 symptoms,
                 diagnosis,
                 treatment,
@@ -68,19 +69,21 @@ class MedicalRecordController {
             return res.status(500).json({ error: 'Erro interno do servidor' });
         }
     }
-    static updateRecord(req, res) {
+    static async updateRecord(req, res) {
         try {
             const recordId = parseInt(req.params.recordId);
             if (isNaN(recordId)) {
                 return res.status(400).json({ error: 'ID do prontuário inválido' });
             }
-            const { notes, prescription } = req.body;
-            if (!notes) {
-                return res.status(400).json({ error: 'Anotações são obrigatórias' });
+            const { symptoms, diagnosis, treatment, notes } = req.body;
+            if (!symptoms || !diagnosis || !treatment) {
+                return res.status(400).json({ error: 'Sintomas, diagnóstico e tratamento são obrigatórios' });
             }
-            const updatedRecord = medicalRecord_service_1.MedicalRecordService.updateRecord(recordId, {
-                notes,
-                prescription: prescription || ''
+            const updatedRecord = await medicalRecord_service_1.MedicalRecordService.updateRecord(recordId, {
+                symptoms,
+                diagnosis,
+                treatment,
+                notes
             });
             if (!updatedRecord) {
                 return res.status(404).json({ error: 'Prontuário não encontrado' });

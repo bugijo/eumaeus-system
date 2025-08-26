@@ -8,8 +8,13 @@ try {
   }
 } catch (error) {
   console.error("[PulseVet] CRITICAL: prisma generate failed.", error);
-  process.exit(1);
+  throw error; // lançar e deixar o topo decidir encerrar o processo
 }
 
-// Importa o servidor real após garantir o client
-import("./server");
+// Inicia o servidor real após garantir o client Prisma
+import { bootstrap } from "./server";
+
+bootstrap().catch((err) => {
+  console.error("[PulseVet] Failed to start server:", err);
+  process.exit(1);
+});
