@@ -12,9 +12,4 @@ try {
 }
 
 // Inicia o servidor real após garantir o client Prisma
-import { bootstrap } from "./server";
-
-bootstrap().catch((err) => {
-  console.error("[PulseVet] Failed to start server:", err);
-  process.exit(1);
-});
+import "./server";

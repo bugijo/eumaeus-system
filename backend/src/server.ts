@@ -50,15 +50,15 @@ app.use((req, res, next) => {
 
   res.header('Access-Control-Allow-Credentials', 'true');
   res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,PATCH,OPTIONS');
-  // Adicionei esta linha, que é crucial para o CORS funcionar com logins
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
-  // Lógica corrigida: Se for uma requisição OPTIONS, encerre. Senão, continue.
+  // Se for uma requisição de pre-flight (OPTIONS), encerramos a conversa aqui.
   if (req.method === 'OPTIONS') {
     return res.sendStatus(204);
   }
 
-  next();
+  // Se não for, passamos para a próxima rota da fila.
+  return next();
 });
 
 // Middlewares
@@ -131,43 +131,35 @@ cron.schedule('55 7 * * *', async () => {
 });
 
 // Inicia o servidor
-export async function bootstrap(): Promise<http.Server> {
-  try {
-    return await new Promise<http.Server>((resolve, reject) => {
-      const server = app.listen(PORT, HOST, () => {
-        console.log(`🚀 Backend rodando e acessível na rede em http://192.168.3.12:${PORT}`);
-        console.log(`📋 API disponível localmente em: http://localhost:${PORT}`);
-        console.log(`🌐 API disponível na rede em: http://192.168.3.12:${PORT}`);
-        console.log(`👥 Endpoint de tutores: http://192.168.3.12:${PORT}/api/tutors`);
-        console.log(`🐾 Endpoint de pets: http://192.168.3.12:${PORT}/api/pets`);
-        console.log(`📅 Endpoint de agendamentos: http://192.168.3.12:${PORT}/api/appointments`);
-        console.log(`🩺 Endpoint de prontuários: http://192.168.3.12:${PORT}/api/records`);
-        console.log(`📦 Endpoint de produtos: http://192.168.3.12:${PORT}/api/products`);
-        console.log(`🔐 Endpoint de autenticação: http://192.168.3.12:${PORT}/api/auth/login`);
-        console.log(`📊 Endpoint de dashboard: http://192.168.3.12:${PORT}/api/dashboard/stats`);
-        console.log(`💰 Endpoint de faturas: http://192.168.3.12:${PORT}/api/invoices`);
+const server = app.listen(PORT, HOST, () => {
+  console.log(`🚀 Backend rodando e acessível na rede em http://192.168.3.12:${PORT}`);
+  console.log(`📋 API disponível localmente em: http://localhost:${PORT}`);
+  console.log(`🌐 API disponível na rede em: http://192.168.3.12:${PORT}`);
+  console.log(`👥 Endpoint de tutores: http://192.168.3.12:${PORT}/api/tutors`);
+  console.log(`🐾 Endpoint de pets: http://192.168.3.12:${PORT}/api/pets`);
+  console.log(`📅 Endpoint de agendamentos: http://192.168.3.12:${PORT}/api/appointments`);
+  console.log(`🩺 Endpoint de prontuários: http://192.168.3.12:${PORT}/api/records`);
+  console.log(`📦 Endpoint de produtos: http://192.168.3.12:${PORT}/api/products`);
+  console.log(`🔐 Endpoint de autenticação: http://192.168.3.12:${PORT}/api/auth/login`);
+  console.log(`📊 Endpoint de dashboard: http://192.168.3.12:${PORT}/api/dashboard/stats`);
+  console.log(`💰 Endpoint de faturas: http://192.168.3.12:${PORT}/api/invoices`);
 
-        console.log(`⏰ Endpoint de disponibilidade: http://192.168.3.12:${PORT}/api/availability`);
-        console.log(`🛠️ Endpoint de serviços: http://192.168.3.12:${PORT}/api/services`);
-        console.log(`💊 Endpoint de receitas: http://192.168.3.12:${PORT}/api/prescriptions`);
-        console.log(`⚙️ Endpoint de configurações: http://192.168.3.12:${PORT}/api/settings/notifications`);
-        
-        // Mensagens do Sistema de Automação
-        console.log('\n🤖 ===== SISTEMA DE AUTOMAÇÃO ATIVADO =====');
-        console.log('⏰ Cron job de teste: Rodando a cada minuto (prova de vida)');
-        console.log('🧪 Teste do sistema: Todos os dias às 7:55');
-        console.log('📧 Envio de lembretes: Todos os dias às 8:00');
-        console.log('🌎 Timezone: America/Sao_Paulo');
-        console.log('✨ O PulseVet agora é um sistema PROATIVO!');
-        console.log('==========================================\n');
-        resolve(server);
-      });
-      server.on('error', (err) => {
-        reject(err);
-      });
-    });
-  } catch (err) {
-    console.error('fatal', err);
-    throw err; // satisfaz TS: caminho de erro lança
-  }
-}
+  console.log(`⏰ Endpoint de disponibilidade: http://192.168.3.12:${PORT}/api/availability`);
+  console.log(`🛠️ Endpoint de serviços: http://192.168.3.12:${PORT}/api/services`);
+  console.log(`💊 Endpoint de receitas: http://192.168.3.12:${PORT}/api/prescriptions`);
+  console.log(`⚙️ Endpoint de configurações: http://192.168.3.12:${PORT}/api/settings/notifications`);
+  
+  // Mensagens do Sistema de Automação
+  console.log('\n🤖 ===== SISTEMA DE AUTOMAÇÃO ATIVADO =====');
+  console.log('⏰ Cron job de teste: Rodando a cada minuto (prova de vida)');
+  console.log('🧪 Teste do sistema: Todos os dias às 7:55');
+  console.log('📧 Envio de lembretes: Todos os dias às 8:00');
+  console.log('🌎 Timezone: America/Sao_Paulo');
+  console.log('✨ O PulseVet agora é um sistema PROATIVO!');
+  console.log('==========================================\n');
+});
+
+server.on('error', (err) => {
+  console.error('fatal', err);
+  process.exit(1); // Encerra a aplicação em caso de erro fatal no servidor
+});
