@@ -1,4 +1,4 @@
-# PulseVet System - Roadmap Estratégico de Desenvolvimento
+# Eumaeus System - Roadmap Estratégico de Desenvolvimento
 
 ## Legenda de Status
 - ✅ **Concluído:** Tarefa finalizada e validada.

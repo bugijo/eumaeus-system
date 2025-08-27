@@ -5,7 +5,7 @@ const defaultConfig = {
   NODE_ENV: 'development',
   APP_URL: 'http://localhost:3000',
   API_URL: 'http://localhost:3333',
-  APP_NAME: 'PulseVet System',
+  APP_NAME: 'Eumaeus System',
   APP_VERSION: '1.0.0',
   DEFAULT_PAGE_SIZE: '10',
   MAX_PAGE_SIZE: '100',
@@ -117,5 +117,5 @@ export const logger = {
 
 // Validação adicional para desenvolvimento
 if (config.isDevelopment) {
-  console.info('🚀 PulseVet System iniciado em modo de desenvolvimento');
+  console.info('🚀 Eumaeus System iniciado em modo de desenvolvimento');
 }

@@ -11,7 +11,7 @@ async function login() {
   try {
     console.log('🔐 Testando login...');
     const response = await axios.post(`${API_BASE}/auth/login`, {
-      email: 'admin@pulsevet.com',
+      email: 'admin@eumaeus.com',
       password: '123456'
     });
     

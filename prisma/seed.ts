@@ -141,22 +141,22 @@ async function main() {
   // Definir usuários de teste
   const testUsers = [
     {
-      email: 'admin@pulsevet.com',
-      name: 'Dr. Admin PulseVet',
+      email: 'admin@eumaeus.com',
+      name: 'Dr. Admin Eumaeus',
       roleName: 'DONO',
     },
     {
-      email: 'veterinario@pulsevet.com',
+      email: 'veterinario@eumaeus.com',
       name: 'Dra. Maria Silva',
       roleName: 'VETERINARIO',
     },
     {
-      email: 'funcionario@pulsevet.com',
+      email: 'funcionario@eumaeus.com',
       name: 'João Santos',
       roleName: 'FUNCIONARIO',
     },
     {
-      email: 'financeiro@pulsevet.com',
+      email: 'financeiro@eumaeus.com',
       name: 'Ana Costa',
       roleName: 'FINANCEIRO',
     },
@@ -195,10 +195,10 @@ async function main() {
 
   console.log('✅ Seed concluído com sucesso!');
   console.log('\n📧 Usuários criados:');
-  console.log('- admin@pulsevet.com (senha: 123456) - DONO');
-  console.log('- veterinario@pulsevet.com (senha: 123456) - VETERINARIO');
-  console.log('- funcionario@pulsevet.com (senha: 123456) - FUNCIONARIO');
-  console.log('- financeiro@pulsevet.com (senha: 123456) - FINANCEIRO');
+  console.log('- admin@eumaeus.com (senha: 123456) - DONO');
+  console.log('- veterinario@eumaeus.com (senha: 123456) - VETERINARIO');
+  console.log('- funcionario@eumaeus.com (senha: 123456) - FUNCIONARIO');
+  console.log('- financeiro@eumaeus.com (senha: 123456) - FINANCEIRO');
 }
 
 main()

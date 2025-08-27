@@ -254,11 +254,11 @@ model ClinicSettings {
   vaccineReminderTemplate     String   @default("Olá {tutor}! A vacina {vacina} do {pet} está próxima do vencimento em {data}. Agende a revacinação!")
   
   // Configurações de E-mail
-  emailFromName               String   @default("PulseVet Clínica Veterinária")
-  emailFromAddress            String   @default("contato@pulsevet.com.br")
+  emailFromName               String   @default("Eumaeus Clínica Veterinária")
+  emailFromAddress            String   @default("contato@eumaeus.com.br")
   
   // Configurações da Clínica
-  clinicName                  String   @default("PulseVet Clínica Veterinária")
+  clinicName                  String   @default("Eumaeus Clínica Veterinária")
   clinicPhone                 String   @default("(11) 99999-9999")
   clinicAddress               String   @default("Rua das Flores, 123 - São Paulo, SP")
   

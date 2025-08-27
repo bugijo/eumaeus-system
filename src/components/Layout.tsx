@@ -90,7 +90,7 @@ const Layout = ({ children }: LayoutProps) => {
               />
             </div>
             <div>
-              <h2 className="font-semibold text-sidebar-foreground text-sm">PulseVet System</h2>
+              <h2 className="font-semibold text-sidebar-foreground text-sm">Eumaeus System</h2>
               <p className="text-xs text-sidebar-foreground/70">{user?.name || 'Usuário'}</p>
             </div>
           </div>

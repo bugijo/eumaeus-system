@@ -1,7 +1,7 @@
-# PulseVet System - Documento de Visão do Produto
+# Eumaeus System - Documento de Visão do Produto
 
 ## 1. Visão Geral
-O PulseVet System é uma **plataforma SaaS (Software as a Service) de gestão completa** para clínicas veterinárias, desenhada para ser moderna, intuitiva e resiliente. O objetivo é oferecer uma solução centralizada e escalável que otimize todas as operações da clínica, do atendimento ao paciente à gestão financeira e fiscal.
+O Eumaeus System é uma **plataforma SaaS (Software as a Service) de gestão completa** para clínicas veterinárias, desenhada para ser moderna, intuitiva e resiliente. O objetivo é oferecer uma solução centralizada e escalável que otimize todas as operações da clínica, do atendimento ao paciente à gestão financeira e fiscal.
 
 ## 2. Modelo de Negócio e Arquitetura
 O sistema será construído sobre uma **arquitetura Multi-Tenant**, permitindo que múltiplas clínicas utilizem a mesma aplicação de forma segura e com seus dados completamente isolados. O administrador do sistema (Super Admin) terá um painel de controle para gerenciar as clínicas cadastradas na plataforma.

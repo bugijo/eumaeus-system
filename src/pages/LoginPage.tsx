@@ -49,7 +49,7 @@ export default function LoginPage() {
 
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">PulseVet System</CardTitle>
+          <CardTitle className="text-2xl font-bold">Eumaeus System</CardTitle>
           <CardDescription>Bem-vindo(a)! Faça login para continuar.</CardDescription>
         </CardHeader>
         <CardContent>

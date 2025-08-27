@@ -25,7 +25,7 @@ async function main() {
   console.log('Cargos criados/verificados com sucesso.');
 
   // 2. Criar um Usuário Administrador Padrão com nova estrutura AuthProfile
-  const adminEmail = 'admin@pulsevet.com';
+  const adminEmail = 'admin@eumaeus.com';
   const plainPassword = 'admin123'; // Lembre-se, esta é uma senha apenas para desenvolvimento!
 
   const hashedPassword = await bcrypt.hash(plainPassword, 10);
