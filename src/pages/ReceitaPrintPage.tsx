@@ -55,7 +55,7 @@ export function ReceitaPrintPage() {
     veterinario: {
       nome: 'Dr. João Silva',
       crmv: 'CRMV-SP 12345',
-      clinica: 'Clínica Veterinária PulseVet',
+      clinica: 'Clínica Veterinária Eumaeus',
       endereco: 'Rua das Flores, 123 - Centro - São Paulo/SP',
       telefone: '(11) 99999-9999'
     },

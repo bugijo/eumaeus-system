@@ -20,7 +20,7 @@ const TestApp: React.FC = () => {
         maxWidth: '500px'
       }}>
         <h1 style={{ color: '#be185d', marginBottom: '20px' }}>
-          🐾 PulseVet System - Teste React
+          🐾 Eumaeus System - Teste React
         </h1>
         
         <div style={{

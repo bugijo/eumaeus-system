@@ -174,7 +174,7 @@ class ReminderService {
           petName: appointment.petName,
           appointmentDate: appointment.appointmentDate.toLocaleDateString('pt-BR'),
           appointmentTime: appointment.appointmentTime,
-          clinicName: 'PulseVet Clínica Veterinária',
+          clinicName: 'Eumaeus Clínica Veterinária',
           clinicPhone: '(11) 99999-9999'
         };
 
@@ -220,7 +220,7 @@ class ReminderService {
           petName: vaccine.petName,
           vaccineName: vaccine.vaccineName,
           dueDate: vaccine.dueDate.toLocaleDateString('pt-BR'),
-          clinicName: 'PulseVet Clínica Veterinária',
+          clinicName: 'Eumaeus Clínica Veterinária',
           clinicPhone: '(11) 99999-9999'
         };
 

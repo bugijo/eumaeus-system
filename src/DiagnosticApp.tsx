@@ -47,7 +47,7 @@ const DiagnosticApp: React.FC = () => {
         boxShadow: '0 10px 30px rgba(0,0,0,0.1)'
       }}>
         <h1 style={{ color: '#be185d', marginBottom: '30px', textAlign: 'center' }}>
-          🔍 Diagnóstico PulseVet System
+          🔍 Diagnóstico Eumaeus System
         </h1>
         
         <div style={{ marginBottom: '20px' }}>

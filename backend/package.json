@@ -1,5 +1,5 @@
 {
-  "name": "vet-system-backend",
+  "name": "eumaeus-backend",
   "version": "1.0.0",
   "description": "Backend API for VetSystem",
   "main": "dist/bootstrap.js",

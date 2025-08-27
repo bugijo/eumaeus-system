@@ -155,7 +155,7 @@ const server = app.listen(PORT, HOST, () => {
   console.log('🧪 Teste do sistema: Todos os dias às 7:55');
   console.log('📧 Envio de lembretes: Todos os dias às 8:00');
   console.log('🌎 Timezone: America/Sao_Paulo');
-  console.log('✨ O PulseVet agora é um sistema PROATIVO!');
+  console.log('✨ O Eumaeus agora é um sistema PROATIVO!');
   console.log('==========================================\n');
 });
 

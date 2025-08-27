@@ -42,7 +42,7 @@ class EmailService {
   async sendEmail(options: EmailOptions): Promise<boolean> {
     try {
       const mailOptions = {
-        from: process.env.EMAIL_USER || 'PulseVet System <seu-email@gmail.com>',
+        from: process.env.EMAIL_USER || 'Eumaeus System <seu-email@gmail.com>',
         to: options.to,
         subject: options.subject,
         html: options.html,
@@ -65,7 +65,7 @@ class EmailService {
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
         <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
           <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #2563eb; margin: 0; font-size: 24px;">🐾 PulseVet</h1>
+            <h1 style="color: #2563eb; margin: 0; font-size: 24px;">🐾 Eumaeus</h1>
             <p style="color: #64748b; margin: 5px 0 0 0;">Sistema Veterinário</p>
           </div>
           
@@ -97,7 +97,7 @@ class EmailService {
           
           <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
             <p style="margin: 0; color: #6b7280; font-size: 12px;">
-              Este é um lembrete automático do sistema PulseVet.<br>
+              Este é um lembrete automático do sistema Eumaeus.<br>
               Caso precise reagendar, entre em contato conosco.
             </p>
           </div>
@@ -119,7 +119,7 @@ class EmailService {
       
       Chegue com 10 minutos de antecedência e traga a carteirinha de vacinação.
       
-      Este é um lembrete automático do sistema PulseVet.
+      Este é um lembrete automático do sistema Eumaeus.
     `;
 
     return this.sendEmail({ to: email, subject, html, text });
@@ -132,7 +132,7 @@ class EmailService {
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
         <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
           <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #2563eb; margin: 0; font-size: 24px;">🐾 PulseVet</h1>
+            <h1 style="color: #2563eb; margin: 0; font-size: 24px;">🐾 Eumaeus</h1>
             <p style="color: #64748b; margin: 5px 0 0 0;">Sistema Veterinário</p>
           </div>
           
@@ -164,7 +164,7 @@ class EmailService {
           
           <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
             <p style="margin: 0; color: #6b7280; font-size: 12px;">
-              Este é um lembrete automático do sistema PulseVet.<br>
+              Este é um lembrete automático do sistema Eumaeus.<br>
               Entre em contato conosco para agendar a revacinação.
             </p>
           </div>
@@ -186,7 +186,7 @@ class EmailService {
       
       Agende a revacinação para manter a proteção em dia!
       
-      Este é um lembrete automático do sistema PulseVet.
+      Este é um lembrete automático do sistema Eumaeus.
     `;
 
     return this.sendEmail({ to: email, subject, html, text });
