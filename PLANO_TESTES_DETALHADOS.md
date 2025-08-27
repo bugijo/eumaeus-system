@@ -1,4 +1,4 @@
-# 🧪 PLANO DE TESTES DETALHADOS - PulseVet System V1.0
+# 🧪 PLANO DE TESTES DETALHADOS - Eumaeus System V1.0
 
 ## 📋 OVERVIEW DOS TESTES
 

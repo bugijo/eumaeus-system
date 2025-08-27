@@ -102,13 +102,13 @@ pg_restore (PostgreSQL) 16.x
 psql -U postgres
 
 # Criar banco para desenvolvimento
-CREATE DATABASE pulsevet_dev;
+CREATE DATABASE Eumaeus_dev;
 
 # Criar usuário para a aplicação
-CREATE USER pulsevet_user WITH PASSWORD 'senha_segura';
+CREATE USER Eumaeus_user WITH PASSWORD 'senha_segura';
 
 # Dar permissões
-GRANT ALL PRIVILEGES ON DATABASE pulsevet_dev TO pulsevet_user;
+GRANT ALL PRIVILEGES ON DATABASE Eumaeus_dev TO Eumaeus_user;
 
 # Sair
 \q
@@ -119,7 +119,7 @@ Crie/edite o arquivo `.env` no backend:
 
 ```env
 # Banco de desenvolvimento local
-DATABASE_URL="postgresql://pulsevet_user:senha_segura@localhost:5432/pulsevet_dev"
+DATABASE_URL="postgresql://Eumaeus_user:senha_segura@localhost:5432/Eumaeus_dev"
 
 # Outras variáveis...
 JWT_SECRET="seu_jwt_secret"
@@ -150,28 +150,28 @@ mkdir "C:\Users\WINDOWS 10\Desktop\Backups"
 cd "C:\Users\WINDOWS 10\Desktop\Backups"
 
 # Executar backup do banco de produção
-pg_dump "postgresql://pulsevet_db_user:***REMOVIDO***@dpg-d1jh806mcj7s739repog-a.ohio-postgres.render.com/pulsevet_db" > pulsevet_backup_v1.sql
+pg_dump "postgresql://Eumaeus_db_user:***REMOVIDO***@dpg-d1jh806mcj7s739repog-a.ohio-postgres.render.com/Eumaeus_db" > Eumaeus_backup_v1.sql
 ```
 
 ### 📋 VERIFICAÇÃO DO BACKUP
 ```powershell
 # Verificar se o arquivo foi criado
-ls pulsevet_backup_v1.sql
+ls Eumaeus_backup_v1.sql
 
 # Ver tamanho do arquivo
-Get-ChildItem pulsevet_backup_v1.sql | Select-Object Name, Length
+Get-ChildItem Eumaeus_backup_v1.sql | Select-Object Name, Length
 
 # Ver primeiras linhas do backup
-Get-Content pulsevet_backup_v1.sql -Head 10
+Get-Content Eumaeus_backup_v1.sql -Head 10
 ```
 
 ### 🔄 RESTAURAR BACKUP (se necessário)
 ```powershell
 # Para restaurar em banco local
-psql -U pulsevet_user -d pulsevet_dev < pulsevet_backup_v1.sql
+psql -U Eumaeus_user -d Eumaeus_dev < Eumaeus_backup_v1.sql
 
 # Para restaurar em outro banco de produção
-psql "nova_database_url" < pulsevet_backup_v1.sql
+psql "nova_database_url" < Eumaeus_backup_v1.sql
 ```
 
 ---
@@ -189,10 +189,10 @@ Para produção no Render:
 ### 📋 Comandos Úteis para Produção
 ```bash
 # Backup do banco local
-pg_dump -U pulsevet_user -h localhost pulsevet_dev > backup_local.sql
+pg_dump -U Eumaeus_user -h localhost Eumaeus_dev > backup_local.sql
 
 # Restaurar backup (se necessário)
-psql -U pulsevet_user -h localhost pulsevet_dev < backup_local.sql
+psql -U Eumaeus_user -h localhost Eumaeus_dev < backup_local.sql
 
 # Conectar ao banco do Render (exemplo)
 psql $DATABASE_URL
@@ -210,7 +210,7 @@ psql $DATABASE_URL
 ### 🔍 Extensões Úteis
 ```sql
 -- Conectar ao banco e instalar extensões
-psql -U postgres -d pulsevet_dev
+psql -U postgres -d Eumaeus_dev
 
 -- UUID (para IDs únicos)
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";

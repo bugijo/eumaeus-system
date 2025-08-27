@@ -1,7 +1,7 @@
 # 🔧 VARIÁVEIS DE AMBIENTE - V2.0
 
 ## 📋 RESUMO
-Este documento lista todas as variáveis de ambiente necessárias para o funcionamento completo da V2.0 do PulseVet System.
+Este documento lista todas as variáveis de ambiente necessárias para o funcionamento completo da V2.0 do Eumaeus System.
 
 ---
 
@@ -58,7 +58,7 @@ VITE_API_URL=https://seu-backend.onrender.com
 ### 📱 Aplicação
 ```env
 # Nome da aplicação
-VITE_APP_NAME=PulseVet System
+VITE_APP_NAME=Eumaeus System
 
 # Versão da aplicação
 VITE_APP_VERSION=2.0.0
@@ -154,7 +154,7 @@ NODE_ENV="development"
 VITE_API_URL="http://localhost:3333"
 
 # Configurações de desenvolvimento
-VITE_APP_NAME="PulseVet System (Dev)"
+VITE_APP_NAME="Eumaeus System (Dev)"
 VITE_APP_VERSION="2.0.0-dev"
 VITE_NODE_ENV="development"
 ```

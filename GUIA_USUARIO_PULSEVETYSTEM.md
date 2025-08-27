@@ -1,8 +1,8 @@
-# 🐾 PulseVet System - Guia do Usuário
+# 🐾 Eumaeus System - Guia do Usuário
 
 ## Bem-vindo ao seu Sistema de Gestão Veterinária!
 
-Este guia rápido te ajudará a começar a usar o PulseVet System em poucos minutos.
+Este guia rápido te ajudará a começar a usar o Eumaeus System em poucos minutos.
 
 ---
 
@@ -111,4 +111,4 @@ Este guia rápido te ajudará a começar a usar o PulseVet System em poucos minu
 
 ---
 
-*PulseVet System - Simplificando a gestão da sua clínica veterinária* 🐾
+*Eumaeus System - Simplificando a gestão da sua clínica veterinária* 🐾

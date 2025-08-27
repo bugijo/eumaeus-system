@@ -1,4 +1,4 @@
-# 🚀 PulseVet System - Checklist de Entrega Técnica
+# 🚀 Eumaeus System - Checklist de Entrega Técnica
 
 ## Status: V1.0 - PRONTO PARA PRODUÇÃO ✅
 
@@ -14,7 +14,7 @@
 - [x] Testes de integração concluídos
 
 ### ✅ 2. Documentação Preparada
-- [x] Guia do Usuário criado (`GUIA_USUARIO_PULSEVETYSTEM.md`)
+- [x] Guia do Usuário criado (`GUIA_USUARIO_EumaeusYSTEM.md`)
 - [x] Documentação técnica disponível
 - [x] Credenciais de teste fornecidas
 
@@ -47,15 +47,15 @@
 ## 👤 Credenciais de Teste
 
 ### Admin
-- **Email:** admin@pulsevetystem.com
+- **Email:** admin@Eumaeusystem.com
 - **Senha:** ***REMOVIDO***
 
 ### Veterinário
-- **Email:** vet@pulsevetystem.com
+- **Email:** vet@Eumaeusystem.com
 - **Senha:** ***REMOVIDO***
 
 ### Tutor (Cliente)
-- **Email:** tutor@pulsevetystem.com
+- **Email:** tutor@Eumaeusystem.com
 - **Senha:** ***REMOVIDO***
 
 ---
@@ -113,4 +113,4 @@ Baseado no feedback da V1.0, priorizar:
 
 ---
 
-*PulseVet System V1.0 - Missão Cumprida! 🎉*
+*Eumaeus System V1.0 - Missão Cumprida! 🎉*

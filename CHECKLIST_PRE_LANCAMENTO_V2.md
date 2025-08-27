@@ -10,7 +10,7 @@
 ## 1️⃣ TESTE DE REGRESSÃO ("Não Quebramos Nada?")
 
 ### 🔐 Login e Autenticação
-- [x] Login como admin@pulsevet.com funciona
+- [x] Login como admin@Eumaeus.com funciona
 - [x] Redirecionamento após login correto
 - [x] Logout funciona corretamente
 - [x] Sessão mantida adequadamente
@@ -93,7 +93,7 @@ NODE_ENV=production
 VITE_API_URL=https://seu-backend.render.com
 
 # App
-VITE_APP_NAME=PulseVet System
+VITE_APP_NAME=Eumaeus System
 VITE_APP_VERSION=2.0.0
 
 # Configurações

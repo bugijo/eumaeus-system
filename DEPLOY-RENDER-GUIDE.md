@@ -1,4 +1,4 @@
-# 🚀 Guia Completo de Deploy no Render - PulseVet System
+# 🚀 Guia Completo de Deploy no Render - Eumaeus System
 
 ## ✅ Estágio 1: Checklist de Pré-Voo CONCLUÍDO
 
@@ -23,7 +23,7 @@
 1. Faça login no [Render.com](https://render.com)
 2. No dashboard, clique em **"New +"** → **"PostgreSQL"**
 3. Configure:
-   - **Name**: `pulsevet-db`
+   - **Name**: `Eumaeus-db`
    - **Region**: `South America (São Paulo)`
    - **Plan**: `Free`
 4. Clique em **"Create Database"**
@@ -42,9 +42,9 @@
 1. Volte ao dashboard do Render
 2. Clique em **"New +"** → **"Web Service"**
 3. Conecte seu repositório do GitHub
-4. Selecione o repositório **PulseVet System**
+4. Selecione o repositório **Eumaeus System**
 5. Configure:
-   - **Name**: `pulsevet-system-backend`
+   - **Name**: `Eumaeus-system-backend`
    - **Root Directory**: `backend` ⚠️ **MUITO IMPORTANTE**
    - **Build Command**: `npm install && npx prisma generate && npm run build`
    - **Start Command**: `npm start`
@@ -80,14 +80,14 @@ Antes de finalizar, role para baixo até **"Environment"** e adicione:
 ## 🎉 Resultado Esperado
 
 Após o deploy bem-sucedido, sua API estará disponível em:
-- `https://pulsevet-system-backend.onrender.com/api/tutors`
-- `https://pulsevet-system-backend.onrender.com/api/pets`
-- `https://pulsevet-system-backend.onrender.com/api/appointments`
-- `https://pulsevet-system-backend.onrender.com/api/records`
-- `https://pulsevet-system-backend.onrender.com/api/products`
-- `https://pulsevet-system-backend.onrender.com/api/auth/login`
-- `https://pulsevet-system-backend.onrender.com/api/dashboard/stats`
-- `https://pulsevet-system-backend.onrender.com/api/invoices`
+- `https://Eumaeus-system-backend.onrender.com/api/tutors`
+- `https://Eumaeus-system-backend.onrender.com/api/pets`
+- `https://Eumaeus-system-backend.onrender.com/api/appointments`
+- `https://Eumaeus-system-backend.onrender.com/api/records`
+- `https://Eumaeus-system-backend.onrender.com/api/products`
+- `https://Eumaeus-system-backend.onrender.com/api/auth/login`
+- `https://Eumaeus-system-backend.onrender.com/api/dashboard/stats`
+- `https://Eumaeus-system-backend.onrender.com/api/invoices`
 
 ---
 

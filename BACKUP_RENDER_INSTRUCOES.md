@@ -36,19 +36,19 @@ mkdir "C:\Users\WINDOWS 10\Desktop\Backups"
 cd "C:\Users\WINDOWS 10\Desktop\Backups"
 
 # 2. Executar backup do banco de produção
-pg_dump "postgresql://pulsevet_db_user:***REMOVIDO***@dpg-d1jh806mcj7s739repog-a.ohio-postgres.render.com/pulsevet_db" > pulsevet_backup_v1.sql
+pg_dump "postgresql://Eumaeus_db_user:***REMOVIDO***@dpg-d1jh806mcj7s739repog-a.ohio-postgres.render.com/Eumaeus_db" > Eumaeus_backup_v1.sql
 ```
 
 ### ✅ VERIFICAR BACKUP
 ```powershell
 # Verificar se o arquivo foi criado
-ls pulsevet_backup_v1.sql
+ls Eumaeus_backup_v1.sql
 
 # Ver tamanho do arquivo (deve ter alguns KB/MB)
-Get-ChildItem pulsevet_backup_v1.sql | Select-Object Name, Length
+Get-ChildItem Eumaeus_backup_v1.sql | Select-Object Name, Length
 
 # Ver primeiras linhas do backup
-Get-Content pulsevet_backup_v1.sql -Head 10
+Get-Content Eumaeus_backup_v1.sql -Head 10
 ```
 
 **Resultado esperado**: Arquivo `.sql` com comandos CREATE TABLE, INSERT, etc.
@@ -60,25 +60,25 @@ Get-Content pulsevet_backup_v1.sql -Head 10
 ### 📤 RESTAURAR EM BANCO LOCAL
 ```powershell
 # Conectar ao PostgreSQL local e restaurar
-psql -U pulsevet_user -d pulsevet_dev < pulsevet_backup_v1.sql
+psql -U Eumaeus_user -d Eumaeus_dev < Eumaeus_backup_v1.sql
 ```
 
 ### 📤 RESTAURAR EM OUTRO BANCO DE PRODUÇÃO
 ```powershell
 # Usar nova DATABASE_URL
-psql "nova_database_url_aqui" < pulsevet_backup_v1.sql
+psql "nova_database_url_aqui" < Eumaeus_backup_v1.sql
 ```
 
 ### 📊 ANALISAR DADOS DO BACKUP
 ```powershell
 # Contar linhas do backup
-(Get-Content pulsevet_backup_v1.sql).Count
+(Get-Content Eumaeus_backup_v1.sql).Count
 
 # Buscar por tabelas específicas
-Select-String "CREATE TABLE" pulsevet_backup_v1.sql
+Select-String "CREATE TABLE" Eumaeus_backup_v1.sql
 
 # Buscar por dados inseridos
-Select-String "INSERT INTO" pulsevet_backup_v1.sql
+Select-String "INSERT INTO" Eumaeus_backup_v1.sql
 ```
 
 ---
@@ -143,15 +143,15 @@ Select-String "INSERT INTO" pulsevet_backup_v1.sql
 
 ## 📞 INFORMAÇÕES IMPORTANTES
 
-**URL do Banco**: `postgresql://pulsevet_db_user:***REMOVIDO***@dpg-d1jh806mcj7s739repog-a.ohio-postgres.render.com/pulsevet_db`
+**URL do Banco**: `postgresql://Eumaeus_db_user:***REMOVIDO***@dpg-d1jh806mcj7s739repog-a.ohio-postgres.render.com/Eumaeus_db`
 
-**Arquivo de Backup**: `pulsevet_backup_v1.sql`
+**Arquivo de Backup**: `Eumaeus_backup_v1.sql`
 
 **Localização**: `C:\Users\WINDOWS 10\Desktop\Backups\`
 
 **Comando Principal**:
 ```bash
-pg_dump "postgresql://pulsevet_db_user:***REMOVIDO***@dpg-d1jh806mcj7s739repog-a.ohio-postgres.render.com/pulsevet_db" > pulsevet_backup_v1.sql
+pg_dump "postgresql://Eumaeus_db_user:***REMOVIDO***@dpg-d1jh806mcj7s739repog-a.ohio-postgres.render.com/Eumaeus_db" > Eumaeus_backup_v1.sql
 ```
 
 ---

@@ -12,7 +12,7 @@
 ### 1. Configurações do Web Service
 
 ```
-Name: pulsevet-system-backend
+Name: Eumaeus-system-backend
 Root Directory: backend
 Build Command: npm install && npx prisma generate && npm run build
 Start Command: npm start

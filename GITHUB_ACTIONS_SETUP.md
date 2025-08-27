@@ -15,7 +15,7 @@ Para que o GitHub Actions execute os testes Cypress corretamente, você precisa 
 1. Clique em **"New repository secret"**
 2. Preencha os campos:
    - **Name:** `VITE_API_URL`
-   - **Value:** `https://pulsevet-backend.onrender.com/api`
+   - **Value:** `https://Eumaeus-backend.onrender.com/api`
 3. Clique em **"Add secret"**
 
 ### 3. Verificar a Configuração

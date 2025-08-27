@@ -1,13 +1,13 @@
 /// <reference types="cypress" />
 
 /**
- * 🧪 TESTE MANUAL INTERATIVO - PulseVet System V1.0
+ * 🧪 TESTE MANUAL INTERATIVO - Eumaeus System V1.0
  * 
  * Este teste permite verificar manualmente cada funcionalidade do sistema
  * com pausas para inspeção visual e interação manual
  */
 
-describe('🚀 PulseVet - Teste Manual Interativo', () => {
+describe('🚀 Eumaeus - Teste Manual Interativo', () => {
   const baseUrl = 'http://localhost:3000';
   
   beforeEach(() => {
@@ -26,7 +26,7 @@ describe('🚀 PulseVet - Teste Manual Interativo', () => {
     cy.get('button').contains('Entrar').should('be.visible');
     
     // Fazer login
-    cy.get('input[type="email"]').type('admin@pulsevetystem.com');
+    cy.get('input[type="email"]').type('admin@Eumaeusystem.com');
     cy.get('input[type="password"]').type('***REMOVIDO***');
     cy.get('button').contains('Entrar').click();
     
@@ -142,7 +142,7 @@ describe('🚀 PulseVet - Teste Manual Interativo', () => {
   it('🔧 TESTE DE FUNCIONALIDADES ESPECÍFICAS', () => {
     // Login
     cy.visit(`${baseUrl}/login`);
-    cy.get('input[type="email"]').type('admin@pulsevetystem.com');
+    cy.get('input[type="email"]').type('admin@Eumaeusystem.com');
     cy.get('input[type="password"]').type('***REMOVIDO***');
     cy.get('button').contains('Entrar').click();
     cy.url({ timeout: 10000 }).should('eq', `${baseUrl}/`);
@@ -187,7 +187,7 @@ describe('🚀 PulseVet - Teste Manual Interativo', () => {
     
     // Login
     cy.visit(`${baseUrl}/login`);
-    cy.get('input[type="email"]').type('admin@pulsevetystem.com');
+    cy.get('input[type="email"]').type('admin@Eumaeusystem.com');
     cy.get('input[type="password"]').type('***REMOVIDO***');
     cy.get('button').contains('Entrar').click();
     cy.url({ timeout: 10000 }).should('eq', `${baseUrl}/`);

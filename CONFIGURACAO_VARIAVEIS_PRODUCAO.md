@@ -11,14 +11,14 @@
 
 ### 📍 ACESSO
 1. **Login**: [https://dashboard.render.com](https://dashboard.render.com)
-2. **Projeto**: Localizar `pulsevet-backend` ou similar
+2. **Projeto**: Localizar `Eumaeus-backend` ou similar
 3. **Configurações**: Environment → Environment Variables
 
 ### 🔧 VARIÁVEIS OBRIGATÓRIAS
 
 #### 🗄️ Banco de Dados
 ```env
-DATABASE_URL=postgresql://pulsevet_db_user:***REMOVIDO***@dpg-d1jh806mcj7s739repog-a.ohio-postgres.render.com/pulsevet_db
+DATABASE_URL=postgresql://Eumaeus_db_user:***REMOVIDO***@dpg-d1jh806mcj7s739repog-a.ohio-postgres.render.com/Eumaeus_db
 ```
 
 #### 🔐 Autenticação JWT
@@ -76,12 +76,12 @@ NODE_ENV=production
 
 #### 🔗 API Connection
 ```env
-VITE_API_URL=https://pulsevet-backend.render.com
+VITE_API_URL=https://Eumaeus-backend.render.com
 ```
 
 #### 📱 App Information
 ```env
-VITE_APP_NAME=PulseVet System
+VITE_APP_NAME=Eumaeus System
 VITE_APP_VERSION=2.0.0
 ```
 
@@ -110,7 +110,7 @@ VITE_NODE_ENV=production
 
 1. Configure todas as variáveis do Render
 2. Aguarde o redeploy automático (5-10 min)
-3. Teste a URL: `https://pulsevet-backend.render.com`
+3. Teste a URL: `https://Eumaeus-backend.render.com`
 4. Verifique se retorna: `{"message":"VetSystem API está funcionando!"}`
 
 ### 2️⃣ SEGUNDO: VERCEL (Frontend)
@@ -129,20 +129,20 @@ VITE_NODE_ENV=production
 ### 🔍 Backend (Render)
 ```bash
 # Testar API básica
-curl https://pulsevet-backend.render.com
+curl https://Eumaeus-backend.render.com
 
 # Testar endpoint de saúde
-curl https://pulsevet-backend.render.com/health
+curl https://Eumaeus-backend.render.com/health
 
 # Testar autenticação
-curl -X POST https://pulsevet-backend.render.com/api/auth/login \
+curl -X POST https://Eumaeus-backend.render.com/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@pulsevet.com","password":"***REMOVIDO***"}'
+  -d '{"email":"admin@Eumaeus.com","password":"***REMOVIDO***"}'
 ```
 
 ### 🔍 Frontend (Vercel)
 1. **Acessar**: `https://vet-system-frontend-blitz.vercel.app`
-2. **Login**: `admin@pulsevet.com` / `admin123`
+2. **Login**: `admin@Eumaeus.com` / `admin123`
 3. **Dashboard**: Verificar se carrega dados
 4. **Funcionalidades**: Testar tutores, agenda, etc.
 
@@ -196,7 +196,7 @@ curl -X POST https://pulsevet-backend.render.com/api/auth/login \
 ### ✅ Teste de Email
 ```bash
 # Testar envio de email
-curl -X POST https://pulsevet-backend.render.com/api/test-email \
+curl -X POST https://Eumaeus-backend.render.com/api/test-email \
   -H "Content-Type: application/json" \
   -d '{"to":"seu_email@gmail.com","subject":"Teste","text":"Funcionando!"}'
 ```
@@ -206,9 +206,9 @@ curl -X POST https://pulsevet-backend.render.com/api/test-email \
 ## 🎯 RESULTADO ESPERADO
 
 ### ✅ Sucesso Total
-- **Backend**: `https://pulsevet-backend.render.com` funcionando
+- **Backend**: `https://Eumaeus-backend.render.com` funcionando
 - **Frontend**: `https://vet-system-frontend-blitz.vercel.app` funcionando
-- **Login**: `admin@pulsevet.com` / `admin123` funcional
+- **Login**: `admin@Eumaeus.com` / `admin123` funcional
 - **Dashboard**: Carregando dados corretamente
 - **Email**: Sistema de automação enviando lembretes
 

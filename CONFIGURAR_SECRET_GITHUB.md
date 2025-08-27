@@ -21,7 +21,7 @@ Para que o GitHub Actions funcione corretamente, você precisa configurar um **S
 
 ### 5. Configurar o Secret
 - **Name:** `VITE_API_URL`
-- **Value:** `https://pulsevet-backend.onrender.com/api`
+- **Value:** `https://Eumaeus-backend.onrender.com/api`
 - Clique em **"Add secret"**
 
 ## ✅ Verificação
