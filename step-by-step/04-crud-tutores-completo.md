@@ -96,4 +96,4 @@ Com o CRUD de Tutores 100% completo, o próximo módulo a ser implementado é o 
 
 ## Status: ✅ CONCLUÍDO
 
-O módulo de Tutores está oficialmente finalizado e pronto para produção, representando nosso primeiro módulo completo do sistema PulseVet.
+O módulo de Tutores está oficialmente finalizado e pronto para produção, representando nosso primeiro módulo completo do sistema Eumaeus.

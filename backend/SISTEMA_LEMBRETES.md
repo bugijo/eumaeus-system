@@ -1,8 +1,8 @@
-# 🤖 Sistema de Lembretes Automáticos - PulseVet
+# 🤖 Sistema de Lembretes Automáticos - Eumaeus
 
 ## 🎯 Visão Geral
 
-O PulseVet agora é um sistema **PROATIVO**! Implementamos um módulo de marketing (CRM Básico) que envia lembretes automáticos por e-mail para:
+O Eumaeus agora é um sistema **PROATIVO**! Implementamos um módulo de marketing (CRM Básico) que envia lembretes automáticos por e-mail para:
 
 - 📅 **Consultas agendadas** (lembrete no dia anterior)
 - 💉 **Vacinas próximas do vencimento** (7 dias antes)
@@ -47,7 +47,7 @@ EMAIL_USER="seu-email@gmail.com"
 EMAIL_PASSWORD="sua-senha-de-app-do-gmail"
 
 # Configurações da clínica
-CLINIC_NAME="PulseVet Clínica Veterinária"
+CLINIC_NAME="Eumaeus Clínica Veterinária"
 CLINIC_PHONE="(11) 99999-9999"
 ```
 
@@ -64,7 +64,7 @@ CLINIC_PHONE="(11) 99999-9999"
 - Design responsivo e profissional
 - Informações da consulta (pet, data, horário)
 - Dicas úteis para o tutor
-- Identidade visual do PulseVet
+- Identidade visual do Eumaeus
 
 ### 💉 Lembrete de Vacinação
 - Alerta visual destacado
@@ -153,4 +153,4 @@ Edite os métodos em `EmailService.ts`:
 
 ---
 
-**🎯 Missão Cumprida**: O PulseVet evoluiu de um sistema reativo para um sistema **PROATIVO** que trabalha 24/7 para o sucesso da clínica!
+**🎯 Missão Cumprida**: O Eumaeus evoluiu de um sistema reativo para um sistema **PROATIVO** que trabalha 24/7 para o sucesso da clínica!

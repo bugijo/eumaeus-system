@@ -2,7 +2,7 @@
 
 ## Visão Geral
 
-A V2.0 do PulseVet System introduz uma arquitetura de autenticação dual que permite dois tipos de usuários:
+A V2.0 do Eumaeus System introduz uma arquitetura de autenticação dual que permite dois tipos de usuários:
 - **Users**: Funcionários da clínica (veterinários, atendentes, etc.)
 - **Tutors**: Clientes que acessam o Portal do Cliente
 

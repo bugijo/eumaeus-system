@@ -38,7 +38,7 @@ async function main() {
       console.log(`🔄 Migrando usuário: ${user.name}`);
       
       // Criar novo AuthProfile com email baseado no nome do usuário
-      const email = `${user.name.toLowerCase().replace(/\s+/g, '.')}@pulsevet.com`;
+      const email = `${user.name.toLowerCase().replace(/\s+/g, '.')}@eumaeus.com`;
       const tempPassword = 'mudar123'; // Senha temporária
       const hashedPassword = await bcrypt.hash(tempPassword, 10);
       
@@ -62,7 +62,7 @@ async function main() {
       } catch (error) {
         console.error(`❌ Erro ao migrar usuário ${user.name}:`, error);
         // Se o email já existe, tentar com um sufixo
-        const fallbackEmail = `${user.name.toLowerCase().replace(/\s+/g, '.')}.${user.id}@pulsevet.com`;
+        const fallbackEmail = `${user.name.toLowerCase().replace(/\s+/g, '.')}.${user.id}@eumaeus.com`;
         
         try {
           const authProfile = await prisma.authProfile.create({
