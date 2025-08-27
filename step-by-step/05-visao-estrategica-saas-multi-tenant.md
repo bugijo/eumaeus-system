@@ -1,7 +1,7 @@
 # 05 - Atualização da Visão Estratégica: SaaS Multi-Tenant
 
 ## Resumo da Mudança
-Esta atualização redefine a visão estratégica do PulseVet System, transformando-o de um sistema de gestão veterinária tradicional para uma **plataforma SaaS Multi-Tenant**. Esta mudança de paradigma estabelece as bases para o crescimento escalável do produto.
+Esta atualização redefine a visão estratégica do Eumaeus System, transformando-o de um sistema de gestão veterinária tradicional para uma **plataforma SaaS Multi-Tenant**. Esta mudança de paradigma estabelece as bases para o crescimento escalável do produto.
 
 ## Arquivos Modificados
 
@@ -75,6 +75,6 @@ A arquitetura atual da V1.0 permanece inalterada. Esta mudança de visão:
 
 ## Conclusão
 
-Esta atualização estratégica posiciona o PulseVet System como uma solução moderna e escalável no mercado veterinário brasileiro. A abordagem faseada (V1.0 → V2.0) garante que possamos validar o produto com qualidade antes de escalar para múltiplas clínicas.
+Esta atualização estratégica posiciona o Eumaeus System como uma solução moderna e escalável no mercado veterinário brasileiro. A abordagem faseada (V1.0 → V2.0) garante que possamos validar o produto com qualidade antes de escalar para múltiplas clínicas.
 
 A documentação agora reflete claramente nossa visão de longo prazo, mantendo o foco na execução da V1.0 enquanto prepara o terreno para a transformação SaaS da V2.0.

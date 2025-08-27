@@ -2,7 +2,7 @@
 
 ## Visão Geral
 
-O Módulo Fiscal do PulseVet permite a emissão de Notas Fiscais de Serviço Eletrônica (NFS-e) diretamente a partir das faturas geradas no sistema. Esta funcionalidade traz conformidade fiscal e profissionalismo para clínicas veterinárias.
+O Módulo Fiscal do Eumaeus permite a emissão de Notas Fiscais de Serviço Eletrônica (NFS-e) diretamente a partir das faturas geradas no sistema. Esta funcionalidade traz conformidade fiscal e profissionalismo para clínicas veterinárias.
 
 ## 🎯 Estratégia Técnica
 
