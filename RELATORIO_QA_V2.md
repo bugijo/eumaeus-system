@@ -1,4 +1,4 @@
-# 📋 RELATÓRIO DE QA - V2.0 PULSEVET
+# 📋 RELATÓRIO DE QA - V2.0 Eumaeus
 
 ## 🎯 RESUMO EXECUTIVO
 **Data:** 26/07/2025  

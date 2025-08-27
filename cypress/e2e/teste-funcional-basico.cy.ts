@@ -1,12 +1,12 @@
 /// <reference types="cypress" />
 
 /**
- * 🧪 TESTE FUNCIONAL BÁSICO - PulseVet System V1.0
+ * 🧪 TESTE FUNCIONAL BÁSICO - Eumaeus System V1.0
  * 
  * Testes essenciais para verificar se o sistema está funcionando corretamente
  */
 
-describe('🚀 PulseVet - Testes Funcionais Básicos', () => {
+describe('🚀 Eumaeus - Testes Funcionais Básicos', () => {
   const baseUrl = 'http://localhost:3000';
   
   describe('🔐 Autenticação', () => {
@@ -23,7 +23,7 @@ describe('🚀 PulseVet - Testes Funcionais Básicos', () => {
     it('Deve fazer login com credenciais válidas', () => {
       cy.visit(`${baseUrl}/login`);
       
-      cy.get('input[type="email"]').type('admin@pulsevetystem.com');
+      cy.get('input[type="email"]').type('admin@Eumaeusystem.com');
       cy.get('input[type="password"]').type('admin123');
       cy.get('button').contains('Entrar').click();
       
@@ -39,7 +39,7 @@ describe('🚀 PulseVet - Testes Funcionais Básicos', () => {
     beforeEach(() => {
       // Login antes de cada teste
       cy.visit(`${baseUrl}/login`);
-      cy.get('input[type="email"]').type('admin@pulsevetystem.com');
+      cy.get('input[type="email"]').type('admin@Eumaeusystem.com');
       cy.get('input[type="password"]').type('admin123');
       cy.get('button').contains('Entrar').click();
       cy.url({ timeout: 10000 }).should('eq', `${baseUrl}/`);
@@ -85,7 +85,7 @@ describe('🚀 PulseVet - Testes Funcionais Básicos', () => {
   describe('📊 Dashboard', () => {
     beforeEach(() => {
       cy.visit(`${baseUrl}/login`);
-      cy.get('input[type="email"]').type('admin@pulsevetystem.com');
+      cy.get('input[type="email"]').type('admin@Eumaeusystem.com');
       cy.get('input[type="password"]').type('admin123');
       cy.get('button').contains('Entrar').click();
       cy.url({ timeout: 10000 }).should('eq', `${baseUrl}/`);
@@ -114,7 +114,7 @@ describe('🚀 PulseVet - Testes Funcionais Básicos', () => {
   describe('👥 Gestão de Tutores', () => {
     beforeEach(() => {
       cy.visit(`${baseUrl}/login`);
-      cy.get('input[type="email"]').type('admin@pulsevetystem.com');
+      cy.get('input[type="email"]').type('admin@Eumaeusystem.com');
       cy.get('input[type="password"]').type('admin123');
       cy.get('button').contains('Entrar').click();
       cy.url({ timeout: 10000 }).should('eq', `${baseUrl}/`);
@@ -134,7 +134,7 @@ describe('🚀 PulseVet - Testes Funcionais Básicos', () => {
   describe('🐕 Gestão de Pets', () => {
     beforeEach(() => {
       cy.visit(`${baseUrl}/login`);
-      cy.get('input[type="email"]').type('admin@pulsevetystem.com');
+      cy.get('input[type="email"]').type('admin@Eumaeusystem.com');
       cy.get('input[type="password"]').type('admin123');
       cy.get('button').contains('Entrar').click();
       cy.url({ timeout: 10000 }).should('eq', `${baseUrl}/`);
@@ -150,7 +150,7 @@ describe('🚀 PulseVet - Testes Funcionais Básicos', () => {
   describe('📅 Agendamentos', () => {
     beforeEach(() => {
       cy.visit(`${baseUrl}/login`);
-      cy.get('input[type="email"]').type('admin@pulsevetystem.com');
+      cy.get('input[type="email"]').type('admin@Eumaeusystem.com');
       cy.get('input[type="password"]').type('admin123');
       cy.get('button').contains('Entrar').click();
       cy.url({ timeout: 10000 }).should('eq', `${baseUrl}/`);
@@ -166,7 +166,7 @@ describe('🚀 PulseVet - Testes Funcionais Básicos', () => {
   describe('📦 Estoque', () => {
     beforeEach(() => {
       cy.visit(`${baseUrl}/login`);
-      cy.get('input[type="email"]').type('admin@pulsevetystem.com');
+      cy.get('input[type="email"]').type('admin@Eumaeusystem.com');
       cy.get('input[type="password"]').type('admin123');
       cy.get('button').contains('Entrar').click();
       cy.url({ timeout: 10000 }).should('eq', `${baseUrl}/`);
@@ -187,7 +187,7 @@ describe('🚀 PulseVet - Testes Funcionais Básicos', () => {
       cy.get('input[type="email"]').should('be.visible');
       cy.get('input[type="password"]').should('be.visible');
       
-      cy.get('input[type="email"]').type('admin@pulsevetystem.com');
+      cy.get('input[type="email"]').type('admin@Eumaeusystem.com');
       cy.get('input[type="password"]').type('admin123');
       cy.get('button').contains('Entrar').click();
       
@@ -198,7 +198,7 @@ describe('🚀 PulseVet - Testes Funcionais Básicos', () => {
       cy.viewport(768, 1024);
       cy.visit(`${baseUrl}/login`);
       
-      cy.get('input[type="email"]').type('admin@pulsevetystem.com');
+      cy.get('input[type="email"]').type('admin@Eumaeusystem.com');
       cy.get('input[type="password"]').type('admin123');
       cy.get('button').contains('Entrar').click();
       

@@ -29,7 +29,7 @@ module.exports = defineConfig({
     
     // Configurações de ambiente
     env: {
-      apiUrl: process.env.VITE_API_URL || 'https://pulsevet-backend.onrender.com/api',
+      apiUrl: process.env.VITE_API_URL || 'https://Eumaeus-backend.onrender.com/api',
       frontendUrl: 'http://localhost:3000'
     },
     

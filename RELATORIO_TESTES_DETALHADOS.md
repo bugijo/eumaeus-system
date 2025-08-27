@@ -1,9 +1,9 @@
-# 🧪 RELATÓRIO DE TESTES DETALHADOS - PulseVet System V1.0
+# 🧪 RELATÓRIO DE TESTES DETALHADOS - Eumaeus System V1.0
 
 ## 📋 Resumo Executivo
 
 **Data:** Janeiro 2025  
-**Sistema:** PulseVet System V1.0  
+**Sistema:** Eumaeus System V1.0  
 **Ambiente:** Desenvolvimento Local  
 **Frontend:** http://localhost:3000  
 **Backend:** http://localhost:3333  
@@ -16,7 +16,7 @@
 
 #### ✅ Login
 - **Status:** ✅ FUNCIONANDO
-- **Credenciais testadas:** admin@pulsevetystem.com / admin123
+- **Credenciais testadas:** admin@Eumaeusystem.com / admin123
 - **Redirecionamento:** ✅ Funcional (login → dashboard)
 - **Validação de campos:** ✅ Implementada
 - **Feedback visual:** ✅ Presente
@@ -346,7 +346,7 @@
 
 ## 🚀 RECOMENDAÇÕES FINAIS
 
-**O PulseVet System V1.0 está PRONTO PARA PRODUÇÃO** com as seguintes características:
+**O Eumaeus System V1.0 está PRONTO PARA PRODUÇÃO** com as seguintes características:
 
 ✅ **Sistema 100% Funcional**  
 ✅ **Interface Profissional**  

@@ -1,13 +1,13 @@
 /// <reference types="cypress" />
 
 /**
- * 🧪 TESTE SISTEMA COMPLETO - PulseVet System V1.0
+ * 🧪 TESTE SISTEMA COMPLETO - Eumaeus System V1.0
  * 
  * Este teste verifica TODOS os módulos e funcionalidades do sistema
  * de forma automatizada e detalhada.
  */
 
-describe('🚀 PulseVet System - Teste Completo', () => {
+describe('🚀 Eumaeus System - Teste Completo', () => {
   const baseUrl = 'http://localhost:3000';
   const apiUrl = 'http://localhost:3333/api';
   
@@ -54,7 +54,7 @@ describe('🚀 PulseVet System - Teste Completo', () => {
 
     it('Deve fazer login com sucesso', () => {
       cy.visit(`${baseUrl}/login`);
-      cy.get('input[type="email"]').type('admin@pulsevetystem.com');
+      cy.get('input[type="email"]').type('admin@Eumaeusystem.com');
       cy.get('input[type="password"]').type('admin123');
       cy.get('button[type="submit"]').click();
       
@@ -78,7 +78,7 @@ describe('🚀 PulseVet System - Teste Completo', () => {
     beforeEach(() => {
       // Login antes de cada teste
       cy.visit(`${baseUrl}/login`);
-      cy.get('input[type="email"]').type('admin@pulsevetystem.com');
+      cy.get('input[type="email"]').type('admin@Eumaeusystem.com');
       cy.get('input[type="password"]').type('admin123');
       cy.get('button[type="submit"]').click();
       cy.url().should('include', '/');
@@ -104,7 +104,7 @@ describe('🚀 PulseVet System - Teste Completo', () => {
   describe('🧭 3. TESTES DE NAVEGAÇÃO', () => {
     beforeEach(() => {
       cy.visit(`${baseUrl}/login`);
-      cy.get('input[type="email"]').type('admin@pulsevetystem.com');
+      cy.get('input[type="email"]').type('admin@Eumaeusystem.com');
       cy.get('input[type="password"]').type('admin123');
       cy.get('button[type="submit"]').click();
     });
@@ -136,7 +136,7 @@ describe('🚀 PulseVet System - Teste Completo', () => {
   describe('👥 4. TESTES DE GESTÃO DE TUTORES', () => {
     beforeEach(() => {
       cy.visit(`${baseUrl}/login`);
-      cy.get('input[type="email"]').type('admin@pulsevetystem.com');
+      cy.get('input[type="email"]').type('admin@Eumaeusystem.com');
       cy.get('input[type="password"]').type('admin123');
       cy.get('button[type="submit"]').click();
       cy.get('[href="/tutores"]').click();
@@ -181,7 +181,7 @@ describe('🚀 PulseVet System - Teste Completo', () => {
   describe('🐕 5. TESTES DE GESTÃO DE PETS', () => {
     beforeEach(() => {
       cy.visit(`${baseUrl}/login`);
-      cy.get('input[type="email"]').type('admin@pulsevetystem.com');
+      cy.get('input[type="email"]').type('admin@Eumaeusystem.com');
       cy.get('input[type="password"]').type('admin123');
       cy.get('button[type="submit"]').click();
       cy.get('[href="/pets"]').click();
@@ -201,7 +201,7 @@ describe('🚀 PulseVet System - Teste Completo', () => {
   describe('📅 6. TESTES DE AGENDAMENTOS', () => {
     beforeEach(() => {
       cy.visit(`${baseUrl}/login`);
-      cy.get('input[type="email"]').type('admin@pulsevetystem.com');
+      cy.get('input[type="email"]').type('admin@Eumaeusystem.com');
       cy.get('input[type="password"]').type('admin123');
       cy.get('button[type="submit"]').click();
       cy.get('[href="/agendamentos"]').click();
@@ -221,7 +221,7 @@ describe('🚀 PulseVet System - Teste Completo', () => {
   describe('📦 7. TESTES DE ESTOQUE', () => {
     beforeEach(() => {
       cy.visit(`${baseUrl}/login`);
-      cy.get('input[type="email"]').type('admin@pulsevetystem.com');
+      cy.get('input[type="email"]').type('admin@Eumaeusystem.com');
       cy.get('input[type="password"]').type('admin123');
       cy.get('button[type="submit"]').click();
       cy.get('[href="/estoque"]').click();
@@ -248,7 +248,7 @@ describe('🚀 PulseVet System - Teste Completo', () => {
   describe('🩺 8. TESTES DE PRONTUÁRIOS', () => {
     beforeEach(() => {
       cy.visit(`${baseUrl}/login`);
-      cy.get('input[type="email"]').type('admin@pulsevetystem.com');
+      cy.get('input[type="email"]').type('admin@Eumaeusystem.com');
       cy.get('input[type="password"]').type('admin123');
       cy.get('button[type="submit"]').click();
       cy.get('[href="/prontuarios"]').click();
@@ -263,7 +263,7 @@ describe('🚀 PulseVet System - Teste Completo', () => {
   describe('💰 9. TESTES FINANCEIROS', () => {
     beforeEach(() => {
       cy.visit(`${baseUrl}/login`);
-      cy.get('input[type="email"]').type('admin@pulsevetystem.com');
+      cy.get('input[type="email"]').type('admin@Eumaeusystem.com');
       cy.get('input[type="password"]').type('admin123');
       cy.get('button[type="submit"]').click();
       cy.get('[href="/financeiro"]').click();
@@ -288,7 +288,7 @@ describe('🚀 PulseVet System - Teste Completo', () => {
         cy.viewport(viewport.width, viewport.height);
         cy.visit(`${baseUrl}/login`);
         
-        cy.get('input[type="email"]').type('admin@pulsevetystem.com');
+        cy.get('input[type="email"]').type('admin@Eumaeusystem.com');
         cy.get('input[type="password"]').type('admin123');
         cy.get('button[type="submit"]').click();
         
@@ -318,7 +318,7 @@ describe('🚀 PulseVet System - Teste Completo', () => {
 
     it('Deve navegar entre páginas rapidamente', () => {
       cy.visit(`${baseUrl}/login`);
-      cy.get('input[type="email"]').type('admin@pulsevetystem.com');
+      cy.get('input[type="email"]').type('admin@Eumaeusystem.com');
       cy.get('input[type="password"]').type('admin123');
       cy.get('button[type="submit"]').click();
       

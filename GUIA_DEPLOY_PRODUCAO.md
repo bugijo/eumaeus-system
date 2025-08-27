@@ -81,7 +81,7 @@ VITE_API_URL=https://seu-backend.onrender.com
 
 #### 📱 Aplicação
 ```env
-VITE_APP_NAME=PulseVet System
+VITE_APP_NAME=Eumaeus System
 VITE_APP_VERSION=2.0.0
 VITE_NODE_ENV=production
 ```
@@ -126,7 +126,7 @@ npx prisma studio
 
 ### 1️⃣ Teste de Login
 - [ ] Acessar a aplicação em produção
-- [ ] Fazer login com `admin@pulsevet.com`
+- [ ] Fazer login com `admin@Eumaeus.com`
 - [ ] Verificar redirecionamento
 - [ ] Testar logout
 
@@ -242,11 +242,11 @@ psql $DATABASE_URL < backup_pre_v2.sql
 
 ### 📧 Template de Email
 ```
-Assunto: 🚀 PulseVet V2.0 - Novas Funcionalidades Disponíveis!
+Assunto: 🚀 Eumaeus V2.0 - Novas Funcionalidades Disponíveis!
 
 Olá!
 
-Temos o prazer de anunciar o lançamento da versão 2.0 do PulseVet System!
+Temos o prazer de anunciar o lançamento da versão 2.0 do Eumaeus System!
 
 🆕 Novidades:
 • 💊 Receituário Digital
@@ -260,7 +260,7 @@ use a senha temporária "mudar123" e altere-a no primeiro login.
 
 Qualquer dúvida, entre em contato conosco.
 
-Equipe PulseVet
+Equipe Eumaeus
 ```
 
 ---

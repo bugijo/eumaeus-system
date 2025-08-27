@@ -41,7 +41,7 @@
 - [ ] **Banco PostgreSQL** - Conexão pendente
 - [ ] **Variáveis de ambiente** - Configuração necessária
 
-**URL Esperada:** `https://pulsevet-backend.render.com`
+**URL Esperada:** `https://Eumaeus-backend.render.com`
 
 ---
 
@@ -56,7 +56,7 @@
 
 - [ ] **Vercel**: Configurar variáveis de ambiente
   - `VITE_API_URL` - URL do backend Render
-  - `VITE_APP_NAME` - PulseVet System
+  - `VITE_APP_NAME` - Eumaeus System
   - `VITE_APP_VERSION` - 2.0.0
 
 ### 6️⃣ MIGRAÇÃO DE DADOS

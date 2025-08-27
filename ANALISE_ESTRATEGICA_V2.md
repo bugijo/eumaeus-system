@@ -192,7 +192,7 @@ Saímos da fase de "construção e correção" para "estratégia e crescimento".
 4. **V3.0:** Arquitetura Multi-Tenant
 
 ### 🌟 Impacto Estratégico
-O Portal do Cliente não é apenas uma funcionalidade - é a **transformação do PulseVet de sistema interno para plataforma de ecossistema**, conectando clínicas, tutores e pets em uma experiência integrada.
+O Portal do Cliente não é apenas uma funcionalidade - é a **transformação do Eumaeus de sistema interno para plataforma de ecossistema**, conectando clínicas, tutores e pets em uma experiência integrada.
 
 ---
 
@@ -205,7 +205,7 @@ O Portal do Cliente não é apenas uma funcionalidade - é a **transformação d
 
 ---
 
-**💡 Conclusão:** Estamos prontos para a próxima fase. A V1.0 nos deu credibilidade técnica. O Portal do Cliente nos dará credibilidade de mercado. É hora de construir o futuro do PulseVet.
+**💡 Conclusão:** Estamos prontos para a próxima fase. A V1.0 nos deu credibilidade técnica. O Portal do Cliente nos dará credibilidade de mercado. É hora de construir o futuro do Eumaeus.
 
 ---
 

@@ -2,7 +2,7 @@
 // Teste principal para CI/CD - Fluxo crítico da aplicação
 
 describe('CI/CD - Fluxo Principal do Sistema Veterinário', () => {
-  const apiUrl = Cypress.env('apiUrl') || 'https://pulsevet-backend.onrender.com/api';
+  const apiUrl = Cypress.env('apiUrl') || 'https://Eumaeus-backend.onrender.com/api';
   
   beforeEach(() => {
     // Configurações otimizadas para CI

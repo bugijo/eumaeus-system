@@ -12,7 +12,7 @@
 ### 📊 USANDO A INTERFACE DO RENDER
 1. **Acesse**: [https://dashboard.render.com](https://dashboard.render.com)
 2. **Login** na sua conta
-3. **Navegue** para o banco `pulsevet-db`
+3. **Navegue** para o banco `Eumaeus-db`
 4. **Procure** por opções de backup/export
 5. **Download** do arquivo de backup
 
@@ -43,7 +43,7 @@
 cd "C:\temp\postgresql-16-windows-x64\bin"
 
 # Executar pg_dump diretamente
-.\pg_dump.exe "postgresql://pulsevet_db_user:VJHnvnF2uwgLg3MwMdgEvdyae5zdxZ7P@dpg-d1jh806mcj7s739repog-a.ohio-postgres.render.com/pulsevet_db" > "C:\Users\WINDOWS 10\Desktop\Backups\pulsevet_backup_v1.sql"
+.\pg_dump.exe "postgresql://Eumaeus_db_user:VJHnvnF2uwgLg3MwMdgEvdyae5zdxZ7P@dpg-d1jh806mcj7s739repog-a.ohio-postgres.render.com/Eumaeus_db" > "C:\Users\WINDOWS 10\Desktop\Backups\Eumaeus_backup_v1.sql"
 ```
 
 ### ✅ VANTAGENS
@@ -62,7 +62,7 @@ cd "C:\temp\postgresql-16-windows-x64\bin"
 docker --version
 
 # Executar pg_dump via container Docker
-docker run --rm postgres:16 pg_dump "postgresql://pulsevet_db_user:VJHnvnF2uwgLg3MwMdgEvdyae5zdxZ7P@dpg-d1jh806mcj7s739repog-a.ohio-postgres.render.com/pulsevet_db" > "C:\Users\WINDOWS 10\Desktop\Backups\pulsevet_backup_v1.sql"
+docker run --rm postgres:16 pg_dump "postgresql://Eumaeus_db_user:VJHnvnF2uwgLg3MwMdgEvdyae5zdxZ7P@dpg-d1jh806mcj7s739repog-a.ohio-postgres.render.com/Eumaeus_db" > "C:\Users\WINDOWS 10\Desktop\Backups\Eumaeus_backup_v1.sql"
 ```
 
 ### ✅ VANTAGENS
@@ -105,10 +105,10 @@ import subprocess
 import os
 
 # URL de conexão
-db_url = "postgresql://pulsevet_db_user:VJHnvnF2uwgLg3MwMdgEvdyae5zdxZ7P@dpg-d1jh806mcj7s739repog-a.ohio-postgres.render.com/pulsevet_db"
+db_url = "postgresql://Eumaeus_db_user:VJHnvnF2uwgLg3MwMdgEvdyae5zdxZ7P@dpg-d1jh806mcj7s739repog-a.ohio-postgres.render.com/Eumaeus_db"
 
 # Comando pg_dump
-cmd = f'pg_dump "{db_url}" > pulsevet_backup_v1.sql'
+cmd = f'pg_dump "{db_url}" > Eumaeus_backup_v1.sql'
 
 # Executar
 try:
@@ -123,9 +123,9 @@ except subprocess.CalledProcessError as e:
 // backup_postgres.js
 const { exec } = require('child_process');
 
-const dbUrl = 'postgresql://pulsevet_db_user:VJHnvnF2uwgLg3MwMdgEvdyae5zdxZ7P@dpg-d1jh806mcj7s739repog-a.ohio-postgres.render.com/pulsevet_db';
+const dbUrl = 'postgresql://Eumaeus_db_user:VJHnvnF2uwgLg3MwMdgEvdyae5zdxZ7P@dpg-d1jh806mcj7s739repog-a.ohio-postgres.render.com/Eumaeus_db';
 
-const cmd = `pg_dump "${dbUrl}" > pulsevet_backup_v1.sql`;
+const cmd = `pg_dump "${dbUrl}" > Eumaeus_backup_v1.sql`;
 
 exec(cmd, (error, stdout, stderr) => {
   if (error) {
@@ -189,7 +189,7 @@ sudo apt update
 sudo apt install postgresql-client
 
 # Executar backup
-pg_dump "postgresql://pulsevet_db_user:VJHnvnF2uwgLg3MwMdgEvdyae5zdxZ7P@dpg-d1jh806mcj7s739repog-a.ohio-postgres.render.com/pulsevet_db" > /mnt/c/Users/"WINDOWS 10"/Desktop/Backups/pulsevet_backup_v1.sql
+pg_dump "postgresql://Eumaeus_db_user:VJHnvnF2uwgLg3MwMdgEvdyae5zdxZ7P@dpg-d1jh806mcj7s739repog-a.ohio-postgres.render.com/Eumaeus_db" > /mnt/c/Users/"WINDOWS 10"/Desktop/Backups/Eumaeus_backup_v1.sql
 ```
 
 ### ✅ VANTAGENS
@@ -244,10 +244,10 @@ cd "C:\temp\postgresql-portable\bin"
 mkdir "C:\Users\WINDOWS 10\Desktop\Backups"
 
 # Executar backup
-.\pg_dump.exe "postgresql://pulsevet_db_user:VJHnvnF2uwgLg3MwMdgEvdyae5zdxZ7P@dpg-d1jh806mcj7s739repog-a.ohio-postgres.render.com/pulsevet_db" > "C:\Users\WINDOWS 10\Desktop\Backups\pulsevet_backup_v1.sql"
+.\pg_dump.exe "postgresql://Eumaeus_db_user:VJHnvnF2uwgLg3MwMdgEvdyae5zdxZ7P@dpg-d1jh806mcj7s739repog-a.ohio-postgres.render.com/Eumaeus_db" > "C:\Users\WINDOWS 10\Desktop\Backups\Eumaeus_backup_v1.sql"
 
 # Verificar backup
-Get-ChildItem "C:\Users\WINDOWS 10\Desktop\Backups\pulsevet_backup_v1.sql"
+Get-ChildItem "C:\Users\WINDOWS 10\Desktop\Backups\Eumaeus_backup_v1.sql"
 ```
 
 ---
