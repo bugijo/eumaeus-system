@@ -38,7 +38,11 @@ const allowedOrigins = [
   'http://localhost:3000',
   'http://192.168.3.12:3000',
   'https://vet-system-frontend-blitz.vercel.app',
-  'https://vet-system-frontend-blitz-git-db1174-giovanni-pereiras-projects.vercel.app'
+  'https://vet-system-frontend-blitz-git-db1174-giovanni-pereiras-projects.vercel.app',
+  'https://eumaeus-system.vercel.app', // Deixe os antigos por enquanto
+  'https://eumaeus-system-git-main-giovanni-pereiras-projects.vercel.app',
+  'https://www.eumaeus.com.br', // <-- ADICIONE ESTA LINHA
+  'https://eumaeus.com.br'      // <-- E ESTA, PARA GARANTIR (com e sem www)
 ];
 
 app.use((req, res, next) => {
