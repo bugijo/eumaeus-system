@@ -26,6 +26,8 @@ dotenv.config();
 console.log('============================================================');
 console.log('INICIANDO VERIFICAÇÃO DE AMBIENTE...');
 console.log(`--> Valor da DATABASE_URL: [${process.env.DATABASE_URL}]`);
+// ADICIONE A LINHA ABAIXO
+console.log('--> Lista allowedOrigins em uso:', allowedOrigins);
 console.log('============================================================');
 // --- FIM DO DEBUG ---
 
