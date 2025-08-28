@@ -13,11 +13,12 @@ export default {
     try {
       const { email, password } = req.body;
 
-      // 1. Busca pelo perfil de autenticação, incluindo apenas usuários (funcionários)
+      // MUDANÇA 1: Vamos incluir tanto 'user' quanto 'tutor' na busca
       const authProfile = await prisma.authProfile.findUnique({
         where: { email },
         include: {
-          user: { include: { role: true } }, // Inclui o User e seu Cargo (Role)
+          user: { include: { role: true } }, // Para funcionários
+          tutor: true,                      // Para tutores/admins
         },
       });
 
@@ -30,20 +31,33 @@ export default {
         return res.status(401).json({ message: 'Credenciais inválidas' });
       }
 
-      // 2. Verifica se é um funcionário da clínica
-      if (!authProfile.user) {
-        return res.status(403).json({ message: 'Acesso negado. Apenas funcionários podem fazer login.' });
+      // MUDANÇA 2: Verificar se existe um 'user' OU um 'tutor' associado
+      if (!authProfile.user && !authProfile.tutor) {
+        return res.status(403).json({ message: 'Acesso negado. Perfil não associado a um funcionário ou tutor.' });
       }
 
-      // 3. Monta os payloads do token e do usuário
-      const tokenPayload = { id: authProfile.user.id, type: 'user', role: authProfile.user.role.name };
-      const userPayload = { id: authProfile.user.id, name: authProfile.user.name, email: authProfile.email, role: authProfile.user.role.name, type: 'user' };
+      // MUDANÇA 3: Criar os dados do token de forma condicional, dependendo do tipo de perfil
+      let tokenPayload;
+      let userPayload;
 
-      // 4. Gera os tokens
-      const accessToken = jwt.sign(tokenPayload, process.env.JWT_SECRET!, { expiresIn: '15m' });
-      const refreshToken = jwt.sign({ authProfileId: authProfile.id }, process.env.REFRESH_TOKEN_SECRET!, { expiresIn: '30d' });
+      if (authProfile.user) {
+        // Se for um funcionário, use os dados de 'user'
+        tokenPayload = { id: authProfile.user.id, type: 'user', role: authProfile.user.role.name };
+        userPayload = { id: authProfile.user.id, name: authProfile.user.name, email: authProfile.email, role: authProfile.user.role.name, type: 'user' };
+      } else if (authProfile.tutor) {
+        // Se for um tutor (nosso admin), use os dados de 'tutor'
+        tokenPayload = { id: authProfile.tutor.id, type: 'tutor', role: authProfile.role };
+        userPayload = { id: authProfile.tutor.id, name: authProfile.tutor.name, email: authProfile.email, role: authProfile.role, type: 'tutor' };
+      } else {
+        // Este caso é um fallback de segurança, não deve acontecer
+        console.error("Erro de lógica: AuthProfile encontrado sem user ou tutor.", authProfile);
+        return res.status(500).json({ message: "Erro de configuração de perfil de usuário." });
+      }
 
-      // Atualiza o refresh token no perfil de autenticação
+      // O resto do código para gerar tokens e responder continua o mesmo
+      const accessToken = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: '15m' });
+      const refreshToken = jwt.sign({ authProfileId: authProfile.id }, REFRESH_TOKEN_SECRET, { expiresIn: '30d' });
+
       await prisma.authProfile.update({
         where: { id: authProfile.id },
         data: { refreshToken },
