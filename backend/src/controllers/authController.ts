@@ -13,8 +13,19 @@ export default {
     try {
       const { email, password } = req.body;
 
-      // PASSO 1: Encontrar o AuthProfile pelo email. Simples e direto.
-      const authProfile = await prisma.authProfile.findUnique({ where: { email } });
+      // PASSO 1: Encontrar o AuthProfile, selecionando TODOS os campos que vamos precisar logo em seguida.
+      const authProfile = await prisma.authProfile.findUnique({
+        where: { email },
+        select: {
+          id: true,
+          password: true,
+          email: true,
+          refreshToken: true,
+          role: true,   // <-- Agora estamos pedindo o 'role'
+          userId: true,  // <-- Agora estamos pedindo o 'userId'
+          tutorId: true, // <-- Agora estamos pedindo o 'tutorId'
+        }
+      });
 
       if (!authProfile) {
         return res.status(401).json({ message: 'Credenciais inválidas' });
