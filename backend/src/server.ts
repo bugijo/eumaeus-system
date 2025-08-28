@@ -35,14 +35,16 @@ const HOST = '0.0.0.0'; // Aceitar conexões de qualquer endereço na rede
 
 // Configuração de CORS com origens permitidas
 const allowedOrigins = [
+  // Ambiente de Desenvolvimento
   'http://localhost:3000',
-  'http://192.168.3.12:3000',
-  'https://vet-system-frontend-blitz.vercel.app',
-  'https://vet-system-frontend-blitz-git-db1174-giovanni-pereiras-projects.vercel.app',
-  'https://eumaeus-system.vercel.app', // Deixe os antigos por enquanto
+
+  // Domínios da Vercel (para testes e previews)
+  'https://eumaeus-system.vercel.app',
   'https://eumaeus-system-git-main-giovanni-pereiras-projects.vercel.app',
-  'https://www.eumaeus.com.br', // <-- ADICIONE ESTA LINHA
-  'https://eumaeus.com.br'      // <-- E ESTA, PARA GARANTIR (com e sem www)
+
+  // Domínio de Produção Oficial (as duas variações principais)
+  'https://eumaeus.com.br',
+  'https://www.eumaeus.com.br'
 ];
 
 app.use((req, res, next) => {
