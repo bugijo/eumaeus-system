@@ -22,19 +22,6 @@ import { prisma } from './lib/prisma';
 // Carrega variáveis de ambiente
 dotenv.config();
 
-// --- VETDEV DEBUG: O TESTE FINAL ---
-console.log('============================================================');
-console.log('INICIANDO VERIFICAÇÃO DE AMBIENTE...');
-console.log(`--> Valor da DATABASE_URL: [${process.env.DATABASE_URL}]`);
-// ADICIONE A LINHA ABAIXO
-console.log('--> Lista allowedOrigins em uso:', allowedOrigins);
-console.log('============================================================');
-// --- FIM DO DEBUG ---
-
-const app = express();
-const PORT = Number(process.env.PORT) || 3333;
-const HOST = '0.0.0.0'; // Aceitar conexões de qualquer endereço na rede
-
 // Configuração de CORS com origens permitidas
 const allowedOrigins = [
   // Ambiente de Desenvolvimento
@@ -48,6 +35,18 @@ const allowedOrigins = [
   'https://eumaeus.com.br',
   'https://www.eumaeus.com.br'
 ];
+
+// --- VETDEV DEBUG: O TESTE FINAL ---
+console.log('============================================================');
+console.log('INICIANDO VERIFICAÇÃO DE AMBIENTE...');
+console.log(`--> Valor da DATABASE_URL: [${process.env.DATABASE_URL}]`);
+console.log('--> Lista allowedOrigins em uso:', allowedOrigins);
+console.log('============================================================');
+// --- FIM DO DEBUG ---
+
+const app = express();
+const PORT = Number(process.env.PORT) || 3333;
+const HOST = '0.0.0.0'; // Aceitar conexões de qualquer endereço na rede
 
 app.use((req, res, next) => {
   const origin = req.headers.origin || '';
