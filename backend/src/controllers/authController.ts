@@ -42,8 +42,9 @@ export default {
 
       if (authProfile.user) {
         // Se for um funcionário, use os dados de 'user'
-        tokenPayload = { id: authProfile.user.id, type: 'user', role: authProfile.user.role.name };
-        userPayload = { id: authProfile.user.id, name: authProfile.user.name, email: authProfile.email, role: authProfile.user.role.name, type: 'user' };
+        const userRole = authProfile.user.role?.name || 'FUNCIONARIO'; // Pega o nome do cargo. Se não encontrar, usa 'FUNCIONARIO' como padrão.
+        tokenPayload = { id: authProfile.user.id, type: 'user', role: userRole };
+        userPayload = { id: authProfile.user.id, name: authProfile.user.name, email: authProfile.email, role: userRole, type: 'user' };
       } else if (authProfile.tutor) {
         // Se for um tutor (nosso admin), use os dados de 'tutor'
         tokenPayload = { id: authProfile.tutor.id, type: 'tutor', role: authProfile.role };
