@@ -258,7 +258,7 @@ export function AppointmentForm({ appointment, onSuccess, onCancel }: Appointmen
           <Button
             type="submit"
             disabled={isSubmitting || createAppointmentMutation.isPending || updateAppointmentMutation.isPending}
-            className="gradient-pink text-white hover:opacity-90"
+            className="gradient-eumaeus-blue text-white hover:opacity-90"
           >
             {(isSubmitting || createAppointmentMutation.isPending || updateAppointmentMutation.isPending) ? (
               <>

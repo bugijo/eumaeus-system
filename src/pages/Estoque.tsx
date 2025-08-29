@@ -198,7 +198,7 @@ export default function StockPage() {
       {/* Cabeçalho Principal */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div className="flex items-center space-x-4">
-          <div className="w-12 h-12 rounded-xl gradient-pink flex items-center justify-center shadow-lg">
+          <div className="w-12 h-12 rounded-xl gradient-eumaeus-green flex items-center justify-center shadow-lg">
             <Package className="w-6 h-6 text-white" />
           </div>
           <div>
@@ -206,7 +206,7 @@ export default function StockPage() {
             <p className="text-gray-600 mt-1">Gerencie produtos e monitore o estoque</p>
           </div>
         </div>
-        <Button onClick={handleNewProduct} className="gradient-pink text-white hover:opacity-90 shadow-lg">
+        <Button onClick={handleNewProduct} className="gradient-eumaeus text-white hover:opacity-90 shadow-lg">
           <Plus className="w-4 h-4 mr-2" />
           Adicionar Produto
         </Button>
@@ -261,7 +261,7 @@ export default function StockPage() {
                   variant={viewMode === 'table' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setViewMode('table')}
-                  className={viewMode === 'table' ? 'gradient-pink text-white' : ''}
+                  className={viewMode === 'table' ? 'gradient-eumaeus-teal text-white' : ''}
                 >
                   <Eye className="w-4 h-4" />
                 </Button>
@@ -269,7 +269,7 @@ export default function StockPage() {
                   variant={viewMode === 'grid' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setViewMode('grid')}
-                  className={viewMode === 'grid' ? 'gradient-pink text-white' : ''}
+                  className={viewMode === 'grid' ? 'gradient-eumaeus-teal text-white' : ''}
                 >
                   <Package className="w-4 h-4" />
                 </Button>

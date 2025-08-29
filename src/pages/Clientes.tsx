@@ -150,13 +150,13 @@ const Clientes = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 rounded-lg gradient-pink flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg gradient-eumaeus-light flex items-center justify-center">
             <Users className="w-5 h-5 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-gradient">Gestão de Clientes</h1>
         </div>
         <Button 
-          className="gradient-pink text-white hover:opacity-90"
+          className="gradient-eumaeus-blue text-white hover:opacity-90"
           onClick={handleNewClient}
         >
           <Plus className="h-4 w-4 mr-2" />

@@ -131,13 +131,13 @@ const Pets = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 rounded-lg gradient-pink flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg gradient-eumaeus-green flex items-center justify-center">
             <PawPrint className="w-5 h-5 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-gradient">Gestão de Pets</h1>
         </div>
         <Button 
-          className="gradient-pink text-white hover:opacity-90"
+          className="gradient-eumaeus-teal text-white hover:opacity-90"
           onClick={handleCreatePet}
         >
           <Plus className="h-4 w-4 mr-2" />
@@ -175,7 +175,7 @@ const Pets = () => {
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Total de Pets
             </CardTitle>
-            <div className="p-2 rounded-lg gradient-pink">
+            <div className="p-2 rounded-lg gradient-eumaeus-light">
               <PawPrint className="h-4 w-4 text-white" />
             </div>
           </CardHeader>
@@ -192,7 +192,7 @@ const Pets = () => {
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Cães
             </CardTitle>
-            <div className="p-2 rounded-lg gradient-pink">
+            <div className="p-2 rounded-lg gradient-eumaeus-blue">
               <span className="text-white text-sm">🐕</span>
             </div>
           </CardHeader>
@@ -211,7 +211,7 @@ const Pets = () => {
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Gatos
             </CardTitle>
-            <div className="p-2 rounded-lg gradient-pink">
+            <div className="p-2 rounded-lg gradient-eumaeus-green">
               <span className="text-white text-sm">🐱</span>
             </div>
           </CardHeader>
@@ -230,7 +230,7 @@ const Pets = () => {
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Outras Espécies
             </CardTitle>
-            <div className="p-2 rounded-lg gradient-pink">
+            <div className="p-2 rounded-lg gradient-eumaeus-teal">
               <Heart className="h-4 w-4 text-white" />
             </div>
           </CardHeader>

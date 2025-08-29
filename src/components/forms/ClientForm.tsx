@@ -192,7 +192,7 @@ export function ClientForm({ client, onSuccess, onCancel, className }: ClientFor
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="gradient-pink text-white hover:opacity-90"
+          className="gradient-eumaeus-green text-white hover:opacity-90"
         >
           {isSubmitting && (
             <LoadingSpinner size="sm" className="mr-2" />
