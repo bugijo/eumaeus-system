@@ -117,16 +117,16 @@ export const TutorListPage = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="bg-background p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <div className="w-8 h-8 rounded-lg gradient-eumaeus-blue flex items-center justify-center">
             <Users className="w-5 h-5 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-gradient">Gestão de Tutores</h1>
+          <h1 className="text-2xl font-bold text-text-dark mb-6">Gestão de Tutores</h1>
         </div>
         <Button 
-          className="gradient-eumaeus-green text-white hover:opacity-90"
+          className="bg-primary text-white font-semibold rounded-lg px-4 py-2 hover:bg-secondary transition-colors duration-200 shadow-sm"
           onClick={handleCreateTutor}
         >
           <Plus className="h-4 w-4 mr-2" />

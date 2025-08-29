@@ -114,10 +114,10 @@ export default function Configuracoes() {
   ];
 
   return (
-    <div className="flex-1 space-y-6 p-6">
+    <div className="bg-background p-6 space-y-6">
       <div className="flex items-center space-x-3">
         <Settings className="h-8 w-8 text-primary" />
-        <h1 className="text-3xl font-bold text-gray-900">Configurações do Sistema</h1>
+        <h1 className="text-2xl font-bold text-text-dark mb-6">Configurações do Sistema</h1>
       </div>
 
       <Tabs defaultValue="geral" className="space-y-6">
