@@ -142,20 +142,20 @@ const Layout = ({ children }: LayoutProps) => {
         sidebarOpen ? 'ml-64' : 'ml-0'
       }`}>
         {/* Top Header */}
-        <header className="bg-gradient-to-r from-pink-100 to-pink-200 border-b border-pink-300 p-4 flex items-center justify-between shadow-sm">
+        <header className="bg-gradient-to-r from-eumaeus-light to-white border-b border-eumaeus-blue/20 p-4 flex items-center justify-between shadow-sm">
           <div className="flex items-center space-x-4">
             {/* Menu Toggle Button */}
             <Button 
               variant="ghost" 
               size="icon" 
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="h-8 w-8 text-pink-700 hover:bg-pink-200"
+              className="h-8 w-8 text-eumaeus-blue hover:bg-eumaeus-blue/10"
             >
               <Menu className="h-5 w-5" />
             </Button>
             
-            <div className="px-4 py-2 rounded-lg bg-gradient-to-r from-pink-200 to-pink-300">
-              <h1 className="text-lg font-semibold text-pink-800">
+            <div className="px-4 py-2 rounded-lg bg-gradient-to-r from-eumaeus-blue/10 to-eumaeus-green/10">
+              <h1 className="text-lg font-semibold text-eumaeus-dark">
                 Bem-vindo(a), {user?.name || 'Usuário'}! 👋
               </h1>
             </div>
@@ -164,17 +164,17 @@ const Layout = ({ children }: LayoutProps) => {
           <div className="flex items-center space-x-4">
             {/* Search Bar */}
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-pink-600" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-eumaeus-blue" />
               <Input
                 placeholder="Buscar..."
-                className="pl-10 w-64 border-pink-300 focus:border-pink-500 focus:ring-pink-500 bg-white/80"
+                className="pl-10 w-64 border-eumaeus-blue/30 focus:border-eumaeus-blue focus:ring-eumaeus-blue bg-white/80"
               />
             </div>
 
             {/* Notifications */}
-            <Button variant="ghost" size="icon" className="relative text-pink-700 hover:bg-pink-200">
+            <Button variant="ghost" size="icon" className="relative text-eumaeus-blue hover:bg-eumaeus-blue/10">
               <Bell className="w-5 h-5" />
-              <span className="absolute -top-1 -right-1 w-3 h-3 bg-pink-500 rounded-full"></span>
+              <span className="absolute -top-1 -right-1 w-3 h-3 bg-eumaeus-green rounded-full"></span>
             </Button>
 
             {/* User Menu */}
@@ -183,7 +183,7 @@ const Layout = ({ children }: LayoutProps) => {
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                   <Avatar className="h-8 w-8">
                     <AvatarImage src="/placeholder.svg" alt={user?.name || 'Usuário'} />
-                    <AvatarFallback className="gradient-pink text-white text-sm">
+                    <AvatarFallback className="bg-gradient-to-r from-eumaeus-blue to-eumaeus-green text-white text-sm">
                       {user?.name?.charAt(0).toUpperCase() || 'U'}
                     </AvatarFallback>
                   </Avatar>

@@ -105,8 +105,13 @@
 
 /* Classes personalizadas para o tema veterinário */
 @layer components {
+  .gradient-eumaeus {
+    @apply bg-gradient-to-br from-eumaeus-blue to-eumaeus-green;
+  }
+  
+  /* Manter compatibilidade com código existente */
   .gradient-pink {
-    @apply bg-gradient-to-br from-primary to-primary/80;
+    @apply bg-gradient-to-br from-eumaeus-blue to-eumaeus-green;
   }
   
   .card-vet {

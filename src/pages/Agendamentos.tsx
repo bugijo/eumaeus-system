@@ -154,7 +154,7 @@ export default function Agendamentos() {
         <button
           onClick={handleNewAppointment}
           data-cy="btn-novo-agendamento"
-          className="px-4 py-2 bg-pink-500 text-white rounded-md hover:bg-pink-600"
+          className="px-4 py-2 bg-eumaeus-blue text-white rounded-md hover:bg-eumaeus-green transition-colors"
         >
           + Novo Agendamento
         </button>
