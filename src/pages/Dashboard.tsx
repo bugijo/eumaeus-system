@@ -138,7 +138,7 @@ const Dashboard = () => {
       <div className="flex flex-col space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-xl gradient-eumaeus-blue flex items-center justify-center shadow-lg">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg">
               <Activity className="w-6 h-6 text-white" />
             </div>
             <div>
@@ -159,13 +159,13 @@ const Dashboard = () => {
           const Icon = stat.icon;
           const TrendIcon = stat.positive ? TrendingUp : TrendingDown;
           return (
-            <Card key={index} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border-l-4 border-l-eumaeus-blue">
+            <Card key={index} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border-l-4 border-l-primary">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-eumaeus-gray">
                   {stat.title}
                 </CardTitle>
-                <div className="p-3 rounded-xl bg-eumaeus-blue/10 shadow-sm">
-                  <Icon className="h-6 w-6 text-eumaeus-blue" />
+                <div className="p-3 rounded-xl bg-primary/10 shadow-sm">
+                  <Icon className="h-6 w-6 text-primary" />
                 </div>
               </CardHeader>
               <CardContent>
@@ -280,7 +280,7 @@ const Dashboard = () => {
                   // Determinar ícone e cor baseado no tipo de atividade
                   const getActivityIcon = (type: string, description: string) => {
                     switch (type) {
-                      case 'tutor': return { icon: Users, color: 'text-eumaeus-blue', bg: 'bg-eumaeus-blue/10' };
+                      case 'tutor': return { icon: Users, color: 'text-primary', bg: 'bg-primary/10' };
                       case 'payment': return { icon: CreditCard, color: 'text-eumaeus-green', bg: 'bg-eumaeus-green/10' };
                       case 'appointment': return { icon: Calendar, color: 'text-eumaeus-cyan', bg: 'bg-eumaeus-cyan/10' };
                       case 'stock': return { icon: Package, color: 'text-eumaeus-teal', bg: 'bg-eumaeus-teal/10' };
@@ -290,7 +290,7 @@ const Dashboard = () => {
                         if (description.includes('pet') || description.includes('animal')) {
                           return { icon: PawPrint, color: 'text-eumaeus-green-light', bg: 'bg-eumaeus-green-light/10' };
                         }
-                        return { icon: Activity, color: 'text-eumaeus-blue', bg: 'bg-eumaeus-blue/10' };
+                        return { icon: Activity, color: 'text-primary', bg: 'bg-primary/10' };
                       }
                     }
                   };

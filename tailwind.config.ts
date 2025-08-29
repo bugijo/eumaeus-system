@@ -19,7 +19,15 @@ export default {
 		},
 		extend: {
 			colors: {
-				// Cores da marca Eumaeus - Paleta expandida
+				// Sistema de cores baseado em variáveis CSS (Fundação do Tema Eumaeus)
+				'primary': 'rgb(var(--color-primary) / <alpha-value>)',
+				'secondary': 'rgb(var(--color-secondary) / <alpha-value>)',
+				'text-dark': 'rgb(var(--color-text-dark) / <alpha-value>)',
+				'text-gray': 'rgb(var(--color-text-gray) / <alpha-value>)',
+				'bg-light': 'rgb(var(--color-background) / <alpha-value>)',
+				'white': 'rgb(var(--color-white) / <alpha-value>)',
+				
+				// Cores da marca Eumaeus - Paleta expandida (mantendo compatibilidade)
 				'eumaeus-blue': '#00529B',       // Azul principal da logo
 				'eumaeus-blue-light': '#3B82F6', // Azul mais claro
 				'eumaeus-blue-dark': '#1E3A8A',  // Azul mais escuro

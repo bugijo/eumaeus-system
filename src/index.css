@@ -11,23 +11,32 @@
 
 @layer base {
   :root {
-    --background: 330 100% 98%;
-    --foreground: 330 15% 15%;
+    /* As cores da marca Eumaeus como variáveis (em formato RGB) */
+    --color-primary: 0 82 155;     /* Eumaeus Blue */
+    --color-secondary: 0 168 89;   /* Eumaeus Green */
+    --color-text-dark: 30 41 59;   /* Eumaeus Dark */
+    --color-text-gray: 100 116 139; /* Eumaeus Gray */
+    --color-background: 241 245 249; /* Eumaeus Light */
+    --color-white: 255 255 255;
+    
+    /* Variáveis do sistema de design (mantendo compatibilidade) */
+    --background: 241 245 249;
+    --foreground: 30 41 59;
 
-    --card: 330 50% 97%;
-    --card-foreground: 330 15% 15%;
+    --card: 255 255 255;
+    --card-foreground: 30 41 59;
 
-    --popover: 330 50% 97%;
-    --popover-foreground: 330 15% 15%;
+    --popover: 255 255 255;
+    --popover-foreground: 30 41 59;
 
-    --primary: 330 85% 65%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 0 82 155;
+    --primary-foreground: 255 255 255;
 
-    --secondary: 330 30% 90%;
-    --secondary-foreground: 330 15% 25%;
+    --secondary: 0 168 89;
+    --secondary-foreground: 255 255 255;
 
-    --muted: 330 25% 92%;
-    --muted-foreground: 330 10% 45%;
+    --muted: 241 245 249;
+    --muted-foreground: 100 116 139;
 
     --accent: 330 40% 85%;
     --accent-foreground: 330 15% 25%;
@@ -128,7 +137,7 @@
   
   /* Manter compatibilidade com código existente */
   .gradient-pink {
-    @apply bg-gradient-to-br from-eumaeus-blue to-eumaeus-green;
+    background: linear-gradient(to bottom right, rgb(var(--color-primary)), rgb(var(--color-secondary)));
   }
   
   .card-vet {
