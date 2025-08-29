@@ -128,16 +128,16 @@ const Pets = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="bg-background p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <div className="w-8 h-8 rounded-lg gradient-eumaeus-green flex items-center justify-center">
             <PawPrint className="w-5 h-5 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-gradient">Gestão de Pets</h1>
+          <h1 className="text-2xl font-bold text-text-dark mb-6">Gestão de Pets</h1>
         </div>
         <Button 
-          className="gradient-eumaeus-teal text-white hover:opacity-90"
+          className="bg-primary text-white font-semibold rounded-lg px-4 py-2 hover:bg-secondary transition-colors duration-200 shadow-sm"
           onClick={handleCreatePet}
         >
           <Plus className="h-4 w-4 mr-2" />
@@ -170,75 +170,75 @@ const Pets = () => {
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card className="card-vet border-gradient">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+        <Card className="bg-white rounded-lg shadow-md">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4">
+            <CardTitle className="text-sm font-medium text-text-gray">
               Total de Pets
             </CardTitle>
             <div className="p-2 rounded-lg gradient-eumaeus-light">
               <PawPrint className="h-4 w-4 text-white" />
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-foreground">{pets.length}</div>
-            <div className="text-xs text-muted-foreground mt-1">
+          <CardContent className="p-4">
+            <div className="text-2xl font-bold text-text-dark">{pets.length}</div>
+            <div className="text-xs text-text-gray mt-1">
               Cadastrados no sistema
             </div>
           </CardContent>
         </Card>
 
-        <Card className="card-vet border-gradient">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+        <Card className="bg-white rounded-lg shadow-md">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4">
+            <CardTitle className="text-sm font-medium text-text-gray">
               Cães
             </CardTitle>
             <div className="p-2 rounded-lg gradient-eumaeus-blue">
               <span className="text-white text-sm">🐕</span>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-foreground">
+          <CardContent className="p-4">
+            <div className="text-2xl font-bold text-text-dark">
               {pets.filter(pet => pet.species === 'Cão').length}
             </div>
-            <div className="text-xs text-muted-foreground mt-1">
+            <div className="text-xs text-text-gray mt-1">
               Caninos cadastrados
             </div>
           </CardContent>
         </Card>
 
-        <Card className="card-vet border-gradient">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+        <Card className="bg-white rounded-lg shadow-md">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4">
+            <CardTitle className="text-sm font-medium text-text-gray">
               Gatos
             </CardTitle>
             <div className="p-2 rounded-lg gradient-eumaeus-green">
               <span className="text-white text-sm">🐱</span>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-foreground">
+          <CardContent className="p-4">
+            <div className="text-2xl font-bold text-text-dark">
               {pets.filter(pet => pet.species === 'Gato').length}
             </div>
-            <div className="text-xs text-muted-foreground mt-1">
+            <div className="text-xs text-text-gray mt-1">
               Felinos cadastrados
             </div>
           </CardContent>
         </Card>
 
-        <Card className="card-vet border-gradient">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+        <Card className="bg-white rounded-lg shadow-md">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4">
+            <CardTitle className="text-sm font-medium text-text-gray">
               Outras Espécies
             </CardTitle>
             <div className="p-2 rounded-lg gradient-eumaeus-teal">
               <Heart className="h-4 w-4 text-white" />
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-foreground">
+          <CardContent className="p-4">
+            <div className="text-2xl font-bold text-text-dark">
               {pets.filter(pet => pet.species !== 'Cão' && pet.species !== 'Gato').length}
             </div>
-            <div className="text-xs text-muted-foreground mt-1">
+            <div className="text-xs text-text-gray mt-1">
               Outras espécies cadastradas
             </div>
           </CardContent>
@@ -246,8 +246,8 @@ const Pets = () => {
       </div>
 
       {/* Pets Table */}
-      <Card className="card-vet">
-        <CardHeader className="border-gradient">
+      <Card className="bg-white rounded-lg shadow-md">
+        <CardHeader className="p-4 border-b border-slate-200">
           <CardTitle className="text-gradient">Lista de Pets ({filteredPets.length})</CardTitle>
         </CardHeader>
         <CardContent>
