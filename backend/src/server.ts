@@ -1,6 +1,5 @@
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import cron from 'node-cron';
 import http from 'http';
 import { tutorRoutes } from './routes/tutor.routes';
@@ -19,8 +18,7 @@ import clinicSettingsRoutes from './routes/clinicSettings.routes';
 import { reminderService } from './services/reminderService';
 import { prisma } from './lib/prisma';
 
-// Carrega variáveis de ambiente
-dotenv.config();
+
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3333;
