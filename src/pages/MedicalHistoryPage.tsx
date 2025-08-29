@@ -153,7 +153,7 @@ export function MedicalHistoryPage() {
                 setShowForm(true);
               }
             }}
-            className="gradient-pink text-white"
+            className="gradient-eumaeus text-white"
           >
             {showForm ? 'Cancelar' : 'Nova Entrada'}
           </Button>
@@ -176,7 +176,7 @@ export function MedicalHistoryPage() {
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                 rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-eumaeus-blue focus:border-transparent"
                 placeholder="Descreva os sintomas, diagnóstico, tratamento..."
                 required
               />
@@ -191,7 +191,7 @@ export function MedicalHistoryPage() {
                 value={formData.prescription}
                 onChange={(e) => setFormData({ ...formData, prescription: e.target.value })}
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-eumaeus-blue focus:border-transparent"
                 placeholder="Medicamentos, dosagem, instruções..."
               />
             </div>
@@ -200,7 +200,7 @@ export function MedicalHistoryPage() {
               <Button
                 type="submit"
                 disabled={createRecordMutation.isPending || updateRecordMutation.isPending}
-                className="gradient-pink text-white"
+                className="gradient-eumaeus text-white"
               >
                 {(createRecordMutation.isPending || updateRecordMutation.isPending) ? (
                   <>
@@ -243,7 +243,7 @@ export function MedicalHistoryPage() {
           ) : (
             <div className="space-y-6">
               {records.map((record) => (
-                <div key={record.id} className="border-l-4 border-pink-500 pl-4 py-2">
+                <div key={record.id} className="border-l-4 border-eumaeus-blue pl-4 py-2">
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="font-medium text-gray-900">
                       Consulta - {formatDate(record.recordDate)}
@@ -253,7 +253,7 @@ export function MedicalHistoryPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => handleEditRecord(record)}
-                        className="flex items-center space-x-1 text-gray-600 hover:text-pink-600"
+                        className="flex items-center space-x-1 text-gray-600 hover:text-eumaeus-blue"
                       >
                         <Edit2 size={14} />
                         <span>Editar</span>
