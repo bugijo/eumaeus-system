@@ -120,13 +120,13 @@ export const TutorListPage = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 rounded-lg gradient-pink flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg gradient-eumaeus-blue flex items-center justify-center">
             <Users className="w-5 h-5 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-gradient">Gestão de Tutores</h1>
         </div>
         <Button 
-          className="gradient-pink text-white hover:opacity-90"
+          className="gradient-eumaeus-green text-white hover:opacity-90"
           onClick={handleCreateTutor}
         >
           <Plus className="h-4 w-4 mr-2" />
@@ -164,7 +164,7 @@ export const TutorListPage = () => {
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Total de Tutores
             </CardTitle>
-            <div className="p-2 rounded-lg gradient-pink">
+            <div className="p-2 rounded-lg gradient-eumaeus-light">
               <Users className="h-4 w-4 text-white" />
             </div>
           </CardHeader>
@@ -181,7 +181,7 @@ export const TutorListPage = () => {
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Tutores Ativos
             </CardTitle>
-            <div className="p-2 rounded-lg gradient-pink">
+            <div className="p-2 rounded-lg gradient-eumaeus-teal">
               <UserCheck className="h-4 w-4 text-white" />
             </div>
           </CardHeader>
@@ -200,7 +200,7 @@ export const TutorListPage = () => {
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Com Pets
             </CardTitle>
-            <div className="p-2 rounded-lg gradient-pink">
+            <div className="p-2 rounded-lg gradient-eumaeus-cyan">
               <UserCheck className="h-4 w-4 text-white" />
             </div>
           </CardHeader>
@@ -219,7 +219,7 @@ export const TutorListPage = () => {
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Novos Este Mês
             </CardTitle>
-            <div className="p-2 rounded-lg gradient-pink">
+            <div className="p-2 rounded-lg gradient-eumaeus-blue">
               <Calendar className="h-4 w-4 text-white" />
             </div>
           </CardHeader>
@@ -266,7 +266,7 @@ export const TutorListPage = () => {
                   <TableRow key={tutor.id} className="hover:bg-muted/50">
                     <TableCell>
                       <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 rounded-full gradient-pink flex items-center justify-center">
+                        <div className="w-10 h-10 rounded-full gradient-eumaeus-green flex items-center justify-center">
                           <Users className="w-5 h-5 text-white" />
                         </div>
                         <div>

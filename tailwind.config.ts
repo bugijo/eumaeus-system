@@ -19,9 +19,15 @@ export default {
 		},
 		extend: {
 			colors: {
-				// Cores da marca Eumaeus
-				'eumaeus-blue': '#00529B',       // O azul da logo
-				'eumaeus-green': '#00A859',      // O verde da logo
+				// Cores da marca Eumaeus - Paleta expandida
+				'eumaeus-blue': '#00529B',       // Azul principal da logo
+				'eumaeus-blue-light': '#3B82F6', // Azul mais claro
+				'eumaeus-blue-dark': '#1E3A8A',  // Azul mais escuro
+				'eumaeus-green': '#00A859',      // Verde principal da logo
+				'eumaeus-green-light': '#10B981', // Verde mais claro
+				'eumaeus-green-dark': '#047857', // Verde mais escuro
+				'eumaeus-teal': '#0D9488',       // Verde-azulado (tom intermediário)
+				'eumaeus-cyan': '#0891B2',       // Ciano (tom entre azul e verde)
 				'eumaeus-dark': '#1E293B',       // Cinza escuro para textos principais
 				'eumaeus-gray': '#64748B',       // Cinza médio para textos secundários
 				'eumaeus-light': '#F1F5F9',      // Cinza claro para fundos

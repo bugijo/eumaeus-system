@@ -138,7 +138,7 @@ const Dashboard = () => {
       <div className="flex flex-col space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-xl gradient-pink flex items-center justify-center shadow-lg">
+            <div className="w-10 h-10 rounded-xl gradient-eumaeus-blue flex items-center justify-center shadow-lg">
               <Activity className="w-6 h-6 text-white" />
             </div>
             <div>

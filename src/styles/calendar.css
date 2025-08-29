@@ -24,7 +24,7 @@
 /* Agendamento cancelado - Vermelho */
 .fc-event.event-cancelled {
   background-color: #dc2626 !important;
-  border-color: #b91c1c !important;
+  border-color: #00529B !important;
   color: white !important;
   opacity: 0.7;
   text-decoration: line-through;
@@ -47,7 +47,7 @@
 }
 
 .fc-event.event-cancelled:hover {
-  background-color: #b91c1c !important;
+  background-color: #00A859 !important;
   border-color: #991b1b !important;
 }
 

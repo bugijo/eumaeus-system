@@ -105,8 +105,25 @@
 
 /* Classes personalizadas para o tema veterinário */
 @layer components {
+  /* Gradientes da marca Eumaeus */
   .gradient-eumaeus {
     @apply bg-gradient-to-br from-eumaeus-blue to-eumaeus-green;
+  }
+  
+  .gradient-eumaeus-light {
+    @apply bg-gradient-to-br from-eumaeus-blue-light to-eumaeus-green-light;
+  }
+  
+  .gradient-eumaeus-teal {
+    @apply bg-gradient-to-br from-eumaeus-cyan to-eumaeus-teal;
+  }
+  
+  .gradient-eumaeus-blue {
+    @apply bg-gradient-to-br from-eumaeus-blue to-eumaeus-blue-light;
+  }
+  
+  .gradient-eumaeus-green {
+    @apply bg-gradient-to-br from-eumaeus-green to-eumaeus-green-light;
   }
   
   /* Manter compatibilidade com código existente */

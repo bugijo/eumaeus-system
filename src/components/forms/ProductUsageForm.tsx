@@ -166,7 +166,7 @@ export function ProductUsageForm({ appointmentId, onSuccess, onCancel }: Product
               type="button"
               onClick={handleAddProduct}
               disabled={!selectedProductId || !quantityUsed || productsLoading}
-              className="w-full gradient-pink text-white hover:opacity-90"
+              className="w-full gradient-eumaeus-teal text-white hover:opacity-90"
             >
               Adicionar
             </Button>
@@ -215,7 +215,7 @@ export function ProductUsageForm({ appointmentId, onSuccess, onCancel }: Product
             type="button"
             onClick={handleSubmit}
             disabled={registerUsageMutation.isPending || usageList.length === 0}
-            className="gradient-pink text-white hover:opacity-90"
+            className="gradient-eumaeus-cyan text-white hover:opacity-90"
           >
             {registerUsageMutation.isPending ? (
               <>
