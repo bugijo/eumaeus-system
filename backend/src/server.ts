@@ -22,51 +22,15 @@ import { prisma } from './lib/prisma';
 // Carrega variáveis de ambiente
 dotenv.config();
 
-// Configuração de CORS com origens permitidas
-const allowedOrigins = [
-  // Ambiente de Desenvolvimento
-  'http://localhost:3000',
-
-  // Domínios da Vercel (para testes e previews)
-  'https://eumaeus-system.vercel.app',
-  'https://eumaeus-system-git-main-giovanni-pereiras-projects.vercel.app',
-
-  // Domínio de Produção Oficial (as duas variações principais)
-  'https://eumaeus.com.br',
-  'https://www.eumaeus.com.br'
-];
-
-// --- VETDEV DEBUG: O TESTE FINAL ---
-console.log('============================================================');
-console.log('INICIANDO VERIFICAÇÃO DE AMBIENTE...');
-console.log(`--> Valor da DATABASE_URL: [${process.env.DATABASE_URL}]`);
-console.log('--> Lista allowedOrigins em uso:', allowedOrigins);
-console.log('============================================================');
-// --- FIM DO DEBUG ---
-
 const app = express();
 const PORT = Number(process.env.PORT) || 3333;
 const HOST = '0.0.0.0'; // Aceitar conexões de qualquer endereço na rede
 
-app.use((req, res, next) => {
-  const origin = req.headers.origin || '';
-  if (allowedOrigins.includes(origin)) {
-    res.header('Access-Control-Allow-Origin', origin);
-    res.header('Vary', 'Origin');
-  }
-
-  res.header('Access-Control-Allow-Credentials', 'true');
-  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,PATCH,OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
-  // Se for uma requisição de pre-flight (OPTIONS), encerramos a conversa aqui.
-  if (req.method === 'OPTIONS') {
-    return res.sendStatus(204);
-  }
-
-  // Se não for, passamos para a próxima rota da fila.
-  return next();
-});
+// Substitua nosso middleware manual por este bloco simples:
+app.use(cors({
+  origin: '*', // O '*' significa: PERMITA QUALQUER ORIGEM
+  credentials: true,
+}));
 
 // Middlewares
 app.use(express.json());
