@@ -84,14 +84,14 @@ const Layout = ({ children }: LayoutProps) => {
           <div className="flex items-center space-x-3">
             <div className="w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden">
               <img 
-                src="/logo-vetdev.jpg" 
-                alt="Logo Clínica Veterinária" 
-                className="w-12 h-12 object-cover rounded-lg"
+                src="/logo.png" 
+                alt="Eumaeus System Logo" 
+                className="w-12 h-12 object-contain"
               />
             </div>
             <div>
-              <h2 className="font-semibold text-sidebar-foreground text-sm">Eumaeus System</h2>
-              <p className="text-xs text-sidebar-foreground/70">{user?.name || 'Usuário'}</p>
+              <h2 className="font-semibold text-eumaeus-dark text-sm">Eumaeus System</h2>
+              <p className="text-xs text-eumaeus-gray">{user?.name || 'Usuário'}</p>
             </div>
           </div>
         </div>

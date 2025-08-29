@@ -19,6 +19,13 @@ export default {
 		},
 		extend: {
 			colors: {
+				// Cores da marca Eumaeus
+				'eumaeus-blue': '#00529B',       // O azul da logo
+				'eumaeus-green': '#00A859',      // O verde da logo
+				'eumaeus-dark': '#1E293B',       // Cinza escuro para textos principais
+				'eumaeus-gray': '#64748B',       // Cinza médio para textos secundários
+				'eumaeus-light': '#F1F5F9',      // Cinza claro para fundos
+				
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',
