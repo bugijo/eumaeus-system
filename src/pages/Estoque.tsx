@@ -194,7 +194,7 @@ export default function StockPage() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="bg-eumaeus-light p-6 rounded-xl space-y-6">
       {/* Cabeçalho Principal */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div className="flex items-center space-x-4">
@@ -202,29 +202,29 @@ export default function StockPage() {
             <Package className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Controle de Estoque</h1>
-            <p className="text-gray-600 mt-1">Gerencie produtos e monitore o estoque</p>
+            <h1 className="text-2xl font-bold text-eumaeus-dark mb-2">Gestão de Estoque</h1>
+            <p className="text-eumaeus-gray">Visão geral e controle total do seu inventário</p>
           </div>
         </div>
-        <Button onClick={handleNewProduct} className="gradient-eumaeus text-white hover:opacity-90 shadow-lg">
+        <Button onClick={handleNewProduct} className="bg-eumaeus-blue text-white font-bold py-2 px-4 rounded-lg hover:bg-eumaeus-green shadow-sm transition-colors duration-200">
           <Plus className="w-4 h-4 mr-2" />
           Adicionar Produto
         </Button>
       </div>
 
       {/* Barra de Filtros e Busca */}
-      <Card className="border-gradient">
+      <Card className="bg-white rounded-lg shadow-md">
         <CardContent className="p-6">
           <div className="flex flex-col lg:flex-row gap-4">
             {/* Busca */}
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-eumaeus-gray w-4 h-4" />
                 <Input
                   placeholder="Buscar produtos ou fornecedores..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 border-primary/20 focus:border-primary"
+                  className="pl-10 border-gray-300 focus:ring-2 focus:ring-eumaeus-blue focus:border-eumaeus-blue transition-colors duration-200"
                 />
               </div>
             </div>
@@ -281,76 +281,76 @@ export default function StockPage() {
 
       {/* Cards de Estatísticas */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="card-vet hover:scale-105 transition-all duration-300 border-l-4 border-l-blue-500">
+        <Card className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border-l-4 border-l-eumaeus-blue">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Itens Cadastrados</CardTitle>
-            <div className="p-2 rounded-lg bg-blue-100">
-              <Package className="h-5 w-5 text-blue-600" />
+            <CardTitle className="text-sm font-medium text-eumaeus-gray">Itens Cadastrados</CardTitle>
+            <div className="p-2 rounded-lg bg-eumaeus-blue/10">
+              <Package className="h-5 w-5 text-eumaeus-blue" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-gray-900 mb-1">
+            <div className="text-3xl font-bold text-eumaeus-dark mb-1">
               {statsLoading ? <LoadingSpinner size="sm" /> : stats?.totalItems || 0}
             </div>
-            <div className="flex items-center text-sm text-green-600">
+            <div className="flex items-center text-sm text-eumaeus-green">
               <TrendingUp className="w-4 h-4 mr-1" />
               <span>Total de produtos</span>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="card-vet hover:scale-105 transition-all duration-300 border-l-4 border-l-green-500">
+        <Card className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border-l-4 border-l-eumaeus-green">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Valor Total do Estoque</CardTitle>
-            <div className="p-2 rounded-lg bg-green-100">
-              <DollarSign className="h-5 w-5 text-green-600" />
+            <CardTitle className="text-sm font-medium text-eumaeus-gray">Valor Total do Estoque</CardTitle>
+            <div className="p-2 rounded-lg bg-eumaeus-green/10">
+              <DollarSign className="h-5 w-5 text-eumaeus-green" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-gray-900 mb-1">
+            <div className="text-3xl font-bold text-eumaeus-dark mb-1">
               {statsLoading ? (
                 <LoadingSpinner size="sm" />
               ) : (
                 formatCurrency(stats?.totalValue || 0)
               )}
             </div>
-            <div className="flex items-center text-sm text-green-600">
+            <div className="flex items-center text-sm text-eumaeus-green">
               <TrendingUp className="w-4 h-4 mr-1" />
               <span>Valor investido</span>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="card-vet hover:scale-105 transition-all duration-300 border-l-4 border-l-yellow-500">
+        <Card className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border-l-4 border-l-eumaeus-teal">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Estoque Baixo</CardTitle>
-            <div className="p-2 rounded-lg bg-yellow-100">
-              <AlertTriangle className="h-5 w-5 text-yellow-600" />
+            <CardTitle className="text-sm font-medium text-eumaeus-gray">Estoque Baixo</CardTitle>
+            <div className="p-2 rounded-lg bg-eumaeus-teal/10">
+              <AlertTriangle className="h-5 w-5 text-eumaeus-teal" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-yellow-600 mb-1">
+            <div className="text-3xl font-bold text-eumaeus-dark mb-1">
               {statsLoading ? <LoadingSpinner size="sm" /> : stats?.lowStockItems || 0}
             </div>
-            <div className="flex items-center text-sm text-yellow-600">
+            <div className="flex items-center text-sm text-eumaeus-teal">
               <TrendingDown className="w-4 h-4 mr-1" />
               <span>Requer atenção</span>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="card-vet hover:scale-105 transition-all duration-300 border-l-4 border-l-red-500">
+        <Card className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border-l-4 border-l-eumaeus-cyan">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Vencendo em 30 dias</CardTitle>
-            <div className="p-2 rounded-lg bg-red-100">
-              <Calendar className="h-5 w-5 text-red-600" />
+            <CardTitle className="text-sm font-medium text-eumaeus-gray">Vencendo em 30 dias</CardTitle>
+            <div className="p-2 rounded-lg bg-eumaeus-cyan/10">
+              <Calendar className="h-5 w-5 text-eumaeus-cyan" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-red-600 mb-1">
+            <div className="text-3xl font-bold text-eumaeus-dark mb-1">
               {statsLoading ? <LoadingSpinner size="sm" /> : stats?.expiringSoon || 0}
             </div>
-            <div className="flex items-center text-sm text-red-600">
+            <div className="flex items-center text-sm text-eumaeus-cyan">
               <AlertTriangle className="w-4 h-4 mr-1" />
               <span>Ação urgente</span>
             </div>
@@ -359,12 +359,12 @@ export default function StockPage() {
       </div>
 
       {/* Lista de Produtos */}
-      <Card className="card-vet">
+      <Card className="bg-white rounded-lg shadow-md">
         <CardHeader className="border-b border-gray-100">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-xl font-semibold text-gray-900">Lista de Produtos</CardTitle>
-              <p className="text-sm text-gray-600 mt-1">
+              <CardTitle className="text-xl font-semibold text-eumaeus-dark">Lista de Produtos</CardTitle>
+              <p className="text-sm text-eumaeus-gray mt-1">
                 {filteredAndSortedProducts.length} de {products.length} produtos
               </p>
             </div>

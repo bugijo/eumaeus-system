@@ -148,13 +148,16 @@ export default function Agendamentos() {
   }
 
   return (
-    <div className="p-4 md:p-6">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Agenda de Atendimentos</h1>
+    <div className="bg-eumaeus-light p-6 rounded-xl">
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-eumaeus-dark mb-2">Agenda de Atendimentos</h1>
+          <p className="text-eumaeus-gray">Gerencie consultas e acompanhe a agenda da clínica</p>
+        </div>
         <button
           onClick={handleNewAppointment}
           data-cy="btn-novo-agendamento"
-          className="px-4 py-2 bg-eumaeus-blue text-white rounded-md hover:bg-eumaeus-green transition-colors"
+          className="bg-eumaeus-blue text-white font-bold py-2 px-4 rounded-lg hover:bg-eumaeus-green shadow-sm transition-colors duration-200"
         >
           + Novo Agendamento
         </button>
