@@ -13,12 +13,17 @@ export default {
     try {
       const { email, password } = req.body;
 
-      // PASSO 1: Encontrar o AuthProfile com as relações User e Tutor.
+      // PASSO 1: Buscar o AuthProfile e TUDO que precisamos de uma só vez com 'include'.
+      // Esta é a forma mais segura de garantir que o TypeScript entenda os dados.
       const authProfile = await prisma.authProfile.findUnique({
         where: { email },
         include: {
-          user: { include: { role: true } }, // Para funcionários
-          tutor: true,                      // Para tutores/admins
+          user: {
+            include: {
+              role: true,
+            },
+          },
+          tutor: true,
         },
       });
 
@@ -31,39 +36,33 @@ export default {
         return res.status(401).json({ message: 'Credenciais inválidas' });
       }
 
-      // PASSO 2: Verificar se existe um 'user' OU um 'tutor' associado
-      if (!authProfile.user && !authProfile.tutor) {
-        return res.status(403).json({ message: 'Acesso negado. Perfil não associado a um funcionário ou tutor.' });
-      }
-
-      // PASSO 3: Criar os dados do token de forma condicional, dependendo do tipo de perfil
+      // O resto da nossa lógica condicional, agora com 100% de certeza dos tipos.
       let tokenPayload;
       let userPayload;
 
       if (authProfile.user) {
-        // Se for um funcionário, use os dados de 'user'
         const userRole = authProfile.user.role?.name || 'FUNCIONARIO';
         tokenPayload = { id: authProfile.user.id, type: 'user', role: userRole };
         userPayload = { id: authProfile.user.id, name: authProfile.user.name, email: authProfile.email, role: userRole, type: 'user' };
       } else if (authProfile.tutor) {
-        // Se for um tutor (nosso admin), use os dados de 'tutor' - tutores têm role 'ADMIN'
         tokenPayload = { id: authProfile.tutor.id, type: 'tutor', role: 'ADMIN' };
         userPayload = { id: authProfile.tutor.id, name: authProfile.tutor.name, email: authProfile.email, role: 'ADMIN', type: 'tutor' };
       } else {
-        // Este caso é um fallback de segurança, não deve acontecer
-        console.error("Erro de lógica: AuthProfile encontrado sem user ou tutor.", authProfile);
-        return res.status(500).json({ message: "Erro de configuração de perfil de usuário." });
+        return res.status(403).json({ message: 'Acesso negado. Perfil não associado a uma conta ativa.' });
       }
 
-      // PASSO 4: Gerar tokens e responder (código que já tínhamos)
-      const accessToken = jwt.sign(tokenPayload, process.env.JWT_SECRET!, { expiresIn: '15m' });
-      const refreshToken = jwt.sign({ authProfileId: authProfile.id }, process.env.REFRESH_TOKEN_SECRET!, { expiresIn: '30d' });
+      // Gerar tokens e responder
+      const JWT_SECRET = process.env.JWT_SECRET!;
+      const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET!;
+
+      const accessToken = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: '15m' });
+      const refreshToken = jwt.sign({ authProfileId: authProfile.id }, REFRESH_TOKEN_SECRET, { expiresIn: '30d' });
 
       await prisma.authProfile.update({
         where: { id: authProfile.id },
         data: { refreshToken },
       });
-      
+
       return res.status(200).json({ accessToken, refreshToken, user: userPayload });
 
     } catch (error) {
