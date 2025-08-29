@@ -206,7 +206,7 @@ export default function StockPage() {
             <p className="text-eumaeus-gray">Visão geral e controle total do seu inventário</p>
           </div>
         </div>
-        <Button onClick={handleNewProduct} className="bg-primary text-white font-bold py-2 px-4 rounded-lg hover:bg-secondary shadow-sm transition-colors duration-200">
+        <Button onClick={handleNewProduct} className="bg-primary text-white font-semibold rounded-lg px-4 py-2 hover:bg-secondary transition-colors duration-200 shadow-sm">
           <Plus className="w-4 h-4 mr-2" />
           Adicionar Produto
         </Button>
@@ -360,7 +360,7 @@ export default function StockPage() {
 
       {/* Lista de Produtos */}
       <Card className="bg-white rounded-lg shadow-md">
-        <CardHeader className="border-b border-gray-100">
+        <CardHeader className="p-4 border-b border-slate-200">
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="text-xl font-semibold text-eumaeus-dark">Lista de Produtos</CardTitle>
@@ -407,7 +407,7 @@ export default function StockPage() {
                       const expiring = isExpiringSoon(product.expirationDate);
                       
                       return (
-                        <TableRow key={product.id} className="hover:bg-gray-50/50 transition-colors">
+                        <TableRow key={product.id} className="hover:bg-background transition-colors cursor-pointer">
                           <TableCell className="font-medium text-gray-900">{product.name}</TableCell>
                           <TableCell className="text-gray-600">{product.supplier}</TableCell>
                           <TableCell>

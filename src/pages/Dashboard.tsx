@@ -168,7 +168,7 @@ const Dashboard = () => {
                   <Icon className="h-6 w-6 text-primary" />
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-4">
                 <div className="text-2xl font-bold text-eumaeus-dark mb-2">
                   {!stat.isStatic && isLoadingStats ? (
                     <LoadingSpinner />
@@ -189,9 +189,9 @@ const Dashboard = () => {
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Upcoming Appointments - Agora Interativo */}
-        <Card className="card-vet border-gradient">
-          <CardHeader className="border-gradient">
-            <CardTitle className="flex items-center justify-between text-gradient">
+        <Card className="bg-white rounded-lg shadow-md">
+          <CardHeader className="p-4 border-b border-slate-200">
+            <CardTitle className="flex items-center justify-between text-text-dark">
               <div className="flex items-center">
                 <Calendar className="h-5 w-5 mr-2 text-primary" />
                 Próximos Agendamentos
@@ -201,7 +201,7 @@ const Dashboard = () => {
               </Badge>
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4">
             <div className="space-y-3">
               {isLoadingAppointments ? (
                 <div className="flex justify-center py-4">
@@ -257,9 +257,9 @@ const Dashboard = () => {
         </Card>
 
         {/* Recent Activities - Feed Aprimorado */}
-        <Card className="card-vet border-gradient">
-          <CardHeader className="border-gradient">
-            <CardTitle className="flex items-center justify-between text-gradient">
+        <Card className="bg-white rounded-lg shadow-md">
+          <CardHeader className="p-4 border-b border-slate-200">
+            <CardTitle className="flex items-center justify-between text-text-dark">
               <div className="flex items-center">
                 <Activity className="h-5 w-5 mr-2 text-primary" />
                 Feed de Atividades
