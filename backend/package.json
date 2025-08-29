@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/bootstrap.ts",
     "build": "tsc",
-    "start": "node dist/src/server.js"
+    "start": "node -r dotenv/config dist/src/server.js",
+    "prisma:generate": "npx prisma generate"
   },
   "dependencies": {
     "@prisma/client": "^5.0.0",
