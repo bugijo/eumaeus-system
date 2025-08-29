@@ -59,12 +59,11 @@ const Layout = ({ children }: LayoutProps) => {
   ];
 
   return (
-    <div className="relative h-screen bg-gray-50">
+    <div className="flex h-screen bg-background overflow-hidden">
       {/* Sidebar */}
-      <aside 
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-all duration-300 ease-in-out ${
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
+      <aside className={`fixed left-0 top-0 h-full w-64 bg-white border-r border-slate-200 transform transition-transform duration-300 ease-in-out z-50 ${
+        sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+      }`}
         onMouseEnter={() => setSidebarOpen(true)}
         onMouseLeave={() => setSidebarOpen(false)}
       >
@@ -142,7 +141,7 @@ const Layout = ({ children }: LayoutProps) => {
         sidebarOpen ? 'ml-64' : 'ml-0'
       }`}>
         {/* Top Header */}
-        <header className="bg-gradient-to-r from-bg-light to-white border-b border-primary/20 p-4 flex items-center justify-between shadow-sm">
+        <header className="bg-white border-b border-slate-200 p-4 flex items-center justify-between shadow-sm">
           <div className="flex items-center space-x-4">
             {/* Menu Toggle Button */}
             <Button 
@@ -204,7 +203,7 @@ const Layout = ({ children }: LayoutProps) => {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-6 transition-all duration-300">
+        <main className="flex-1 p-6 bg-background transition-all duration-300">
           {children}
         </main>
       </div>
