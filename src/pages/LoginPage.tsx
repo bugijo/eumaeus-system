@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -70,14 +71,25 @@ export default function LoginPage() {
               {/* Campo de Senha */}
               <div className="flex flex-col space-y-1.5">
                 <Label htmlFor="password">Senha</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Sua senha"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Sua senha"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 h-auto p-1"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? 'Esconder' : 'Mostrar'}
+                  </Button>
+                </div>
               </div>
 
               {/* Exibição de Erro */}

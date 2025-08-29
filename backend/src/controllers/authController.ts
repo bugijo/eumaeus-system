@@ -32,6 +32,15 @@ export default {
       }
 
       const isPasswordValid = await bcrypt.compare(password, authProfile.password);
+
+      // --- VETDEV DEBUG DE HASH ---
+      console.log('================================');
+      console.log('DEBUGANDO COMPARAÇÃO DE SENHA');
+      console.log('Senha recebida do frontend:', password);
+      console.log('Hash que está no banco:', authProfile.password);
+      console.log('Resultado da comparação (bcrypt.compare):', isPasswordValid);
+      console.log('================================');
+
       if (!isPasswordValid) {
         return res.status(401).json({ message: 'Credenciais inválidas' });
       }

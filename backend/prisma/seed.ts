@@ -30,6 +30,10 @@ async function main() {
 
   const hashedPassword = await bcrypt.hash(plainPassword, 10);
 
+  console.log('--- HASH QUE SERÁ SALVO NO BANCO ---');
+  console.log(hashedPassword);
+  console.log('------------------------------------');
+
   // Verificar se o AuthProfile já existe
   const existingAuthProfile = await prisma.authProfile.findUnique({
     where: { email: adminEmail }
