@@ -13,18 +13,13 @@ export default {
     try {
       const { email, password } = req.body;
 
-      // PASSO 1: Encontrar o AuthProfile, selecionando TODOS os campos que vamos precisar logo em seguida.
+      // PASSO 1: Encontrar o AuthProfile com as relações User e Tutor.
       const authProfile = await prisma.authProfile.findUnique({
         where: { email },
-        select: {
-          id: true,
-          password: true,
-          email: true,
-          refreshToken: true,
-          role: true,   // <-- Agora estamos pedindo o 'role'
-          userId: true,  // <-- Agora estamos pedindo o 'userId'
-          tutorId: true, // <-- Agora estamos pedindo o 'tutorId'
-        }
+        include: {
+          user: { include: { role: true } }, // Para funcionários
+          tutor: true,                      // Para tutores/admins
+        },
       });
 
       if (!authProfile) {
@@ -36,39 +31,28 @@ export default {
         return res.status(401).json({ message: 'Credenciais inválidas' });
       }
 
-      // PASSO 2: Agora, com o authProfile em mãos, buscamos o User OU Tutor associado.
-      let user;
-      let tutor;
-      
-      // Verifica se o authProfile está ligado a um 'user' (funcionário)
-      if (authProfile.userId) {
-        user = await prisma.user.findUnique({
-          where: { id: authProfile.userId },
-          include: { role: true } // O include aqui funciona de forma simples e direta
-        });
-      }
-      // Se não, verifica se está ligado a um 'tutor' (admin/dono)
-      else if (authProfile.tutorId) {
-        tutor = await prisma.tutor.findUnique({ where: { id: authProfile.tutorId } });
+      // PASSO 2: Verificar se existe um 'user' OU um 'tutor' associado
+      if (!authProfile.user && !authProfile.tutor) {
+        return res.status(403).json({ message: 'Acesso negado. Perfil não associado a um funcionário ou tutor.' });
       }
 
-      if (!user && !tutor) {
-        return res.status(403).json({ message: 'Acesso negado. Perfil de autenticação não está associado a uma conta ativa.' });
-      }
-
-      // PASSO 3: Montar os payloads com os dados que AGORA temos certeza que existem.
+      // PASSO 3: Criar os dados do token de forma condicional, dependendo do tipo de perfil
       let tokenPayload;
       let userPayload;
 
-      if (user) {
-        const userRole = user.role?.name || 'FUNCIONARIO';
-        tokenPayload = { id: user.id, type: 'user', role: userRole };
-        userPayload = { id: user.id, name: user.name, email: authProfile.email, role: userRole, type: 'user' };
-      } else if (tutor) {
-        tokenPayload = { id: tutor.id, type: 'tutor', role: authProfile.role };
-        userPayload = { id: tutor.id, name: tutor.name, email: authProfile.email, role: authProfile.role, type: 'tutor' };
+      if (authProfile.user) {
+        // Se for um funcionário, use os dados de 'user'
+        const userRole = authProfile.user.role?.name || 'FUNCIONARIO';
+        tokenPayload = { id: authProfile.user.id, type: 'user', role: userRole };
+        userPayload = { id: authProfile.user.id, name: authProfile.user.name, email: authProfile.email, role: userRole, type: 'user' };
+      } else if (authProfile.tutor) {
+        // Se for um tutor (nosso admin), use os dados de 'tutor' - tutores têm role 'ADMIN'
+        tokenPayload = { id: authProfile.tutor.id, type: 'tutor', role: 'ADMIN' };
+        userPayload = { id: authProfile.tutor.id, name: authProfile.tutor.name, email: authProfile.email, role: 'ADMIN', type: 'tutor' };
       } else {
-        return res.status(500).json({ message: "Erro crítico na configuração do perfil." });
+        // Este caso é um fallback de segurança, não deve acontecer
+        console.error("Erro de lógica: AuthProfile encontrado sem user ou tutor.", authProfile);
+        return res.status(500).json({ message: "Erro de configuração de perfil de usuário." });
       }
 
       // PASSO 4: Gerar tokens e responder (código que já tínhamos)
