@@ -5,7 +5,7 @@ const TestApp: React.FC = () => {
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #fce7f3, #f3e8ff)',
+      background: 'linear-gradient(135deg, #F1F5F9, #E0F2FE)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -19,7 +19,7 @@ const TestApp: React.FC = () => {
         textAlign: 'center',
         maxWidth: '500px'
       }}>
-        <h1 style={{ color: '#be185d', marginBottom: '20px' }}>
+        <h1 style={{ color: '#00529B', marginBottom: '20px' }}>
           🐾 Eumaeus System - Teste React
         </h1>
         
@@ -71,7 +71,7 @@ const TestApp: React.FC = () => {
               });
           }}
           style={{
-            background: '#be185d',
+            background: '#00A859',
             color: 'white',
             border: 'none',
             padding: '12px 24px',
