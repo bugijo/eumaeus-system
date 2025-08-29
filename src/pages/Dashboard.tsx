@@ -133,7 +133,7 @@ const Dashboard = () => {
   // ========================================
 
   return (
-    <div className="space-y-6">
+    <div className="bg-eumaeus-light p-6 rounded-xl space-y-6">
       {/* Cabeçalho Aprimorado */}
       <div className="flex flex-col space-y-4">
         <div className="flex items-center justify-between">
@@ -142,11 +142,11 @@ const Dashboard = () => {
               <Activity className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gradient">Cockpit da Clínica</h1>
-              <p className="text-muted-foreground">Visão geral e controle total da sua clínica veterinária</p>
+              <h1 className="text-2xl font-bold text-eumaeus-dark mb-2">Cockpit da Clínica</h1>
+              <p className="text-eumaeus-gray">Visão geral e controle total da sua clínica veterinária</p>
             </div>
           </div>
-          <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+          <div className="flex items-center space-x-2 text-sm text-eumaeus-gray">
             <Clock className="w-4 h-4" />
             <span>Atualizado agora</span>
           </div>
@@ -159,17 +159,17 @@ const Dashboard = () => {
           const Icon = stat.icon;
           const TrendIcon = stat.positive ? TrendingUp : TrendingDown;
           return (
-            <Card key={index} className={`card-vet border-gradient hover:scale-105 transition-all duration-300 border-l-4 ${stat.borderColor} ${stat.bgColor}/30`}>
+            <Card key={index} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border-l-4 border-l-eumaeus-blue">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
+                <CardTitle className="text-sm font-medium text-eumaeus-gray">
                   {stat.title}
                 </CardTitle>
-                <div className={`p-3 rounded-xl ${stat.bgColor} shadow-sm`}>
-                  <Icon className={`h-6 w-6 ${stat.iconColor}`} />
+                <div className="p-3 rounded-xl bg-eumaeus-blue/10 shadow-sm">
+                  <Icon className="h-6 w-6 text-eumaeus-blue" />
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-foreground mb-2">
+                <div className="text-2xl font-bold text-eumaeus-dark mb-2">
                   {!stat.isStatic && isLoadingStats ? (
                     <LoadingSpinner />
                   ) : (
@@ -177,8 +177,8 @@ const Dashboard = () => {
                   )}
                 </div>
                 <div className="flex items-center text-xs">
-                  <TrendIcon className={`h-3 w-3 mr-1 ${stat.positive ? 'text-green-600' : 'text-red-600'}`} />
-                  <span className={stat.positive ? 'text-green-600' : 'text-red-600'}>{stat.change}</span>
+                  <TrendIcon className={`h-3 w-3 mr-1 ${stat.positive ? 'text-eumaeus-green' : 'text-eumaeus-teal'}`} />
+                  <span className={stat.positive ? 'text-eumaeus-green' : 'text-eumaeus-teal'}>{stat.change}</span>
                 </div>
               </CardContent>
             </Card>

@@ -147,16 +147,19 @@ const Clientes = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="bg-eumaeus-light p-6 rounded-xl space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <div className="w-8 h-8 rounded-lg gradient-eumaeus-light flex items-center justify-center">
             <Users className="w-5 h-5 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-gradient">Gestão de Clientes</h1>
+          <div>
+            <h1 className="text-2xl font-bold text-eumaeus-dark mb-2">Gestão de Clientes</h1>
+            <p className="text-eumaeus-gray">Cadastre e gerencie informações dos tutores</p>
+          </div>
         </div>
         <Button 
-          className="gradient-eumaeus-blue text-white hover:opacity-90"
+          className="bg-eumaeus-blue text-white font-bold py-2 px-4 rounded-lg hover:bg-eumaeus-green shadow-sm transition-colors duration-200"
           onClick={handleNewClient}
         >
           <Plus className="h-4 w-4 mr-2" />
