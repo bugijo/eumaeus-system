@@ -280,17 +280,17 @@ const Dashboard = () => {
                   // Determinar ícone e cor baseado no tipo de atividade
                   const getActivityIcon = (type: string, description: string) => {
                     switch (type) {
-                      case 'tutor': return { icon: Users, color: 'text-orange-600', bg: 'bg-orange-100' };
-                      case 'payment': return { icon: CreditCard, color: 'text-green-600', bg: 'bg-green-100' };
-                      case 'appointment': return { icon: Calendar, color: 'text-blue-600', bg: 'bg-blue-100' };
-                      case 'stock': return { icon: Package, color: 'text-red-600', bg: 'bg-red-100' };
-                      case 'consultation': return { icon: Stethoscope, color: 'text-purple-600', bg: 'bg-purple-100' };
+                      case 'tutor': return { icon: Users, color: 'text-eumaeus-blue', bg: 'bg-eumaeus-blue/10' };
+                      case 'payment': return { icon: CreditCard, color: 'text-eumaeus-green', bg: 'bg-eumaeus-green/10' };
+                      case 'appointment': return { icon: Calendar, color: 'text-eumaeus-cyan', bg: 'bg-eumaeus-cyan/10' };
+                      case 'stock': return { icon: Package, color: 'text-eumaeus-teal', bg: 'bg-eumaeus-teal/10' };
+                      case 'consultation': return { icon: Stethoscope, color: 'text-eumaeus-blue-light', bg: 'bg-eumaeus-blue-light/10' };
                       default: {
                         // Fallback baseado na descrição
                         if (description.includes('pet') || description.includes('animal')) {
-                          return { icon: PawPrint, color: 'text-purple-600', bg: 'bg-purple-100' };
+                          return { icon: PawPrint, color: 'text-eumaeus-green-light', bg: 'bg-eumaeus-green-light/10' };
                         }
-                        return { icon: Activity, color: 'text-primary', bg: 'bg-primary/10' };
+                        return { icon: Activity, color: 'text-eumaeus-blue', bg: 'bg-eumaeus-blue/10' };
                       }
                     }
                   };

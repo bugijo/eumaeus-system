@@ -34,7 +34,7 @@ const DiagnosticApp: React.FC = () => {
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #fce7f3, #f3e8ff)',
+      background: 'linear-gradient(135deg, #F1F5F9, #E0F2FE)',
       padding: '20px',
       fontFamily: 'Arial, sans-serif'
     }}>
@@ -46,7 +46,7 @@ const DiagnosticApp: React.FC = () => {
         borderRadius: '15px',
         boxShadow: '0 10px 30px rgba(0,0,0,0.1)'
       }}>
-        <h1 style={{ color: '#be185d', marginBottom: '30px', textAlign: 'center' }}>
+        <h1 style={{ color: '#00529B', marginBottom: '30px', textAlign: 'center' }}>
           🔍 Diagnóstico Eumaeus System
         </h1>
         
@@ -125,7 +125,7 @@ const DiagnosticApp: React.FC = () => {
           <button 
             onClick={() => window.location.reload()}
             style={{
-              background: '#be185d',
+              background: '#00A859',
               color: 'white',
               border: 'none',
               padding: '12px 24px',
