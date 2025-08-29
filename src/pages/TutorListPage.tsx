@@ -117,7 +117,7 @@ export const TutorListPage = () => {
   }
 
   return (
-    <div className="bg-background p-6 space-y-6">
+    <div className="!bg-background p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <div className="w-8 h-8 rounded-lg gradient-eumaeus-blue flex items-center justify-center">

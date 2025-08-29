@@ -148,7 +148,7 @@ export default function Agendamentos() {
   }
 
   return (
-    <div className="bg-eumaeus-light p-6 rounded-xl">
+    <div className="!bg-background p-6 rounded-xl">
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold text-eumaeus-dark mb-2">Agenda de Atendimentos</h1>

@@ -114,7 +114,7 @@ export default function Configuracoes() {
   ];
 
   return (
-    <div className="bg-background p-6 space-y-6">
+    <div className="!bg-background p-6 space-y-6">
       <div className="flex items-center space-x-3">
         <Settings className="h-8 w-8 text-primary" />
         <h1 className="text-2xl font-bold text-text-dark mb-6">Configurações do Sistema</h1>

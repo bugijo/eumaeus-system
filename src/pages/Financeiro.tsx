@@ -127,7 +127,7 @@ export default function Financeiro() {
   const periodos = ['Este Mês', 'Últimos 30 dias', 'Este Ano', 'Personalizado'];
 
   return (
-    <div className="bg-background p-6 space-y-6">
+    <div className="!bg-background p-6 space-y-6">
       {/* Header Section */}
       <div className="space-y-4">
         <h1 className="text-2xl font-bold text-text-dark mb-6">Painel Financeiro</h1>
