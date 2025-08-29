@@ -206,7 +206,7 @@ export default function StockPage() {
             <p className="text-eumaeus-gray">Visão geral e controle total do seu inventário</p>
           </div>
         </div>
-        <Button onClick={handleNewProduct} className="bg-eumaeus-blue text-white font-bold py-2 px-4 rounded-lg hover:bg-eumaeus-green shadow-sm transition-colors duration-200">
+        <Button onClick={handleNewProduct} className="bg-primary text-white font-bold py-2 px-4 rounded-lg hover:bg-secondary shadow-sm transition-colors duration-200">
           <Plus className="w-4 h-4 mr-2" />
           Adicionar Produto
         </Button>
@@ -224,7 +224,7 @@ export default function StockPage() {
                   placeholder="Buscar produtos ou fornecedores..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 border-gray-300 focus:ring-2 focus:ring-eumaeus-blue focus:border-eumaeus-blue transition-colors duration-200"
+                  className="pl-10 border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary transition-colors duration-200"
                 />
               </div>
             </div>
@@ -281,11 +281,11 @@ export default function StockPage() {
 
       {/* Cards de Estatísticas */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border-l-4 border-l-eumaeus-blue">
+        <Card className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border-l-4 border-l-primary">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-eumaeus-gray">Itens Cadastrados</CardTitle>
-            <div className="p-2 rounded-lg bg-eumaeus-blue/10">
-              <Package className="h-5 w-5 text-eumaeus-blue" />
+            <div className="p-2 rounded-lg bg-primary/10">
+              <Package className="h-5 w-5 text-primary" />
             </div>
           </CardHeader>
           <CardContent>
