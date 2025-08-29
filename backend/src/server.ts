@@ -26,11 +26,32 @@ const app = express();
 const PORT = Number(process.env.PORT) || 3333;
 const HOST = '0.0.0.0'; // Aceitar conexões de qualquer endereço na rede
 
-// Substitua nosso middleware manual por este bloco simples:
-app.use(cors({
-  origin: '*', // O '*' significa: PERMITA QUALQUER ORIGEM
-  credentials: true,
-}));
+// Configuração de CORS com origens permitidas
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://eumaeus-system.vercel.app',
+  'https://eumaeus-system-git-main-giovanni-pereiras-projects.vercel.app',
+  'https://eumaeus.com.br',
+  'https://www.eumaeus.com.br'
+];
+
+app.use((req, res, next) => {
+  const origin = req.headers.origin || '';
+  if (allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Vary', 'Origin');
+  }
+
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,PATCH,OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(204);
+  }
+
+  return next();
+});
 
 // Middlewares
 app.use(express.json());
