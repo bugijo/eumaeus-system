@@ -7,7 +7,7 @@ import { LoadingWithText, FullPageLoading } from '@/components/ui/LoadingSpinner
 import { ErrorDisplay } from '@/components/ui/ErrorBoundary';
 import { TutorFormModal } from '@/components/forms/TutorForm';
 import { useTutors, useDeleteTutor } from '@/api/tutorApi';
-import { useToast } from '@/hooks/useToast';
+import { useToast } from '@/components/ui/use-toast';
 import { PAGINATION } from '@/constants';
 import {
   Dialog,

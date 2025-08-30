@@ -287,8 +287,8 @@ export function ReceitaForm({ isOpen, onClose, medicalRecordId, petData }: Recei
             </div>
 
             {/* Vacina de Raiva */}
-            <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-              <h3 className="font-semibold mb-3 text-yellow-800">Vacina Antirrábica</h3>
+            <div className="bg-warning-muted p-4 rounded-lg border border-warning-muted-foreground">
+              <h3 className="font-semibold mb-3 text-warning-muted-foreground">Vacina Antirrábica</h3>
               <div className="space-y-4">
                 <div className="flex items-center space-x-2">
                   <input
@@ -296,9 +296,9 @@ export function ReceitaForm({ isOpen, onClose, medicalRecordId, petData }: Recei
                     id="vacinaAplicada"
                     checked={vacinaRaiva.aplicada}
                     onChange={(e) => setVacinaRaiva({...vacinaRaiva, aplicada: e.target.checked})}
-                    className="w-4 h-4 text-yellow-600 bg-gray-100 border-gray-300 rounded focus:ring-yellow-500"
+                    className="w-4 h-4 text-warning-muted-foreground bg-gray-100 border-gray-300 rounded focus:ring-warning"
                   />
-                  <Label htmlFor="vacinaAplicada" className="text-yellow-800">Vacina antirrábica aplicada</Label>
+                  <Label htmlFor="vacinaAplicada" className="text-warning-muted-foreground">Vacina antirrábica aplicada</Label>
                 </div>
                 
                 {vacinaRaiva.aplicada && (

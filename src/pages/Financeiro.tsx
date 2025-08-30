@@ -110,7 +110,7 @@ export default function Financeiro() {
   const getStatusBadge = (status: string) => {
     const statusConfig = {
       'Pago': { variant: 'default' as const, className: 'bg-green-100 text-green-800 hover:bg-green-100' },
-      'Pendente': { variant: 'secondary' as const, className: 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100' },
+      'Pendente': { variant: 'secondary' as const, className: 'bg-warning-muted text-warning-muted-foreground hover:bg-warning-muted' },
       'Atrasado': { variant: 'destructive' as const, className: 'bg-red-100 text-red-800 hover:bg-red-100' }
     };
     
@@ -185,10 +185,10 @@ export default function Financeiro() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Receitas Pendentes</CardTitle>
-            <TrendingDown className="h-4 w-4 text-yellow-600" />
+            <TrendingDown className="h-4 w-4 text-warning-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">
+            <div className="text-2xl font-bold text-warning-muted-foreground">
               {formatCurrency(financialStats?.pending?.amount || 0)}
             </div>
             <p className="text-xs text-muted-foreground">

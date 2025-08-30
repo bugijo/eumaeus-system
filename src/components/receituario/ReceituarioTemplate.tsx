@@ -195,8 +195,8 @@ export function ReceituarioTemplate({ data, isOpen, onClose, isForEmail = false 
           {/* Vacina de Raiva */}
           {data.vacinaRaiva?.aplicada && (
             <div className="mb-6">
-              <h3 className="font-bold text-lg mb-2 text-yellow-800">VACINA ANTIRRÁBICA</h3>
-              <div className="border border-yellow-300 bg-yellow-50 p-4 rounded">
+              <h3 className="font-bold text-lg mb-2 text-warning-muted-foreground">VACINA ANTIRRÁBICA</h3>
+              <div className="border border-warning-muted-foreground bg-warning-muted p-4 rounded">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <strong>Data da Aplicação:</strong> {new Date(data.vacinaRaiva.dataAplicacao).toLocaleDateString('pt-BR')}

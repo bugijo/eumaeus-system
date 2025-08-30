@@ -228,7 +228,7 @@ const MedicalRecordsPage = () => {
                     {record.notes && (
                       <div>
                         <h4 className="font-medium text-sm text-gray-700 mb-1">Observações</h4>
-                        <p className="text-sm bg-yellow-50 p-3 rounded">{record.notes}</p>
+                        <p className="text-sm bg-warning-muted p-3 rounded">{record.notes}</p>
                       </div>
                     )}
                     

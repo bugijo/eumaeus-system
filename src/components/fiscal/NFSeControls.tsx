@@ -120,7 +120,7 @@ const NFSeControls: React.FC<NFSeControlsProps> = ({ invoice }) => {
       case '202':
         return {
           status: 'Processando',
-          color: 'bg-yellow-100 text-yellow-800',
+          color: 'bg-warning-muted text-warning-muted-foreground',
           icon: <Clock className="w-4 h-4" />
         };
       default:

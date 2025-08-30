@@ -11,59 +11,67 @@
 
 @layer base {
   :root {
-    /* As cores da marca Eumaeus como variáveis (em formato RGB) */
+    /* Paleta Eumaeus - inspirada na logo e login (RGB utilitário) */
     --color-primary: 0 82 155;     /* Eumaeus Blue */
     --color-secondary: 0 168 89;   /* Eumaeus Green */
     --color-text-dark: 30 41 59;   /* Eumaeus Dark */
     --color-text-gray: 100 116 139; /* Eumaeus Gray */
-    --color-background: 241 245 249; /* Eumaeus Light */
+    --color-background: 248 250 252; /* Slate 50 - fundo principal */
     --color-white: 255 255 255;
     
-    /* Variáveis do sistema de design (mantendo compatibilidade) */
-    --background: 241 245 249;
-    --foreground: 30 41 59;
+    /* Sistema de design unificado - tokens em HSL (compatível com tailwind.config.ts) */
+    --background: 210 40% 98%;      /* Slate 50 - fundo geral claro */
+    --foreground: 222 47% 11%;      /* Texto escuro principal */
 
-    --card: 255 255 255;
-    --card-foreground: 30 41 59;
+    --card: 0 0% 100%;              /* Cards brancos */
+    --card-foreground: 222 47% 11%;
 
-    --popover: 255 255 255;
-    --popover-foreground: 30 41 59;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
 
-    --primary: 0 82 155;
-    --primary-foreground: 255 255 255;
+    --primary: 207 100% 30%;        /* Azul Eumaeus */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 168 89;
-    --secondary-foreground: 255 255 255;
+    --secondary: 153 100% 33%;      /* Verde Eumaeus */
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 241 245 249;
-    --muted-foreground: 100 116 139;
+    --muted: 210 40% 96%;           /* Fundo sutil */
+    --muted-foreground: 215 20% 50%; /* Texto secundário */
 
-    --accent: 330 40% 85%;
-    --accent-foreground: 330 15% 25%;
+    --accent: 214 95% 92%;          /* Azul bem claro para destaques */
+    --accent-foreground: 222 47% 11%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 84% 63%;       /* Vermelho para ações destrutivas */
     --destructive-foreground: 0 0% 100%;
 
-    --border: 330 20% 85%;
-    --input: 330 20% 90%;
-    --ring: 330 85% 65%;
+    /* Tokens de Warning/Aviso - para padronizar cores amarelas */
+    --warning: 48 100% 67%;         /* Amarelo/âmbar padrão - amber-400 */
+    --warning-foreground: 30 30% 15%; /* Texto escuro para contraste */
+    --warning-muted: 48 100% 95%;   /* Fundo claro amarelo - yellow-50 */
+    --warning-muted-foreground: 30 85% 25%; /* Texto escuro em fundo claro */
+
+    --border: 214 32% 91%;          /* Bordas sutis (slate-200) */
+    --input: 210 40% 96%;           /* Fundo dos inputs */
+    --ring: 207 100% 30%;           /* Ring azul Eumaeus */
 
     --radius: 0.75rem;
 
-    --chart-1: 330 85% 65%;
-    --chart-2: 300 70% 60%;
-    --chart-3: 280 60% 55%;
-    --chart-4: 320 75% 70%;
-    --chart-5: 340 80% 65%;
+    /* Gráficos com cores da marca */
+    --chart-1: 207 100% 30%;        /* Azul Eumaeus */
+    --chart-2: 153 100% 33%;        /* Verde Eumaeus */
+    --chart-3: 173 57% 32%;         /* Teal */
+    --chart-4: 191 88% 37%;         /* Cyan */
+    --chart-5: 217 91% 60%;         /* Blue-500 */
 
-    --sidebar-background: 330 40% 95%;
-    --sidebar-foreground: 330 15% 25%;
-    --sidebar-primary: 330 85% 65%;
+    /* Sidebar com tons da marca */
+    --sidebar-background: 0 0% 100%;     /* Fundo branco limpo */
+    --sidebar-foreground: 222 47% 11%;   /* Texto escuro */
+    --sidebar-primary: 207 100% 30%;     /* Azul Eumaeus */
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 330 30% 88%;
-    --sidebar-accent-foreground: 330 15% 25%;
-    --sidebar-border: 330 20% 80%;
-    --sidebar-ring: 330 85% 65%;
+    --sidebar-accent: 210 40% 96%;       /* Hover sutil */
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 214 32% 91%;       /* Borda sutil */
+    --sidebar-ring: 207 100% 30%;        /* Ring azul Eumaeus */
   }
 
   .dark {
@@ -90,6 +98,12 @@
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
+
+    /* Warning no tema escuro */
+    --warning: 48 96% 50%;          /* Amarelo mais vibrante no escuro */
+    --warning-foreground: 20 30% 10%; /* Texto muito escuro */
+    --warning-muted: 48 30% 15%;    /* Fundo escuro amarelado */
+    --warning-muted-foreground: 48 70% 70%; /* Texto claro no fundo escuro */
 
     --border: 330 10% 20%;
     --input: 330 10% 18%;
@@ -161,8 +175,16 @@
   * {
     @apply border-border;
   }
+  html,
+  body,
+  #root {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: hsl(var(--background));
+  }
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground;
     font-family: 'Poppins', sans-serif;
   }
 }

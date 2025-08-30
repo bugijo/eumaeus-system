@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 
 import { useProduct, useCreateProduct, useUpdateProduct } from '@/api/productApi';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 import { productSchema, type CreateProductData } from '@/schemas/productSchema';
 
 const ProductFormPage: React.FC = () => {

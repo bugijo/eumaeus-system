@@ -10,7 +10,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { useCreateProduct, useUpdateProduct, Product } from '@/api/productApi';
-import { useToast } from '@/hooks/useToast';
+import { useToast } from '@/components/ui/use-toast';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 interface ProductFormProps {

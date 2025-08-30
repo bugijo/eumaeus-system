@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { ArrowLeft, Save, User, Loader2 } from 'lucide-react';
-import { useToast } from '@/hooks/useToast';
+import { useToast } from '@/components/ui/use-toast';
 
 const TutorFormPage = () => {
   const navigate = useNavigate();
@@ -143,7 +143,7 @@ const TutorFormPage = () => {
       <div className="container mx-auto py-6">
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
-            <div className="text-yellow-500 mb-2">⚠️ Tutor não encontrado</div>
+            <div className="text-warning-muted-foreground mb-2">⚠️ Tutor não encontrado</div>
             <p className="text-sm text-gray-600 mb-4">
               O tutor que você está tentando editar não foi encontrado.
             </p>

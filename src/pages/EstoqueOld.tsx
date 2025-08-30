@@ -140,14 +140,14 @@ const Estoque = () => {
 
   const getStockLevelColor = (quantidade: number, quantidadeMinima: number) => {
     if (quantidade === 0) return 'bg-red-500';
-    if (quantidade <= quantidadeMinima) return 'bg-yellow-500';
+    if (quantidade <= quantidadeMinima) return 'bg-warning';
     return 'bg-green-500';
   };
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
       'Em Estoque': { variant: 'default' as const, className: 'bg-green-100 text-green-800 hover:bg-green-100' },
-      'Estoque Baixo': { variant: 'secondary' as const, className: 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100' },
+      'Estoque Baixo': { variant: 'secondary' as const, className: 'bg-warning-muted text-warning-muted-foreground hover:bg-warning-muted' },
       'Esgotado': { variant: 'destructive' as const, className: 'bg-red-100 text-red-800 hover:bg-red-100' }
     };
     
@@ -230,10 +230,10 @@ const Estoque = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Itens com Estoque Baixo</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-yellow-600" />
+            <AlertTriangle className="h-4 w-4 text-warning-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">{itensEstoqueBaixo} Itens</div>
+            <div className="text-2xl font-bold text-warning-muted-foreground">{itensEstoqueBaixo} Itens</div>
             <p className="text-xs text-muted-foreground">
               Abaixo do estoque mínimo
             </p>

@@ -154,12 +154,12 @@ const Clientes = () => {
             <Users className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-eumaeus-dark mb-2">Gestão de Clientes</h1>
-            <p className="text-eumaeus-gray">Cadastre e gerencie informações dos tutores</p>
+            <h1 className="text-2xl font-bold text-foreground mb-2">Gestão de Clientes</h1>
+            <p className="text-muted-foreground">Cadastre e gerencie informações dos tutores</p>
           </div>
         </div>
         <Button 
-          className="bg-eumaeus-blue text-white font-bold py-2 px-4 rounded-lg hover:bg-eumaeus-green shadow-sm transition-colors duration-200"
+          className="bg-primary text-primary-foreground font-bold py-2 px-4 rounded-lg hover:bg-primary/90 shadow-sm transition-colors duration-200"
           onClick={handleNewClient}
         >
           <Plus className="h-4 w-4 mr-2" />
@@ -193,7 +193,7 @@ const Clientes = () => {
         <Card>
           <CardContent className="p-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">
+              <div className="text-2xl font-bold text-secondary">
                 {clients.filter(c => c.status === 'Ativo').length}
               </div>
               <div className="text-sm text-muted-foreground">Clientes Ativos</div>

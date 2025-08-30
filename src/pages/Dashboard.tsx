@@ -133,7 +133,7 @@ const Dashboard = () => {
   // ========================================
 
   return (
-    <div className="bg-eumaeus-light p-6 rounded-xl space-y-6">
+    <div className="bg-background p-6 rounded-xl space-y-6">
       {/* Cabeçalho Aprimorado */}
       <div className="flex flex-col space-y-4">
         <div className="flex items-center justify-between">
@@ -142,11 +142,11 @@ const Dashboard = () => {
               <Activity className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-eumaeus-dark mb-2">Cockpit da Clínica</h1>
-              <p className="text-eumaeus-gray">Visão geral e controle total da sua clínica veterinária</p>
+              <h1 className="text-2xl font-bold text-foreground mb-2">Cockpit da Clínica</h1>
+              <p className="text-muted-foreground">Visão geral e controle total da sua clínica veterinária</p>
             </div>
           </div>
-          <div className="flex items-center space-x-2 text-sm text-eumaeus-gray">
+          <div className="flex items-center space-x-2 text-sm text-muted-foreground">
             <Clock className="w-4 h-4" />
             <span>Atualizado agora</span>
           </div>
@@ -159,9 +159,9 @@ const Dashboard = () => {
           const Icon = stat.icon;
           const TrendIcon = stat.positive ? TrendingUp : TrendingDown;
           return (
-            <Card key={index} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border-l-4 border-l-primary">
+            <Card key={index} className="bg-card rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border-l-4 border-l-primary">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-eumaeus-gray">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
                   {stat.title}
                 </CardTitle>
                 <div className="p-3 rounded-xl bg-primary/10 shadow-sm">
@@ -169,7 +169,7 @@ const Dashboard = () => {
                 </div>
               </CardHeader>
               <CardContent className="p-4">
-                <div className="text-2xl font-bold text-eumaeus-dark mb-2">
+                <div className="text-2xl font-bold text-foreground mb-2">
                   {!stat.isStatic && isLoadingStats ? (
                     <LoadingSpinner />
                   ) : (
@@ -177,8 +177,8 @@ const Dashboard = () => {
                   )}
                 </div>
                 <div className="flex items-center text-xs">
-                  <TrendIcon className={`h-3 w-3 mr-1 ${stat.positive ? 'text-eumaeus-green' : 'text-eumaeus-teal'}`} />
-                  <span className={stat.positive ? 'text-eumaeus-green' : 'text-eumaeus-teal'}>{stat.change}</span>
+                  <TrendIcon className={`h-3 w-3 mr-1 ${stat.positive ? 'text-secondary' : 'text-primary'}`} />
+                  <span className={stat.positive ? 'text-secondary' : 'text-primary'}>{stat.change}</span>
                 </div>
               </CardContent>
             </Card>
@@ -189,9 +189,9 @@ const Dashboard = () => {
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Upcoming Appointments - Agora Interativo */}
-        <Card className="bg-white rounded-lg shadow-md">
-          <CardHeader className="p-4 border-b border-slate-200">
-            <CardTitle className="flex items-center justify-between text-text-dark">
+        <Card className="bg-card rounded-lg shadow-md">
+          <CardHeader className="p-4 border-b border-border">
+            <CardTitle className="flex items-center justify-between text-foreground">
               <div className="flex items-center">
                 <Calendar className="h-5 w-5 mr-2 text-primary" />
                 Próximos Agendamentos
@@ -232,7 +232,7 @@ const Dashboard = () => {
                           appt.status === 'SCHEDULED' ? 'bg-blue-100 text-blue-800 hover:bg-blue-200' :
                           appt.status === 'CONFIRMED' ? 'bg-green-100 text-green-800 hover:bg-green-200' :
                           appt.status === 'COMPLETED' ? 'bg-gray-100 text-gray-800 hover:bg-gray-200' :
-                          'bg-yellow-100 text-yellow-800 hover:bg-yellow-200'
+                          'bg-warning-muted text-warning-muted-foreground hover:bg-warning-muted'
                         }
                       >
                         {appt.status === 'SCHEDULED' ? 'Agendado' : 
@@ -257,9 +257,9 @@ const Dashboard = () => {
         </Card>
 
         {/* Recent Activities - Feed Aprimorado */}
-        <Card className="bg-white rounded-lg shadow-md">
-          <CardHeader className="p-4 border-b border-slate-200">
-            <CardTitle className="flex items-center justify-between text-text-dark">
+        <Card className="bg-card rounded-lg shadow-md">
+          <CardHeader className="p-4 border-b border-border">
+            <CardTitle className="flex items-center justify-between text-foreground">
               <div className="flex items-center">
                 <Activity className="h-5 w-5 mr-2 text-primary" />
                 Feed de Atividades
@@ -281,14 +281,14 @@ const Dashboard = () => {
                   const getActivityIcon = (type: string, description: string) => {
                     switch (type) {
                       case 'tutor': return { icon: Users, color: 'text-primary', bg: 'bg-primary/10' };
-                      case 'payment': return { icon: CreditCard, color: 'text-eumaeus-green', bg: 'bg-eumaeus-green/10' };
-                      case 'appointment': return { icon: Calendar, color: 'text-eumaeus-cyan', bg: 'bg-eumaeus-cyan/10' };
-                      case 'stock': return { icon: Package, color: 'text-eumaeus-teal', bg: 'bg-eumaeus-teal/10' };
-                      case 'consultation': return { icon: Stethoscope, color: 'text-eumaeus-blue-light', bg: 'bg-eumaeus-blue-light/10' };
+                      case 'payment': return { icon: CreditCard, color: 'text-secondary', bg: 'bg-secondary/10' };
+                      case 'appointment': return { icon: Calendar, color: 'text-primary', bg: 'bg-primary/10' };
+                      case 'stock': return { icon: Package, color: 'text-primary', bg: 'bg-primary/10' };
+                      case 'consultation': return { icon: Stethoscope, color: 'text-primary', bg: 'bg-primary/10' };
                       default: {
                         // Fallback baseado na descrição
                         if (description.includes('pet') || description.includes('animal')) {
-                          return { icon: PawPrint, color: 'text-eumaeus-green-light', bg: 'bg-eumaeus-green-light/10' };
+                          return { icon: PawPrint, color: 'text-secondary', bg: 'bg-secondary/10' };
                         }
                         return { icon: Activity, color: 'text-primary', bg: 'bg-primary/10' };
                       }

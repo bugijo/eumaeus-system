@@ -6,7 +6,7 @@ import { LoadingWithText, FullPageLoading } from '@/components/ui/LoadingSpinner
 import { ErrorDisplay } from '@/components/ui/ErrorBoundary';
 import { useTutors, useTutorStats } from '@/api/tutorApi';
 import { usePets, usePetSpeciesStats, usePetAgeStats } from '@/api/petApi';
-import { useToast } from '@/hooks/useToast';
+import { useToast } from '@/components/ui/use-toast';
 import { PAGINATION } from '@/constants';
 import type { Tutor, Pet } from '@/types';
 

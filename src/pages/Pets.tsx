@@ -120,35 +120,32 @@ const Pets = () => {
   if (isError) {
     return (
       <div className="flex flex-col items-center justify-center h-64 space-y-4">
-        <div className="text-red-500 text-lg">Erro ao carregar pets</div>
-        <div className="text-gray-600">{error?.message || 'Ocorreu um erro inesperado'}</div>
+        <div className="text-destructive text-lg">Erro ao carregar pets</div>
+        <div className="text-muted-foreground">{error?.message || 'Ocorreu um erro inesperado'}</div>
         <Button onClick={() => window.location.reload()}>Tentar novamente</Button>
       </div>
     );
   }
 
   return (
-    <div className="!bg-background p-6 space-y-6">
+    <div className="bg-background p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 rounded-lg gradient-eumaeus-green flex items-center justify-center">
-            <PawPrint className="w-5 h-5 text-white" />
+          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+            <PawPrint className="w-5 h-5 text-primary-foreground" />
           </div>
-          <h1 className="text-2xl font-bold text-text-dark mb-6">Gestão de Pets</h1>
+          <h1 className="text-2xl font-bold text-foreground mb-6">Gestão de Pets</h1>
         </div>
-        <Button 
-          className="bg-primary text-white font-semibold rounded-lg px-4 py-2 hover:bg-secondary transition-colors duration-200 shadow-sm"
-          onClick={handleCreatePet}
-        >
+        <Button onClick={handleCreatePet}>
           <Plus className="h-4 w-4 mr-2" />
           Cadastrar Pet
         </Button>
       </div>
 
       {/* Search and Filters */}
-      <Card className="card-vet">
-        <CardHeader className="border-gradient">
-          <CardTitle className="text-gradient">Buscar Pets</CardTitle>
+      <Card>
+        <CardHeader>
+          <CardTitle>Buscar Pets</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center space-x-4">
@@ -161,7 +158,7 @@ const Pets = () => {
                 className="pl-10"
               />
             </div>
-            <Button variant="outline" className="btn-primary-vet">
+            <Button variant="outline">
               Filtros Avançados
             </Button>
           </div>
@@ -170,75 +167,75 @@ const Pets = () => {
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card className="bg-white rounded-lg shadow-md">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4">
-            <CardTitle className="text-sm font-medium text-text-gray">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
               Total de Pets
             </CardTitle>
-            <div className="p-2 rounded-lg gradient-eumaeus-light">
-              <PawPrint className="h-4 w-4 text-white" />
+            <div className="p-2 rounded-lg bg-primary">
+              <PawPrint className="h-4 w-4 text-primary-foreground" />
             </div>
           </CardHeader>
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-text-dark">{pets.length}</div>
-            <div className="text-xs text-text-gray mt-1">
+            <div className="text-2xl font-bold text-foreground">{pets.length}</div>
+            <div className="text-xs text-muted-foreground mt-1">
               Cadastrados no sistema
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-white rounded-lg shadow-md">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4">
-            <CardTitle className="text-sm font-medium text-text-gray">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
               Cães
             </CardTitle>
-            <div className="p-2 rounded-lg gradient-eumaeus-blue">
-              <span className="text-white text-sm">🐕</span>
+            <div className="p-2 rounded-lg bg-primary">
+              <span className="text-primary-foreground text-sm">🐕</span>
             </div>
           </CardHeader>
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-text-dark">
+            <div className="text-2xl font-bold text-foreground">
               {pets.filter(pet => pet.species === 'Cão').length}
             </div>
-            <div className="text-xs text-text-gray mt-1">
+            <div className="text-xs text-muted-foreground mt-1">
               Caninos cadastrados
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-white rounded-lg shadow-md">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4">
-            <CardTitle className="text-sm font-medium text-text-gray">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
               Gatos
             </CardTitle>
-            <div className="p-2 rounded-lg gradient-eumaeus-green">
-              <span className="text-white text-sm">🐱</span>
+            <div className="p-2 rounded-lg bg-primary">
+              <span className="text-primary-foreground text-sm">🐱</span>
             </div>
           </CardHeader>
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-text-dark">
+            <div className="text-2xl font-bold text-foreground">
               {pets.filter(pet => pet.species === 'Gato').length}
             </div>
-            <div className="text-xs text-text-gray mt-1">
+            <div className="text-xs text-muted-foreground mt-1">
               Felinos cadastrados
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-white rounded-lg shadow-md">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4">
-            <CardTitle className="text-sm font-medium text-text-gray">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
               Outras Espécies
             </CardTitle>
-            <div className="p-2 rounded-lg gradient-eumaeus-teal">
-              <Heart className="h-4 w-4 text-white" />
+            <div className="p-2 rounded-lg bg-primary">
+              <Heart className="h-4 w-4 text-primary-foreground" />
             </div>
           </CardHeader>
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-text-dark">
+            <div className="text-2xl font-bold text-foreground">
               {pets.filter(pet => pet.species !== 'Cão' && pet.species !== 'Gato').length}
             </div>
-            <div className="text-xs text-text-gray mt-1">
+            <div className="text-xs text-muted-foreground mt-1">
               Outras espécies cadastradas
             </div>
           </CardContent>
@@ -246,9 +243,9 @@ const Pets = () => {
       </div>
 
       {/* Pets Table */}
-      <Card className="bg-white rounded-lg shadow-md">
-        <CardHeader className="p-4 border-b border-slate-200">
-          <CardTitle className="text-gradient">Lista de Pets ({filteredPets.length})</CardTitle>
+      <Card>
+        <CardHeader className="p-4 border-b border-border">
+          <CardTitle>Lista de Pets ({filteredPets.length})</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
@@ -306,7 +303,7 @@ const Pets = () => {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge className="bg-green-100 text-green-800">
+                      <Badge variant="secondary">
                         Ativo
                       </Badge>
                     </TableCell>
@@ -320,7 +317,7 @@ const Pets = () => {
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                          className="h-8 w-8 text-primary hover:text-primary/90 hover:bg-primary/10"
                           onClick={() => handleViewMedicalHistory(pet)}
                           title="Ver Prontuário"
                         >
@@ -340,7 +337,7 @@ const Pets = () => {
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                          className="h-8 w-8 text-destructive hover:text-destructive/90 hover:bg-destructive/10"
                           onClick={() => handleDeletePet(pet)}
                         >
                           <Trash2 className="h-4 w-4" />
@@ -355,24 +352,14 @@ const Pets = () => {
         </CardContent>
       </Card>
 
-      {/* Modal de criação de pet */}
-      <PetFormModal
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        pet={editingPet}
-        onSuccess={() => {
-          handleCloseModal();
-        }}
-      />
-
       {/* Modal de confirmação de exclusão */}
       {isDeleteModalOpen && petToDelete && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-card rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold text-foreground mb-4">
               Confirmar Exclusão
             </h3>
-            <p className="text-gray-600 mb-6">
+            <p className="text-muted-foreground mb-6">
               Você tem certeza que deseja excluir <strong>{petToDelete.name}</strong>? 
               Esta ação não pode ser desfeita.
             </p>

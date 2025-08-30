@@ -8,7 +8,7 @@ import { ErrorDisplay } from '@/components/ui/ErrorBoundary';
 import { PetFormModal } from '@/components/forms/PetForm';
 import { usePets, useDeletePet } from '@/api/petApi';
 import { useTutors } from '@/api/tutorApi';
-import { useToast } from '@/hooks/useToast';
+import { useToast } from '@/components/ui/use-toast';
 import { PAGINATION, COMMON_SPECIES } from '@/constants';
 import type { Pet, PetSearchParams } from '@/types';
 
@@ -194,8 +194,8 @@ export function PetsPage({ className }: PetsPageProps) {
       <div className="mb-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Pets</h1>
-            <p className="text-gray-600 mt-1">
+            <h1 className="text-3xl font-bold text-foreground">Pets</h1>
+            <p className="text-muted-foreground mt-1">
               Gerencie os pets cadastrados no sistema
             </p>
           </div>
@@ -210,11 +210,11 @@ export function PetsPage({ className }: PetsPageProps) {
       </div>
 
       {/* Filters */}
-      <div className="mb-6 bg-white rounded-lg border p-6">
+      <div className="mb-6 bg-card rounded-lg border p-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Search */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-muted-foreground mb-2">
               Buscar
             </label>
             <input
@@ -222,19 +222,19 @@ export function PetsPage({ className }: PetsPageProps) {
               placeholder="Nome do pet..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-input rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
             />
           </div>
 
           {/* Species Filter */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-muted-foreground mb-2">
               Espécie
             </label>
             <select
               value={selectedSpecies}
               onChange={(e) => setSelectedSpecies(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-input rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
             >
               <option value="">Todas as espécies</option>
               {COMMON_SPECIES.map(species => (
@@ -245,13 +245,13 @@ export function PetsPage({ className }: PetsPageProps) {
 
           {/* Tutor Filter */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-muted-foreground mb-2">
               Tutor
             </label>
             <select
               value={selectedTutor}
               onChange={(e) => setSelectedTutor(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-input rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
             >
               <option value="">Todos os tutores</option>
               {tutors.map(tutor => (
@@ -280,9 +280,9 @@ export function PetsPage({ className }: PetsPageProps) {
 
       {/* Stats */}
       <div className="mb-6">
-        <div className="bg-white rounded-lg border p-4">
+        <div className="bg-card rounded-lg border p-4">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600">
+            <span className="text-sm text-muted-foreground">
               {totalItems} {totalItems === 1 ? 'pet encontrado' : 'pets encontrados'}
               {hasActiveFilters && ' (filtrado)'}
             </span>
@@ -294,7 +294,7 @@ export function PetsPage({ className }: PetsPageProps) {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-lg border">
+      <div className="bg-card rounded-lg border">
         <DataTable
           data={pets}
           columns={columns}
@@ -309,7 +309,7 @@ export function PetsPage({ className }: PetsPageProps) {
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="mt-6 flex items-center justify-between">
-          <div className="text-sm text-gray-600">
+          <div className="text-sm text-muted-foreground">
             Página {currentPage} de {totalPages}
           </div>
           

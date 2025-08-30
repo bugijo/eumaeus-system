@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { useProducts, useDeleteProduct, useStockStats } from '@/api/productApi';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 import type { Product } from '@/api/productApi';
 
 const ProductListPage: React.FC = () => {
@@ -84,8 +84,8 @@ const ProductListPage: React.FC = () => {
   if (error) {
     return (
       <div className="p-8 text-center">
-        <h2 className="text-xl text-red-600 mb-2">Erro ao carregar produtos</h2>
-        <p className="text-gray-600">Ocorreu um erro ao buscar os produtos. Tente novamente.</p>
+        <h2 className="text-xl text-destructive mb-2">Erro ao carregar produtos</h2>
+        <p className="text-muted-foreground">Ocorreu um erro ao buscar os produtos. Tente novamente.</p>
       </div>
     );
   }
@@ -130,19 +130,19 @@ const ProductListPage: React.FC = () => {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Estoque Baixo</CardTitle>
-              <AlertTriangle className="h-4 w-4 text-yellow-600" />
+              <AlertTriangle className="h-4 w-4 text-warning-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-yellow-600">{stats.lowStockItems}</div>
+              <div className="text-2xl font-bold text-warning-muted-foreground">{stats.lowStockItems}</div>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Vencendo em 30 dias</CardTitle>
-              <Calendar className="h-4 w-4 text-red-600" />
+              <Calendar className="h-4 w-4 text-destructive" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-red-600">{stats.expiringSoon}</div>
+              <div className="text-2xl font-bold text-destructive">{stats.expiringSoon}</div>
             </CardContent>
           </Card>
         </div>
@@ -201,25 +201,25 @@ const ProductListPage: React.FC = () => {
                       <TableCell className="font-medium">{product.name}</TableCell>
                       <TableCell>{product.supplier}</TableCell>
                       <TableCell>
-                        <span className={isLowStock(product.quantity) ? 'text-yellow-600 font-semibold' : ''}>
+                        <span className={isLowStock(product.quantity) ? 'text-warning-muted-foreground font-semibold' : ''}>
                           {product.quantity}
                         </span>
                       </TableCell>
                       <TableCell>{formatPrice(product.costPrice)}</TableCell>
                       <TableCell>
-                        <span className={isExpiringSoon(product.expirationDate) ? 'text-red-600 font-semibold' : ''}>
+                        <span className={isExpiringSoon(product.expirationDate) ? 'text-destructive font-semibold' : ''}>
                           {formatDate(product.expirationDate)}
                         </span>
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-1">
                           {isLowStock(product.quantity) && (
-                            <Badge variant="outline" className="text-yellow-600 border-yellow-600">
+                            <Badge variant="outline" className="text-warning-muted-foreground border-warning-muted-foreground">
                               Estoque Baixo
                             </Badge>
                           )}
                           {isExpiringSoon(product.expirationDate) && (
-                            <Badge variant="outline" className="text-red-600 border-red-600">
+                            <Badge variant="outline" className="text-destructive border-destructive">
                               Vencendo
                             </Badge>
                           )}
@@ -238,7 +238,7 @@ const ProductListPage: React.FC = () => {
                             variant="outline"
                             size="sm"
                             onClick={() => setProductToDelete(product)}
-                            className="text-red-600 hover:text-red-700"
+                            className="text-destructive hover:text-destructive/90"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -268,7 +268,7 @@ const ProductListPage: React.FC = () => {
             <AlertDialogAction
               onClick={handleDeleteProduct}
               disabled={deleteMutation.isPending}
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
             >
               {deleteMutation.isPending ? 'Excluindo...' : 'Excluir'}
             </AlertDialogAction>

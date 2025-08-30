@@ -53,6 +53,18 @@ function App() {
         height: window.innerHeight,
       },
     });
+
+    // Diagnóstico: inspecionar variáveis de tema e cor de fundo atual
+    try {
+      const root = document.documentElement;
+      const css = getComputedStyle(root);
+      const bgVar = css.getPropertyValue('--background').trim();
+      const fgVar = css.getPropertyValue('--foreground').trim();
+      const bodyBg = getComputedStyle(document.body).backgroundColor;
+      logger.debug('Tema - variáveis atuais', { backgroundVar: bgVar, foregroundVar: fgVar, bodyBackgroundColor: bodyBg });
+    } catch (err) {
+      console.warn('Falha ao inspecionar variáveis de tema', err);
+    }
   }, []);
   
   return (

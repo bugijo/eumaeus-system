@@ -8,6 +8,7 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "0.0.0.0", // Aceitar conexões de qualquer endereço na rede
     port: 3000,
+    strictPort: true, // Não mudar automaticamente de porta
   },
   plugins: [
     react(),
