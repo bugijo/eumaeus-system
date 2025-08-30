@@ -61,8 +61,8 @@ export default function Prontuario() {
   if (isError) {
     return (
       <div className="flex flex-col items-center justify-center h-64 space-y-4">
-        <div className="text-red-500 text-lg">Erro ao carregar pets</div>
-        <div className="text-gray-600">{error?.message || 'Ocorreu um erro inesperado'}</div>
+        <div className="text-destructive text-lg">Erro ao carregar pets</div>
+        <div className="text-muted-foreground">{error?.message || 'Ocorreu um erro inesperado'}</div>
         <Button onClick={() => window.location.reload()}>Tentar novamente</Button>
       </div>
     );
@@ -75,14 +75,14 @@ export default function Prontuario() {
           <div className="w-8 h-8 rounded-lg gradient-eumaeus-cyan flex items-center justify-center">
             <FileText className="w-5 h-5 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-text-dark mb-6">Prontuários Médicos</h1>
+          <h1 className="text-2xl font-bold text-foreground mb-6">Prontuários Médicos</h1>
         </div>
       </div>
 
       {/* Search */}
-      <Card className="bg-white rounded-lg shadow-md">
-        <CardHeader className="p-4 border-b border-slate-200">
-          <CardTitle className="text-text-dark">Selecionar Pet para Prontuário</CardTitle>
+      <Card className="bg-card rounded-lg shadow-md">
+        <CardHeader className="p-4 border-b border-border">
+          <CardTitle className="text-foreground">Selecionar Pet para Prontuário</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center space-x-4">
@@ -223,7 +223,6 @@ export default function Prontuario() {
                     </TableCell>
                     <TableCell>
                       <Button 
-                        className="gradient-eumaeus-teal text-white hover:opacity-90"
                         onClick={() => handleViewProntuario(pet.id)}
                       >
                         <FileText className="h-4 w-4 mr-2" />

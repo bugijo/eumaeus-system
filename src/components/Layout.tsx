@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, 
@@ -58,10 +58,68 @@ const Layout = ({ children }: LayoutProps) => {
     { icon: Settings, label: 'Configurações', path: '/configuracoes' },
   ];
 
+  // ===== Debug Tema (apenas dev / habilitar com ?debugTheme=1) =====
+  const [showThemeDebug, setShowThemeDebug] = useState<boolean>(false);
+  const [themeSnapshot, setThemeSnapshot] = useState<{
+    backgroundVar?: string;
+    foregroundVar?: string;
+    cardVar?: string;
+    cardFgVar?: string;
+    bodyBg?: string;
+    htmlBg?: string;
+    forcedColors?: boolean;
+  }>({});
+
+  useEffect(() => {
+    if (import.meta.env.DEV) {
+      const qs = new URLSearchParams(location.search);
+      const enabled = qs.has('debugTheme') || localStorage.getItem('debugTheme') === '1';
+      setShowThemeDebug(enabled);
+      try {
+        const css = getComputedStyle(document.documentElement);
+        setThemeSnapshot({
+          backgroundVar: css.getPropertyValue('--background').trim(),
+          foregroundVar: css.getPropertyValue('--foreground').trim(),
+          cardVar: css.getPropertyValue('--card').trim(),
+          cardFgVar: css.getPropertyValue('--card-foreground').trim(),
+          bodyBg: getComputedStyle(document.body).backgroundColor,
+          htmlBg: getComputedStyle(document.documentElement).backgroundColor,
+          forcedColors: typeof window.matchMedia === 'function' && window.matchMedia('(forced-colors: active)').matches,
+        });
+      } catch (e) {
+        // noop
+      }
+    }
+  }, [location.search]);
+
+  const navigation = (
+    <nav className="flex-1 p-4 space-y-2">
+      {navigationItems.map((item) => {
+        const Icon = item.icon;
+        const isActive = location.pathname === item.path;
+        
+        return (
+          <Link
+            key={item.path}
+            to={item.path}
+            className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+              isActive
+                ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+            }`}
+          >
+            <Icon className="w-5 h-5" />
+            <span>{item.label}</span>
+          </Link>
+        );
+      })}
+    </nav>
+  );
+
   return (
     <div className="flex h-screen bg-background overflow-hidden">
       {/* Sidebar */}
-      <aside className={`fixed left-0 top-0 h-full w-64 bg-white border-r border-slate-200 transform transition-transform duration-300 ease-in-out z-50 ${
+      <aside className={`fixed left-0 top-0 h-full w-64 bg-card border-r border-border transform transition-transform duration-300 ease-in-out z-50 ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full'
       }`}
         onMouseEnter={() => setSidebarOpen(true)}
@@ -89,34 +147,14 @@ const Layout = ({ children }: LayoutProps) => {
               />
             </div>
             <div>
-              <h2 className="font-semibold text-eumaeus-dark text-sm">Eumaeus System</h2>
-              <p className="text-xs text-eumaeus-gray">{user?.name || 'Usuário'}</p>
+              <h2 className="font-semibold text-foreground text-sm">Eumaeus System</h2>
+              <p className="text-xs text-muted-foreground">{user?.name || 'Usuário'}</p>
             </div>
           </div>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-2">
-          {navigationItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = location.pathname === item.path;
-            
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                  isActive
-                    ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                    : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
-                }`}
-              >
-                <Icon className="w-5 h-5" />
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
-        </nav>
+        {navigation}
 
         {/* Logout */}
         <div className="p-4 border-t border-sidebar-border">
@@ -141,7 +179,7 @@ const Layout = ({ children }: LayoutProps) => {
         sidebarOpen ? 'ml-64' : 'ml-0'
       }`}>
         {/* Top Header */}
-        <header className="bg-white border-b border-slate-200 p-4 flex items-center justify-between shadow-sm">
+        <header className="bg-card border-b border-border p-4 flex items-center justify-between shadow-sm supports-[backdrop-filter]:bg-card/90 backdrop-blur">
           <div className="flex items-center space-x-4">
             {/* Menu Toggle Button */}
             <Button 
@@ -154,7 +192,7 @@ const Layout = ({ children }: LayoutProps) => {
             </Button>
             
             <div className="px-4 py-2 rounded-lg bg-gradient-to-r from-primary/10 to-secondary/10">
-              <h1 className="text-lg font-semibold text-eumaeus-dark">
+              <h1 className="text-lg font-semibold text-foreground">
                 Bem-vindo(a), {user?.name || 'Usuário'}! 👋
               </h1>
             </div>
@@ -166,14 +204,14 @@ const Layout = ({ children }: LayoutProps) => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-primary" />
               <Input
                 placeholder="Buscar..."
-                className="pl-10 w-64 border-primary/30 focus:border-primary focus:ring-primary bg-white/80"
+                className="pl-10 w-64 border-input focus:border-primary focus:ring-primary bg-card/80 text-foreground placeholder:text-muted-foreground"
               />
             </div>
 
             {/* Notifications */}
             <Button variant="ghost" size="icon" className="relative text-primary hover:bg-primary/10">
               <Bell className="w-5 h-5" />
-              <span className="absolute -top-1 -right-1 w-3 h-3 bg-eumaeus-green rounded-full"></span>
+              <span className="absolute -top-1 -right-1 w-3 h-3 bg-secondary rounded-full"></span>
             </Button>
 
             {/* User Menu */}
@@ -203,10 +241,51 @@ const Layout = ({ children }: LayoutProps) => {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-6 bg-background transition-all duration-300">
+        <main className="flex-1 p-6 bg-background text-foreground transition-all duration-300">
           {children}
         </main>
       </div>
+
+      {import.meta.env.DEV && showThemeDebug && (
+        <div className="fixed bottom-4 right-4 z-[100] max-w-sm text-xs bg-white/90 backdrop-blur border border-border rounded-lg shadow-lg p-3">
+          <div className="flex items-center justify-between mb-2">
+            <span className="font-semibold text-foreground">Debug Tema</span>
+            <button
+              className="text-xs px-2 py-0.5 rounded bg-muted hover:bg-muted/80"
+              onClick={() => {
+                localStorage.setItem('debugTheme', '0');
+                setShowThemeDebug(false);
+              }}
+            >
+              Fechar
+            </button>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <div className="text-muted-foreground">--background</div>
+              <div className="font-mono">{themeSnapshot.backgroundVar || 'n/d'}</div>
+              <div className="h-4 w-full rounded mt-1" style={{ background: `hsl(${themeSnapshot.backgroundVar || '0 0% 100%'})` }} />
+            </div>
+            <div>
+              <div className="text-muted-foreground">--card</div>
+              <div className="font-mono">{themeSnapshot.cardVar || 'n/d'}</div>
+              <div className="h-4 w-full rounded mt-1" style={{ background: `hsl(${themeSnapshot.cardVar || '0 0% 100%'})` }} />
+            </div>
+            <div>
+              <div className="text-muted-foreground">Body BG</div>
+              <div className="font-mono">{themeSnapshot.bodyBg || 'n/d'}</div>
+            </div>
+            <div>
+              <div className="text-muted-foreground">HTML BG</div>
+              <div className="font-mono">{themeSnapshot.htmlBg || 'n/d'}</div>
+            </div>
+            <div className="col-span-2">
+              <div className="text-muted-foreground">forced-colors</div>
+              <div className="font-mono">{String(!!themeSnapshot.forcedColors)}</div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

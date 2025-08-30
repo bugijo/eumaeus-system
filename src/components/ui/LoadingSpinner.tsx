@@ -15,8 +15,8 @@ const sizeClasses = {
 };
 
 const colorClasses = {
-  primary: 'text-blue-600',
-  secondary: 'text-gray-600',
+  primary: 'text-primary',
+  secondary: 'text-muted-foreground',
   white: 'text-white'
 };
 
@@ -69,7 +69,7 @@ export function LoadingWithText({
   return (
     <div className={cn('flex items-center justify-center space-x-2', className)}>
       <LoadingSpinner size={size} />
-      <span className="text-gray-600">{text}</span>
+      <span className="text-muted-foreground">{text}</span>
     </div>
   );
 }
@@ -81,10 +81,10 @@ interface FullPageLoadingProps {
 
 export function FullPageLoading({ text = 'Carregando...' }: FullPageLoadingProps) {
   return (
-    <div className="fixed inset-0 bg-white bg-opacity-75 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-background/75 flex items-center justify-center z-50">
       <div className="text-center">
         <LoadingSpinner size="xl" className="mx-auto mb-4" />
-        <p className="text-lg text-gray-600">{text}</p>
+        <p className="text-lg text-muted-foreground">{text}</p>
       </div>
     </div>
   );

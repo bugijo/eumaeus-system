@@ -8,7 +8,7 @@ import { InputField, TextareaField } from '@/components/ui/FormField';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { tutorSchema, tutorUpdateSchema, type TutorFormData, type TutorUpdateData } from '@/schemas/tutorSchema';
 import { useCreateTutor, useUpdateTutor } from '@/api/tutorApi';
-import { useToast } from '@/hooks/useToast';
+import { useToast } from '@/components/ui/use-toast';
 import type { Tutor } from '@/types';
 
 interface TutorFormProps {

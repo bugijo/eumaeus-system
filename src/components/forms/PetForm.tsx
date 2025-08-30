@@ -9,7 +9,7 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { petSchema, petUpdateSchema, type PetFormData, type PetUpdateData } from '@/schemas/petSchema';
 import { useCreatePet, useCreatePetForTutor, useUpdatePet } from '@/api/petApi';
 import { useTutors } from '@/api/tutorApi';
-import { useToast } from '@/hooks/useToast';
+import { useToast } from '@/components/ui/use-toast';
 import { COMMON_SPECIES } from '@/constants';
 import type { Pet } from '@/types';
 

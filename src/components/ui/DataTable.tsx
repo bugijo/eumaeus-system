@@ -27,7 +27,7 @@ function EmptyState({ message }: { message: string }) {
           d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" 
         />
       </svg>
-      <h3 className="mt-2 text-sm font-medium text-gray-900">Nenhum registro encontrado</h3>
+      <h3 className="mt-2 text-sm font-medium text-foreground">Nenhum registro encontrado</h3>
       <p className="mt-1 text-sm text-gray-500">{message}</p>
     </div>
   );
@@ -178,11 +178,11 @@ export function DataTable<T extends Record<string, any>>({
               )}
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-card divide-y divide-border">
             {sortedData.map((item, index) => (
               <tr key={item.id || index} className="hover:bg-gray-50">
                 {columns.map((column) => (
-                  <td key={String(column.key)} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td key={String(column.key)} className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
                     {column.render ? column.render(item[column.key], item) : String(item[column.key] || '-')}
                   </td>
                 ))}

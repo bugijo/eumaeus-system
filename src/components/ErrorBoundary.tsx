@@ -79,31 +79,29 @@ class ErrorBoundary extends Component<Props, State> {
 
       // UI padrão de erro
       return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+        <div className="min-h-screen flex items-center justify-center bg-muted p-4">
           <Card className="w-full max-w-md">
             <CardHeader className="text-center">
-              <div className="mx-auto w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
-                <AlertTriangle className="w-6 h-6 text-red-600" />
+              <div className="mx-auto w-12 h-12 bg-destructive/10 rounded-full flex items-center justify-center mb-4">
+                <AlertTriangle className="w-6 h-6 text-destructive" />
               </div>
-              <CardTitle className="text-red-600">Ops! Algo deu errado</CardTitle>
+              <CardTitle className="text-destructive">Ops! Algo deu errado</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-gray-600 text-center">
+              <p className="text-muted-foreground text-center">
                 Ocorreu um erro inesperado na aplicação. Nossa equipe foi notificada.
               </p>
-              
               {process.env.NODE_ENV === 'development' && this.state.error && (
-                <details className="bg-gray-100 p-3 rounded text-sm">
-                  <summary className="cursor-pointer font-medium text-gray-700 mb-2">
+                <details className="bg-muted p-3 rounded text-sm">
+                  <summary className="cursor-pointer font-medium text-foreground mb-2">
                     Detalhes do erro (desenvolvimento)
                   </summary>
-                  <pre className="whitespace-pre-wrap text-xs text-red-600">
+                  <pre className="whitespace-pre-wrap text-xs text-destructive">
                     {this.state.error.message}
                     {this.state.error.stack}
                   </pre>
                 </details>
               )}
-              
               <div className="flex gap-2">
                 <Button 
                   onClick={this.handleReset} 

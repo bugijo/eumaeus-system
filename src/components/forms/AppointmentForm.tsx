@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { InputField, SelectField, TextareaField } from '@/components/ui/FormField';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { useToast } from '@/hooks/useToast';
+import { useToast } from '@/components/ui/use-toast';
 import { useCreateAppointment, useUpdateAppointment, useDeleteAppointment } from '@/api/appointmentApi';
 import { usePets } from '@/api/petApi';
 

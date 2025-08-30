@@ -36,7 +36,7 @@ import {
   Product,
 } from '@/api/productApi';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { useToast } from '@/hooks/useToast';
+import { useToast } from '@/components/ui/use-toast';
 import {
   Package,
   DollarSign,
@@ -164,7 +164,7 @@ export default function StockPage() {
     if (quantity === 0) {
       return { label: 'Sem Estoque', color: 'bg-red-100 text-red-800' };
     } else if (quantity < 10) {
-      return { label: 'Estoque Baixo', color: 'bg-yellow-100 text-yellow-800' };
+      return { label: 'Estoque Baixo', color: 'bg-warning-muted text-warning-muted-foreground' };
     } else {
       return { label: 'Em Estoque', color: 'bg-green-100 text-green-800' };
     }
@@ -194,7 +194,8 @@ export default function StockPage() {
   }
 
   return (
-    <div className="bg-eumaeus-light p-6 rounded-xl space-y-6">
+-    <div className="bg-eumaeus-light p-6 rounded-xl space-y-6">
++    <div className="bg-background p-6 rounded-xl space-y-6">
       {/* Cabeçalho Principal */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div className="flex items-center space-x-4">
@@ -413,7 +414,7 @@ export default function StockPage() {
                           <TableCell>
                             <span className={`font-medium ${
                               product.quantity === 0 ? 'text-red-600' : 
-                              product.quantity < 10 ? 'text-yellow-600' : 'text-green-600'
+                              product.quantity < 10 ? 'text-warning-muted-foreground' : 'text-green-600'
                             }`}>
                               {product.quantity}
                             </span>
@@ -495,7 +496,7 @@ export default function StockPage() {
                                 <p className="text-gray-500">Quantidade</p>
                                 <p className={`font-semibold ${
                                   product.quantity === 0 ? 'text-red-600' : 
-                                  product.quantity < 10 ? 'text-yellow-600' : 'text-green-600'
+                                  product.quantity < 10 ? 'text-warning-muted-foreground' : 'text-green-600'
                                 }`}>
                                   {product.quantity}
                                 </p>

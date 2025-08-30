@@ -44,9 +44,9 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex bg-white">
+    <div className="min-h-screen flex bg-background">
       {/* PAINEL DA ESQUERDA - IMAGEM (só aparece em telas grandes) */}
-      <div className="hidden lg:flex flex-1 items-center justify-center bg-eumaeus-light relative">
+      <div className="hidden lg:flex flex-1 items-center justify-center bg-muted relative">
         {/* Logo como uma marca d'água sutil no fundo */}
         <img src="/logo.png" alt="Eumaeus Logo" className="w-2/3 opacity-20" />
       </div>
@@ -57,17 +57,17 @@ export default function LoginPage() {
           {/* Logo principal, menor, acima do formulário */}
           <img src="/logo.png" alt="Eumaeus System" className="mx-auto h-12 w-auto mb-8" />
 
-          <h2 className="text-center text-2xl font-bold text-eumaeus-dark mb-2">
+          <h2 className="text-center text-2xl font-bold text-foreground mb-2">
             Faça login na sua conta
           </h2>
-          <p className="text-center text-eumaeus-gray mb-8">
+          <p className="text-center text-muted-foreground mb-8">
             Bem-vindo(a) ao Eumaeus System!
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Campo de Email */}
             <div>
-              <Label htmlFor="email" className="text-eumaeus-dark">Email</Label>
+              <Label htmlFor="email" className="text-foreground">Email</Label>
               <Input
                 id="email"
                 type="email"
@@ -75,13 +75,13 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="mt-1 border-gray-300 focus:border-eumaeus-blue focus:ring-eumaeus-blue"
+                className="mt-1 border-input focus:border-primary focus:ring-primary"
               />
             </div>
 
             {/* Campo de Senha */}
             <div>
-              <Label htmlFor="password" className="text-eumaeus-dark">Senha</Label>
+              <Label htmlFor="password" className="text-foreground">Senha</Label>
               <div className="relative mt-1">
                 <Input
                   id="password"
@@ -90,13 +90,13 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="border-gray-300 focus:border-eumaeus-blue focus:ring-eumaeus-blue pr-20"
+                  className="border-input focus:border-primary focus:ring-primary pr-20"
                 />
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 h-auto p-1 text-eumaeus-gray hover:text-eumaeus-blue"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 h-auto p-1 text-muted-foreground hover:text-foreground"
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? 'Esconder' : 'Mostrar'}
@@ -105,12 +105,12 @@ export default function LoginPage() {
             </div>
 
             {/* Exibição de Erro */}
-            {error && <p className="text-sm text-red-500 text-center">{error}</p>}
+            {error && <p className="text-sm text-destructive text-center">{error}</p>}
 
             {/* Botão de Submit */}
             <Button 
               type="submit" 
-              className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-eumaeus-blue hover:bg-eumaeus-green focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-eumaeus-blue transition-colors" 
+              className="w-full"
               disabled={loading}
             >
               {loading ? 'Entrando...' : 'Entrar'}

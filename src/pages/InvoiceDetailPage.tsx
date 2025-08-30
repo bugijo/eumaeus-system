@@ -34,7 +34,7 @@ const InvoiceDetailPage: React.FC = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'PENDING':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-warning-muted text-warning-muted-foreground';
       case 'PAID':
         return 'bg-green-100 text-green-800';
       case 'CANCELLED':

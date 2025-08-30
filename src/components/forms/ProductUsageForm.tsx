@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { SelectField, InputField } from '@/components/ui/FormField';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { useToast } from '@/hooks/useToast';
+import { useToast } from '@/components/ui/use-toast';
 import { useProducts, useRegisterProductUsage, ProductUsageRequest } from '@/api/productApi';
 
 interface ProductUsageItem {

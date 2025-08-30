@@ -932,24 +932,22 @@ export function ProntuarioPet() {
                       </div>
 
                       {/* Informações sobre Fotos */}
-                      <Card className="bg-amber-50 border-amber-200 mt-6">
-                        <CardContent className="p-4">
-                          <div className="flex items-start space-x-3">
-                            <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
-                              <Camera className="w-4 h-4 text-amber-600" />
-                            </div>
-                            <div>
-                              <h4 className="font-medium text-amber-900 mb-1">Dicas para Fotos Médicas</h4>
-                              <ul className="text-sm text-amber-700 space-y-1">
-                                <li>• Use boa iluminação natural sempre que possível</li>
-                                <li>• Mantenha o foco na área de interesse</li>
-                                <li>• Tire fotos de diferentes ângulos quando necessário</li>
-                                <li>• Documente a evolução de lesões com fotos periódicas</li>
-                                <li>• Adicione descrições detalhadas para cada foto</li>
-                              </ul>
-                            </div>
+                      <Card className="bg-warning-muted border-warning-muted-foreground mt-6">
+                        <div className="flex items-start space-x-3">
+                          <div className="w-8 h-8 rounded-full bg-warning-muted flex items-center justify-center flex-shrink-0">
+                            <Camera className="w-4 h-4 text-warning-muted-foreground" />
                           </div>
-                        </CardContent>
+                          <div>
+                            <h4 className="font-medium text-warning-muted-foreground mb-1">Dicas para Fotos Médicas</h4>
+                            <ul className="text-sm text-warning-muted-foreground space-y-1">
+                              <li>• Use boa iluminação natural sempre que possível</li>
+                              <li>• Mantenha o foco na área de interesse</li>
+                              <li>• Tire fotos de diferentes ângulos quando necessário</li>
+                              <li>• Documente a evolução de lesões com fotos periódicas</li>
+                              <li>• Adicione descrições detalhadas para cada foto</li>
+                            </ul>
+                          </div>
+                        </div>
                       </Card>
                     </CardContent>
                   </Card>

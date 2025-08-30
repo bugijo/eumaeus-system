@@ -16,7 +16,7 @@ export function FormField({
 }: FormFieldComponentProps) {
   return (
     <div className={`space-y-2 ${className}`}>
-      <label className="block text-sm font-medium text-gray-700">
+      <label className="block text-sm font-medium text-foreground">
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
       </label>
@@ -163,9 +163,9 @@ export const SelectField = React.forwardRef<HTMLSelectElement, SelectFieldProps>
   ...selectProps 
 }, ref) => {
   const selectClassName = `
-    block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
-    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 
-    sm:text-sm bg-white
+    block w-full px-3 py-2 border border-input rounded-md shadow-sm 
+    focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary 
+    sm:text-sm bg-background
     ${error ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : ''}
     ${selectProps.disabled ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : ''}
   `.trim();
