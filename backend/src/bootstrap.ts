@@ -1,15 +1,6 @@
-import { execSync } from "child_process";
+import 'dotenv/config'
 
-try {
-  if (process.env.NODE_ENV === "production") {
-    console.log("[Eumaeus] Forcing prisma generate on startup...");
-    execSync("npx prisma generate", { stdio: "inherit" });
-    console.log("[Eumaeus] Prisma generate completed.");
-  }
-} catch (error) {
-  console.error("[Eumaeus] CRITICAL: prisma generate failed.", error);
-  throw error; // lançar e deixar o topo decidir encerrar o processo
-}
+console.log('[Eumaeus] Iniciando servidor...');
 
-// Inicia o servidor real após garantir o client Prisma
-import "./server";
+// Importa e inicia o servidor diretamente
+require('./server');

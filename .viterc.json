@@ -1,0 +1,23 @@
+{
+  "optimizeDeps": {
+    "force": true,
+    "esbuildOptions": {
+      "target": "esnext",
+      "supported": {
+        "bigint": true
+      }
+    }
+  },
+  "build": {
+    "target": "esnext",
+    "minify": "esbuild",
+    "cssMinify": true,
+    "reportCompressedSize": false,
+    "chunkSizeWarningLimit": 1000
+  },
+  "server": {
+    "hmr": {
+      "port": 24678
+    }
+  }
+}

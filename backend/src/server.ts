@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import compression from 'compression';
 import cron from 'node-cron';
 import http from 'http';
 import { tutorRoutes } from './routes/tutor.routes';
@@ -23,6 +24,55 @@ import { prisma } from './lib/prisma';
 const app = express();
 const PORT = Number(process.env.PORT) || 3333;
 const HOST = '0.0.0.0'; // Aceitar conexões de qualquer endereço na rede
+
+// Middleware de compressão simplificado
+app.use(compression());
+
+// Middleware de cache headers
+app.use((req, res, next) => {
+  // Cache para recursos estáticos
+  if (req.url.match(/\.(css|js|png|jpg|jpeg|gif|ico|svg)$/)) {
+    res.setHeader('Cache-Control', 'public, max-age=31536000'); // 1 ano
+  }
+  // Cache para APIs de dashboard (5 minutos)
+  else if (req.url.includes('/api/dashboard')) {
+    res.setHeader('Cache-Control', 'public, max-age=300'); // 5 minutos
+  }
+  // Cache para outras APIs (1 minuto)
+  else if (req.url.includes('/api/')) {
+    res.setHeader('Cache-Control', 'public, max-age=60'); // 1 minuto
+  }
+  // Headers de segurança
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  next();
+});
+
+// Middleware de rate limiting simples
+const requestCounts = new Map();
+app.use((req, res, next) => {
+  const ip = req.ip || req.connection.remoteAddress;
+  const now = Date.now();
+  const windowMs = 60 * 1000; // 1 minuto
+  const maxRequests = 100; // 100 requests por minuto
+  
+  if (!requestCounts.has(ip)) {
+    requestCounts.set(ip, { count: 1, resetTime: now + windowMs });
+  } else {
+    const record = requestCounts.get(ip);
+    if (now > record.resetTime) {
+      record.count = 1;
+      record.resetTime = now + windowMs;
+    } else {
+      record.count++;
+      if (record.count > maxRequests) {
+        return res.status(429).json({ error: 'Too many requests' });
+      }
+    }
+  }
+  next();
+});
 
 // Configuração de CORS com origens permitidas
 const allowedOrigins = [

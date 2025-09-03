@@ -1,46 +1,47 @@
 import '@testing-library/jest-dom';
+import { vi } from 'vitest';
 
 // Mock do matchMedia para testes
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
-  value: jest.fn().mockImplementation(query => ({
+  value: vi.fn().mockImplementation(query => ({
     matches: false,
     media: query,
     onchange: null,
-    addListener: jest.fn(), // deprecated
-    removeListener: jest.fn(), // deprecated
-    addEventListener: jest.fn(),
-    removeEventListener: jest.fn(),
-    dispatchEvent: jest.fn(),
+    addListener: vi.fn(), // deprecated
+    removeListener: vi.fn(), // deprecated
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
   })),
 });
 
 // Mock do ResizeObserver
-global.ResizeObserver = jest.fn().mockImplementation(() => ({
-  observe: jest.fn(),
-  unobserve: jest.fn(),
-  disconnect: jest.fn(),
+global.ResizeObserver = vi.fn().mockImplementation(() => ({
+  observe: vi.fn(),
+  unobserve: vi.fn(),
+  disconnect: vi.fn(),
 }));
 
 // Mock do IntersectionObserver
-global.IntersectionObserver = jest.fn().mockImplementation(() => ({
-  observe: jest.fn(),
-  unobserve: jest.fn(),
-  disconnect: jest.fn(),
+global.IntersectionObserver = vi.fn().mockImplementation(() => ({
+  observe: vi.fn(),
+  unobserve: vi.fn(),
+  disconnect: vi.fn(),
 }));
 
 // Mock do window.scrollTo
 Object.defineProperty(window, 'scrollTo', {
-  value: jest.fn(),
+  value: vi.fn(),
   writable: true,
 });
 
 // Mock do localStorage
 const localStorageMock = {
-  getItem: jest.fn(),
-  setItem: jest.fn(),
-  removeItem: jest.fn(),
-  clear: jest.fn(),
+  getItem: vi.fn(),
+  setItem: vi.fn(),
+  removeItem: vi.fn(),
+  clear: vi.fn(),
 };
 Object.defineProperty(window, 'localStorage', {
   value: localStorageMock,
@@ -48,26 +49,26 @@ Object.defineProperty(window, 'localStorage', {
 
 // Mock do sessionStorage
 const sessionStorageMock = {
-  getItem: jest.fn(),
-  setItem: jest.fn(),
-  removeItem: jest.fn(),
-  clear: jest.fn(),
+  getItem: vi.fn(),
+  setItem: vi.fn(),
+  removeItem: vi.fn(),
+  clear: vi.fn(),
 };
 Object.defineProperty(window, 'sessionStorage', {
   value: sessionStorageMock,
 });
 
 // Mock do fetch
-global.fetch = jest.fn();
+global.fetch = vi.fn();
 
 // Mock do performance.now
 Object.defineProperty(window, 'performance', {
   value: {
-    now: jest.fn(() => Date.now()),
-    mark: jest.fn(),
-    measure: jest.fn(),
-    getEntriesByType: jest.fn(() => []),
-    getEntriesByName: jest.fn(() => []),
+    now: vi.fn(() => Date.now()),
+    mark: vi.fn(),
+    measure: vi.fn(),
+    getEntriesByType: vi.fn(() => []),
+    getEntriesByName: vi.fn(() => []),
   },
 });
 
@@ -95,9 +96,9 @@ Object.defineProperty(window, 'location', {
     pathname: '/',
     search: '',
     hash: '',
-    reload: jest.fn(),
-    assign: jest.fn(),
-    replace: jest.fn(),
+    reload: vi.fn(),
+    assign: vi.fn(),
+    replace: vi.fn(),
   },
   writable: true,
 });
@@ -105,7 +106,7 @@ Object.defineProperty(window, 'location', {
 // Configuração global para testes
 beforeEach(() => {
   // Limpar todos os mocks antes de cada teste
-  jest.clearAllMocks();
+  vi.clearAllMocks();
   
   // Resetar localStorage e sessionStorage
   localStorageMock.getItem.mockClear();
