@@ -9,14 +9,23 @@ export interface TestResponse {
   headers: http.IncomingHttpHeaders;
 }
 
-type AppLike = Express | Server | (Express & { __simulate?: (method: string, path: string) => TestResponse });
+type AppLike =
+  | Express
+  | Server
+  | (Express & { __simulate?: (method: string, path: string, options?: { body?: unknown; headers?: Record<string, string> }) => TestResponse });
 
-const isSimulatableApp = (app: AppLike): app is AppLike & { __simulate: (method: string, path: string) => TestResponse } =>
-  typeof (app as any)?.__simulate === 'function';
+const isSimulatableApp = (app: AppLike): app is AppLike & {
+  __simulate: (method: string, path: string, options?: { body?: unknown; headers?: Record<string, string> }) => TestResponse;
+} => typeof (app as any)?.__simulate === 'function';
 
-const performRequest = (app: AppLike, method: string, path: string): Promise<TestResponse> => {
+interface RequestOptions {
+  body?: unknown;
+  headers?: Record<string, string>;
+}
+
+const performRequest = (app: AppLike, method: string, path: string, options: RequestOptions = {}): Promise<TestResponse> => {
   if (isSimulatableApp(app)) {
-    return Promise.resolve(app.__simulate(method, path)).then(result => ({
+    return Promise.resolve(app.__simulate(method, path, options)).then(result => ({
       status: result.status ?? 200,
       body: result.body,
       text: result.text,
@@ -53,14 +62,15 @@ const performRequest = (app: AppLike, method: string, path: string): Promise<Tes
       const address = server!.address();
       const port = typeof address === 'object' && address ? address.port : 0;
 
-      const options: http.RequestOptions = {
+      const requestOptions: http.RequestOptions = {
         method,
         hostname: '127.0.0.1',
         port,
         path,
+        headers: options.headers,
       };
 
-      const req = http.request(options, res => {
+      const req = http.request(requestOptions, res => {
         const chunks: Buffer[] = [];
 
         res.on('data', chunk => {
@@ -92,6 +102,14 @@ const performRequest = (app: AppLike, method: string, path: string): Promise<Tes
         reject(error);
       });
 
+      if (options.body !== undefined) {
+        const payload =
+          typeof options.body === 'string' || options.body instanceof Buffer
+            ? options.body
+            : JSON.stringify(options.body);
+        req.write(payload);
+      }
+
       req.end();
     };
 
@@ -104,10 +122,29 @@ const performRequest = (app: AppLike, method: string, path: string): Promise<Tes
 };
 
 class TestRequest {
+  private body: unknown;
+  private headers: Record<string, string> = {};
+
   constructor(private readonly app: AppLike, private readonly method: string, private readonly path: string) {}
 
+  send(payload: unknown): TestRequest {
+    this.body = payload;
+    if (!this.headers['content-type']) {
+      this.headers['content-type'] = 'application/json';
+    }
+    return this;
+  }
+
+  set(key: string, value: string): TestRequest {
+    this.headers[key.toLowerCase()] = value;
+    return this;
+  }
+
   async expect(status: number): Promise<TestResponse> {
-    const response = await performRequest(this.app, this.method, this.path);
+    const response = await performRequest(this.app, this.method, this.path, {
+      body: this.body,
+      headers: this.headers,
+    });
 
     if (response.status !== status) {
       const error = new Error(`Expected status ${status} but received ${response.status}`);
@@ -124,6 +161,22 @@ class TestAgent {
 
   get(path: string): TestRequest {
     return new TestRequest(this.app, 'GET', path);
+  }
+
+  post(path: string): TestRequest {
+    return new TestRequest(this.app, 'POST', path);
+  }
+
+  put(path: string): TestRequest {
+    return new TestRequest(this.app, 'PUT', path);
+  }
+
+  delete(path: string): TestRequest {
+    return new TestRequest(this.app, 'DELETE', path);
+  }
+
+  patch(path: string): TestRequest {
+    return new TestRequest(this.app, 'PATCH', path);
   }
 }
 

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { TutorService } from '../services/tutor.service';
+import { ServiceError, TutorService } from '../services/tutor.service';
 
 export class TutorController {
   static async getTutorStats(req: Request, res: Response): Promise<Response> {
@@ -14,9 +14,27 @@ export class TutorController {
 
   static async getAllTutors(req: Request, res: Response): Promise<Response> {
     try {
+      const pageParam = Number(req.query.page ?? 1);
+      const limitParam = Number(req.query.limit ?? 10);
+
+      const page = Number.isFinite(pageParam) && pageParam > 0 ? pageParam : 1;
+      const limit = Number.isFinite(limitParam) && limitParam > 0 ? limitParam : 10;
+
       const tutors = await TutorService.getAllTutors();
-      return res.status(200).json(tutors);
+      const total = tutors.length;
+      const start = (page - 1) * limit;
+      const data = tutors.slice(start, start + limit);
+
+      return res.status(200).json({
+        data,
+        total,
+        page,
+        limit,
+      });
     } catch (error) {
+      if (error instanceof ServiceError) {
+        return res.status(error.statusCode).json({ error: error.message });
+      }
       console.error('Erro ao buscar tutores:', error);
       return res.status(500).json({ error: 'Erro interno do servidor' });
     }
@@ -28,6 +46,9 @@ export class TutorController {
       const createdTutor = await TutorService.createTutor(newTutorData);
       return res.status(201).json(createdTutor);
     } catch (error) {
+      if (error instanceof ServiceError) {
+        return res.status(error.statusCode).json({ error: error.message });
+      }
       console.error('Erro ao criar tutor:', error);
       return res.status(500).json({ error: 'Erro interno do servidor' });
     }
@@ -42,13 +63,16 @@ export class TutorController {
       }
       
       const tutor = await TutorService.getTutorById(id);
-      
+
       if (!tutor) {
         return res.status(404).json({ error: 'Tutor não encontrado' });
       }
-      
+
       return res.status(200).json(tutor);
     } catch (error) {
+      if (error instanceof ServiceError) {
+        return res.status(error.statusCode).json({ error: error.message });
+      }
       console.error('Erro ao buscar tutor:', error);
       return res.status(500).json({ error: 'Erro interno do servidor' });
     }
@@ -68,9 +92,12 @@ export class TutorController {
       if (!updatedTutor) {
         return res.status(404).json({ error: 'Tutor não encontrado' });
       }
-      
+
       return res.status(200).json(updatedTutor);
     } catch (error) {
+      if (error instanceof ServiceError) {
+        return res.status(error.statusCode).json({ error: error.message });
+      }
       console.error('Erro ao atualizar tutor:', error);
       return res.status(500).json({ error: 'Erro interno do servidor' });
     }
@@ -89,9 +116,12 @@ export class TutorController {
       if (!deleted) {
         return res.status(404).json({ error: 'Tutor não encontrado' });
       }
-      
+
       return res.status(200).json({ message: 'Tutor deletado com sucesso' });
     } catch (error) {
+      if (error instanceof ServiceError) {
+        return res.status(error.statusCode).json({ error: error.message });
+      }
       console.error('Erro ao deletar tutor:', error);
       return res.status(500).json({ error: 'Erro interno do servidor' });
     }
