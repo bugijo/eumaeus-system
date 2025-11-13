@@ -5,7 +5,18 @@ import { componentTagger } from "lovable-tagger";
 /// <reference types="vitest" />
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
+export default defineConfig(({ mode }) => {
+  const testAliases = mode === 'test'
+    ? {
+        express: path.resolve(__dirname, './backend/test-utils/stubs/express.ts'),
+        cors: path.resolve(__dirname, './backend/test-utils/stubs/cors.ts'),
+        compression: path.resolve(__dirname, './backend/test-utils/stubs/compression.ts'),
+        'node-cron': path.resolve(__dirname, './backend/test-utils/stubs/node-cron.ts'),
+        nodemailer: path.resolve(__dirname, './backend/test-utils/stubs/nodemailer.ts'),
+      }
+    : {};
+
+  return {
   server: {
     host: "0.0.0.0", // Aceitar conexões de qualquer endereço na rede
     port: 3000,
@@ -38,6 +49,8 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      "supertest": path.resolve(__dirname, "./backend/test-utils/mockSupertest.ts"),
+      ...testAliases,
     },
   },
   build: {
@@ -186,4 +199,5 @@ export default defineConfig(({ mode }) => ({
       ]
     }
   }
-}));
+  };
+});

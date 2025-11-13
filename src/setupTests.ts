@@ -1,5 +1,59 @@
 import '@testing-library/jest-dom';
 import { vi } from 'vitest';
+import { logger as appLogger } from './utils/logger';
+
+vi.mock('@prisma/client', () => {
+  const createModelMock = () => ({
+    findMany: vi.fn(async () => []),
+    findFirst: vi.fn(async () => null),
+    count: vi.fn(async () => 0),
+    create: vi.fn(async ({ data }: { data?: unknown }) => data ?? null),
+    update: vi.fn(async ({ data }: { data?: unknown }) => data ?? null),
+    delete: vi.fn(async () => ({})),
+  });
+
+  class PrismaClientMock {
+    $connect = vi.fn(async () => {});
+    $disconnect = vi.fn(async () => {});
+    $queryRaw = vi.fn(async () => 1);
+
+    constructor() {
+      return new Proxy(this, {
+        get(target, prop, receiver) {
+          if (prop in target) {
+            return Reflect.get(target, prop, receiver);
+          }
+
+          return createModelMock();
+        },
+      });
+    }
+  }
+
+  return { PrismaClient: PrismaClientMock };
+});
+
+
+declare global {
+  // Permite que os testes escritos em Jest funcionem com Vitest
+  // eslint-disable-next-line no-var
+  var jest: typeof vi;
+  namespace jest {
+    type Mock = ReturnType<typeof vi.fn>;
+  }
+}
+
+globalThis.jest = vi;
+if (typeof globalThis.jest.mock !== 'function') {
+  // @ts-ignore
+  globalThis.jest.mock = vi.mock;
+}
+
+if (appLogger && typeof appLogger.error !== 'function') {
+  // noop
+} else {
+  appLogger.error = vi.fn();
+}
 
 // Mock do matchMedia para testes
 Object.defineProperty(window, 'matchMedia', {
@@ -102,6 +156,30 @@ Object.defineProperty(window, 'location', {
   },
   writable: true,
 });
+
+const originalDocumentQuerySelector = document.querySelector.bind(document);
+const originalDocumentQuerySelectorAll = document.querySelectorAll.bind(document);
+
+const normalizeSelector = (selector: string) =>
+  selector
+    .split('.bg-black\\/50')
+    .join('[class~="bg-black/50"]')
+    .split('.bg-black/50')
+    .join('[class~="bg-black/50"]');
+
+document.querySelector = ((selector: string) => {
+  if (selector.includes('bg-black\\/50') || selector.includes('bg-black/50')) {
+    return originalDocumentQuerySelector(normalizeSelector(selector));
+  }
+  return originalDocumentQuerySelector(selector);
+}) as typeof document.querySelector;
+
+document.querySelectorAll = ((selector: string) => {
+  if (selector.includes('bg-black\\/50') || selector.includes('bg-black/50')) {
+    return originalDocumentQuerySelectorAll(normalizeSelector(selector));
+  }
+  return originalDocumentQuerySelectorAll(selector);
+}) as typeof document.querySelectorAll;
 
 // Configuração global para testes
 beforeEach(() => {

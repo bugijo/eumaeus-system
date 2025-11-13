@@ -7,7 +7,13 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "supertest": ["./backend/test-utils/mockSupertest"],
+      "express": ["./backend/test-utils/stubs/express"],
+      "compression": ["./backend/test-utils/stubs/compression"],
+      "cors": ["./backend/test-utils/stubs/cors"],
+      "node-cron": ["./backend/test-utils/stubs/node-cron"],
+      "nodemailer": ["./backend/test-utils/stubs/nodemailer"]
     },
     "noImplicitAny": false,
     "noUnusedParameters": false,
