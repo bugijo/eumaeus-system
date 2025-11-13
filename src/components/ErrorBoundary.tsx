@@ -2,10 +2,14 @@ import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import * as LoggerModule from '../utils/logger';
+
+const appLogger = LoggerModule.logger;
 
 interface Props {
   children: ReactNode;
   fallback?: ReactNode;
+  onError?: (error: Error, info: ErrorInfo) => void;
 }
 
 interface State {
@@ -28,15 +32,19 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('ErrorBoundary capturou um erro:', error, errorInfo);
-    
-    // Log estruturado do erro
     this.logError(error, errorInfo);
-    
+    this.props.onError?.(error, errorInfo);
+
     this.setState({
       error,
       errorInfo,
     });
+  }
+
+  componentDidUpdate(prevProps: Props) {
+    if (this.state.hasError && prevProps.children !== this.props.children) {
+      this.setState({ hasError: false, error: undefined, errorInfo: undefined });
+    }
   }
 
   private logError = (error: Error, errorInfo: ErrorInfo) => {
@@ -47,19 +55,11 @@ class ErrorBoundary extends Component<Props, State> {
       timestamp: new Date().toISOString(),
       userAgent: navigator.userAgent,
       url: window.location.href,
+      error,
+      errorInfo,
     };
 
-    // Em produção, enviar para serviço de monitoramento
-    if (process.env.NODE_ENV === 'production') {
-      // Aqui você pode integrar com Sentry, LogRocket, etc.
-      console.error('Erro capturado pelo ErrorBoundary:', errorData);
-    } else {
-      console.group('🚨 Erro capturado pelo ErrorBoundary');
-      console.error('Erro:', error);
-      console.error('Stack do componente:', errorInfo.componentStack);
-      console.error('Dados completos:', errorData);
-      console.groupEnd();
-    }
+    appLogger.error?.('Erro capturado pelo Error Boundary', errorData);
   };
 
   private handleReload = () => {
@@ -89,33 +89,37 @@ class ErrorBoundary extends Component<Props, State> {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-muted-foreground text-center">
-                Ocorreu um erro inesperado na aplicação. Nossa equipe foi notificada.
+                Ocorreu um erro inesperado. Nossa equipe foi notificada.
               </p>
               {process.env.NODE_ENV === 'development' && this.state.error && (
                 <details className="bg-muted p-3 rounded text-sm">
                   <summary className="cursor-pointer font-medium text-foreground mb-2">
-                    Detalhes do erro (desenvolvimento)
+                    Detalhes do erro:
                   </summary>
-                  <pre className="whitespace-pre-wrap text-xs text-destructive">
+                  <p className="text-sm font-medium text-destructive mb-2">
                     {this.state.error.message}
-                    {this.state.error.stack}
-                  </pre>
+                  </p>
+                  {this.state.error.stack && (
+                    <pre className="whitespace-pre-wrap text-xs text-destructive">
+                      {this.state.error.stack}
+                    </pre>
+                  )}
                 </details>
               )}
               <div className="flex gap-2">
-                <Button 
-                  onClick={this.handleReset} 
-                  variant="outline" 
+                <Button
+                  onClick={this.handleReset}
+                  variant="outline"
                   className="flex-1"
                 >
                   Tentar Novamente
                 </Button>
-                <Button 
-                  onClick={this.handleReload} 
+                <Button
+                  onClick={this.handleReload}
                   className="flex-1"
                 >
                   <RefreshCw className="w-4 h-4 mr-2" />
-                  Recarregar Página
+                  Recarregar página
                 </Button>
               </div>
             </CardContent>
@@ -128,6 +132,7 @@ class ErrorBoundary extends Component<Props, State> {
   }
 }
 
+export { ErrorBoundary };
 export default ErrorBoundary;
 
 // Hook para usar ErrorBoundary de forma mais simples
