@@ -194,8 +194,7 @@ export default function StockPage() {
   }
 
   return (
--    <div className="bg-eumaeus-light p-6 rounded-xl space-y-6">
-+    <div className="bg-background p-6 rounded-xl space-y-6">
+    <div className="bg-eumaeus-light p-6 rounded-xl space-y-6">
       {/* Cabeçalho Principal */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div className="flex items-center space-x-4">
@@ -406,16 +405,21 @@ export default function StockPage() {
                     filteredAndSortedProducts.map((product) => {
                       const stockStatus = getStockStatus(product.quantity);
                       const expiring = isExpiringSoon(product.expirationDate);
-                      
+
                       return (
                         <TableRow key={product.id} className="hover:bg-background transition-colors cursor-pointer">
                           <TableCell className="font-medium text-gray-900">{product.name}</TableCell>
                           <TableCell className="text-gray-600">{product.supplier}</TableCell>
                           <TableCell>
-                            <span className={`font-medium ${
-                              product.quantity === 0 ? 'text-red-600' : 
-                              product.quantity < 10 ? 'text-warning-muted-foreground' : 'text-green-600'
-                            }`}>
+                            <span
+                              className={`font-medium ${
+                                product.quantity === 0
+                                  ? 'text-red-600'
+                                  : product.quantity < 10
+                                    ? 'text-warning-muted-foreground'
+                                    : 'text-green-600'
+                              }`}
+                            >
                               {product.quantity}
                             </span>
                           </TableCell>
@@ -475,9 +479,12 @@ export default function StockPage() {
                   {filteredAndSortedProducts.map((product) => {
                     const stockStatus = getStockStatus(product.quantity);
                     const expiring = isExpiringSoon(product.expirationDate);
-                    
+
                     return (
-                      <Card key={product.id} className="hover:shadow-lg transition-all duration-300 border-l-4 border-l-primary/30">
+                      <Card
+                        key={product.id}
+                        className="hover:shadow-lg transition-all duration-300 border-l-4 border-l-primary/30"
+                      >
                         <CardHeader className="pb-3">
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
@@ -494,10 +501,15 @@ export default function StockPage() {
                             <div className="grid grid-cols-2 gap-3 text-sm">
                               <div>
                                 <p className="text-gray-500">Quantidade</p>
-                                <p className={`font-semibold ${
-                                  product.quantity === 0 ? 'text-red-600' : 
-                                  product.quantity < 10 ? 'text-warning-muted-foreground' : 'text-green-600'
-                                }`}>
+                                <p
+                                  className={`font-semibold ${
+                                    product.quantity === 0
+                                      ? 'text-red-600'
+                                      : product.quantity < 10
+                                        ? 'text-warning-muted-foreground'
+                                        : 'text-green-600'
+                                  }`}
+                                >
                                   {product.quantity}
                                 </p>
                               </div>
@@ -506,19 +518,15 @@ export default function StockPage() {
                                 <p className="font-semibold text-gray-900">{formatCurrency(product.costPrice)}</p>
                               </div>
                             </div>
-                            
+
                             <div>
                               <p className="text-gray-500 text-sm">Vencimento</p>
-                              <p className={`text-sm font-medium ${
-                                expiring ? 'text-red-600' : 'text-gray-700'
-                              }`}>
+                              <p className={`text-sm font-medium ${expiring ? 'text-red-600' : 'text-gray-700'}`}>
                                 {formatDate(product.expirationDate)}
-                                {expiring && (
-                                  <AlertTriangle className="w-3 h-3 inline ml-1" />
-                                )}
+                                {expiring && <AlertTriangle className="w-3 h-3 inline ml-1" />}
                               </p>
                             </div>
-                            
+
                             <div className="flex space-x-2 pt-2">
                               <Button
                                 variant="outline"
