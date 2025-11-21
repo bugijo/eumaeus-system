@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -52,6 +52,14 @@ import {
   Eye,
 } from 'lucide-react';
 
+type EnhancedProduct = Product & {
+  stockStatus: ReturnType<typeof getStockStatus>;
+  isExpiringSoon: boolean;
+  expirationTimestamp: number;
+  normalizedName: string;
+  normalizedSupplier: string;
+};
+
 export default function StockPage() {
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -67,25 +75,52 @@ export default function StockPage() {
   const deleteMutation = useDeleteProduct();
   const { toast } = useToast();
 
-  // Filtrar e ordenar produtos
-  const filteredAndSortedProducts = useMemo(() => {
-    let filtered = products.filter(product => {
-      const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           product.supplier.toLowerCase().includes(searchTerm.toLowerCase());
-      
+  const normalizedSearchTerm = useMemo(() => searchTerm.trim().toLowerCase(), [searchTerm]);
+
+  const getStockStatus = useCallback((quantity: number) => {
+    if (quantity === 0) {
+      return { label: 'Sem Estoque', color: 'bg-red-100 text-red-800' };
+    }
+
+    if (quantity < 10) {
+      return { label: 'Estoque Baixo', color: 'bg-warning-muted text-warning-muted-foreground' };
+    }
+
+    return { label: 'Em Estoque', color: 'bg-green-100 text-green-800' };
+  }, []);
+
+  // Filtrar e ordenar produtos com pré-processamento para melhorar performance
+  const filteredAndSortedProducts = useMemo<EnhancedProduct[]>(() => {
+    const expirationThreshold = new Date();
+    expirationThreshold.setDate(expirationThreshold.getDate() + 30);
+    const expirationTimestamp = expirationThreshold.getTime();
+
+    const normalizedProducts: EnhancedProduct[] = products.map((product) => {
+      const productExpirationTimestamp = new Date(product.expirationDate).getTime();
+
+      return {
+        ...product,
+        stockStatus: getStockStatus(product.quantity),
+        isExpiringSoon: productExpirationTimestamp <= expirationTimestamp,
+        expirationTimestamp: productExpirationTimestamp,
+        normalizedName: product.name.toLowerCase(),
+        normalizedSupplier: product.supplier.toLowerCase(),
+      };
+    });
+
+    const filtered = normalizedProducts.filter((product) => {
+      const matchesSearch =
+        product.normalizedName.includes(normalizedSearchTerm) ||
+        product.normalizedSupplier.includes(normalizedSearchTerm);
+
       if (statusFilter === 'all') return matchesSearch;
       if (statusFilter === 'low-stock') return matchesSearch && product.quantity < 10;
       if (statusFilter === 'out-of-stock') return matchesSearch && product.quantity === 0;
-      if (statusFilter === 'expiring') {
-        const expDate = new Date(product.expirationDate);
-        const thirtyDaysFromNow = new Date();
-        thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
-        return matchesSearch && expDate <= thirtyDaysFromNow;
-      }
+      if (statusFilter === 'expiring') return matchesSearch && product.isExpiringSoon;
+
       return matchesSearch;
     });
 
-    // Ordenar produtos
     filtered.sort((a, b) => {
       switch (sortBy) {
         case 'name':
@@ -95,14 +130,14 @@ export default function StockPage() {
         case 'price':
           return b.costPrice - a.costPrice;
         case 'expiration':
-          return new Date(a.expirationDate).getTime() - new Date(b.expirationDate).getTime();
+          return a.expirationTimestamp - b.expirationTimestamp;
         default:
           return 0;
       }
     });
 
     return filtered;
-  }, [products, searchTerm, statusFilter, sortBy]);
+  }, [products, normalizedSearchTerm, statusFilter, sortBy, getStockStatus]);
 
   const handleNewProduct = () => {
     setSelectedProduct(null);
@@ -160,23 +195,6 @@ export default function StockPage() {
     return new Date(dateString).toLocaleDateString('pt-BR');
   };
 
-  const getStockStatus = (quantity: number) => {
-    if (quantity === 0) {
-      return { label: 'Sem Estoque', color: 'bg-red-100 text-red-800' };
-    } else if (quantity < 10) {
-      return { label: 'Estoque Baixo', color: 'bg-warning-muted text-warning-muted-foreground' };
-    } else {
-      return { label: 'Em Estoque', color: 'bg-green-100 text-green-800' };
-    }
-  };
-
-  const isExpiringSoon = (expirationDate: string) => {
-    const expDate = new Date(expirationDate);
-    const thirtyDaysFromNow = new Date();
-    thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
-    return expDate <= thirtyDaysFromNow;
-  };
-
   if (productsLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -194,8 +212,7 @@ export default function StockPage() {
   }
 
   return (
--    <div className="bg-eumaeus-light p-6 rounded-xl space-y-6">
-+    <div className="bg-background p-6 rounded-xl space-y-6">
+    <div className="bg-eumaeus-light p-6 rounded-xl space-y-6">
       {/* Cabeçalho Principal */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div className="flex items-center space-x-4">
@@ -207,7 +224,10 @@ export default function StockPage() {
             <p className="text-eumaeus-gray">Visão geral e controle total do seu inventário</p>
           </div>
         </div>
-        <Button onClick={handleNewProduct} className="bg-primary text-white font-semibold rounded-lg px-4 py-2 hover:bg-secondary transition-colors duration-200 shadow-sm">
+        <Button
+          onClick={handleNewProduct}
+          className="bg-primary text-white font-semibold rounded-lg px-4 py-2 hover:bg-secondary transition-colors duration-200 shadow-sm"
+        >
           <Plus className="w-4 h-4 mr-2" />
           Adicionar Produto
         </Button>
@@ -231,9 +251,9 @@ export default function StockPage() {
             </div>
             
             {/* Filtros */}
-            <div className="flex gap-3">
+            <div className="flex gap-3 flex-wrap">
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[180px] border-primary/20">
+                <SelectTrigger className="w-full sm:w-[180px] border-primary/20">
                   <Filter className="w-4 h-4 mr-2" />
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
@@ -246,7 +266,7 @@ export default function StockPage() {
               </Select>
               
               <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-[160px] border-primary/20">
+                <SelectTrigger className="w-full sm:w-[160px] border-primary/20">
                   <SelectValue placeholder="Ordenar" />
                 </SelectTrigger>
                 <SelectContent>
@@ -404,32 +424,34 @@ export default function StockPage() {
                     </TableRow>
                   ) : (
                     filteredAndSortedProducts.map((product) => {
-                      const stockStatus = getStockStatus(product.quantity);
-                      const expiring = isExpiringSoon(product.expirationDate);
-                      
                       return (
                         <TableRow key={product.id} className="hover:bg-background transition-colors cursor-pointer">
                           <TableCell className="font-medium text-gray-900">{product.name}</TableCell>
                           <TableCell className="text-gray-600">{product.supplier}</TableCell>
                           <TableCell>
-                            <span className={`font-medium ${
-                              product.quantity === 0 ? 'text-red-600' : 
-                              product.quantity < 10 ? 'text-warning-muted-foreground' : 'text-green-600'
-                            }`}>
+                            <span
+                              className={`font-medium ${
+                                product.quantity === 0
+                                  ? 'text-red-600'
+                                  : product.quantity < 10
+                                    ? 'text-warning-muted-foreground'
+                                    : 'text-green-600'
+                              }`}
+                            >
                               {product.quantity}
                             </span>
                           </TableCell>
                           <TableCell className="font-medium">{formatCurrency(product.costPrice)}</TableCell>
                           <TableCell>
-                            <span className={expiring ? 'text-red-600 font-medium' : 'text-gray-600'}>
+                            <span className={product.isExpiringSoon ? 'text-red-600 font-medium' : 'text-gray-600'}>
                               {formatDate(product.expirationDate)}
-                              {expiring && (
+                              {product.isExpiringSoon && (
                                 <AlertTriangle className="w-4 h-4 inline ml-1 text-red-600" />
                               )}
                             </span>
                           </TableCell>
                           <TableCell>
-                            <Badge className={stockStatus.color}>{stockStatus.label}</Badge>
+                            <Badge className={product.stockStatus.color}>{product.stockStatus.label}</Badge>
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex items-center justify-end space-x-2">
@@ -473,19 +495,19 @@ export default function StockPage() {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                   {filteredAndSortedProducts.map((product) => {
-                    const stockStatus = getStockStatus(product.quantity);
-                    const expiring = isExpiringSoon(product.expirationDate);
-                    
                     return (
-                      <Card key={product.id} className="hover:shadow-lg transition-all duration-300 border-l-4 border-l-primary/30">
+                      <Card
+                        key={product.id}
+                        className="hover:shadow-lg transition-all duration-300 border-l-4 border-l-primary/30"
+                      >
                         <CardHeader className="pb-3">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <h3 className="font-semibold text-gray-900 text-sm leading-tight">{product.name}</h3>
-                              <p className="text-xs text-gray-500 mt-1">{product.supplier}</p>
-                            </div>
-                            <Badge className={stockStatus.color} variant="secondary">
-                              {stockStatus.label}
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <h3 className="font-semibold text-gray-900 text-sm leading-tight">{product.name}</h3>
+                                <p className="text-xs text-gray-500 mt-1">{product.supplier}</p>
+                              </div>
+                            <Badge className={product.stockStatus.color} variant="secondary">
+                              {product.stockStatus.label}
                             </Badge>
                           </div>
                         </CardHeader>
@@ -494,10 +516,15 @@ export default function StockPage() {
                             <div className="grid grid-cols-2 gap-3 text-sm">
                               <div>
                                 <p className="text-gray-500">Quantidade</p>
-                                <p className={`font-semibold ${
-                                  product.quantity === 0 ? 'text-red-600' : 
-                                  product.quantity < 10 ? 'text-warning-muted-foreground' : 'text-green-600'
-                                }`}>
+                                <p
+                                  className={`font-semibold ${
+                                    product.quantity === 0
+                                      ? 'text-red-600'
+                                      : product.quantity < 10
+                                        ? 'text-warning-muted-foreground'
+                                        : 'text-green-600'
+                                  }`}
+                                >
                                   {product.quantity}
                                 </p>
                               </div>
@@ -506,19 +533,15 @@ export default function StockPage() {
                                 <p className="font-semibold text-gray-900">{formatCurrency(product.costPrice)}</p>
                               </div>
                             </div>
-                            
+
                             <div>
                               <p className="text-gray-500 text-sm">Vencimento</p>
-                              <p className={`text-sm font-medium ${
-                                expiring ? 'text-red-600' : 'text-gray-700'
-                              }`}>
+                              <p className={`text-sm font-medium ${product.isExpiringSoon ? 'text-red-600' : 'text-gray-700'}`}>
                                 {formatDate(product.expirationDate)}
-                                {expiring && (
-                                  <AlertTriangle className="w-3 h-3 inline ml-1" />
-                                )}
+                                {product.isExpiringSoon && <AlertTriangle className="w-3 h-3 inline ml-1" />}
                               </p>
                             </div>
-                            
+
                             <div className="flex space-x-2 pt-2">
                               <Button
                                 variant="outline"
