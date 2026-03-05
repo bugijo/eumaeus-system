@@ -1,4 +1,4 @@
-import { defineConfig } from "vite";
+﻿import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
@@ -18,9 +18,9 @@ export default defineConfig(({ mode }) => {
 
   return {
   server: {
-    host: "0.0.0.0", // Aceitar conexões de qualquer endereço na rede
+    host: "0.0.0.0", // Aceitar conexÃµes de qualquer endereÃ§o na rede
     port: 3000,
-    strictPort: true, // Não mudar automaticamente de porta
+    strictPort: true, // NÃ£o mudar automaticamente de porta
     hmr: {
       overlay: false // Desabilitar overlay de erros para melhor UX
     },
@@ -30,7 +30,7 @@ export default defineConfig(({ mode }) => {
   },
   // Cache configuration
   cacheDir: 'node_modules/.vite',
-  // Evitar recompilações desnecessárias
+  // Evitar recompilaÃ§Ãµes desnecessÃ¡rias
   define: {
     __DEV__: mode === 'development',
     global: 'globalThis'
@@ -54,79 +54,22 @@ export default defineConfig(({ mode }) => {
     },
   },
   build: {
-    // Otimizações de performance
+    // OtimizaÃ§Ãµes de performance
     target: 'esnext',
     minify: 'esbuild',
     sourcemap: false,
     rollupOptions: {
       output: {
-        // Code splitting otimizado
-        manualChunks(id) {
-          // Vendor chunks
-          if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom')) {
-              return 'react-vendor';
-            }
-            if (id.includes('@radix-ui')) {
-              return 'ui-vendor';
-            }
-            if (id.includes('@tanstack') || id.includes('react-query')) {
-              return 'query-vendor';
-            }
-            if (id.includes('lucide-react')) {
-              return 'icons-vendor';
-            }
-            if (id.includes('@fullcalendar')) {
-              return 'calendar-vendor';
-            }
-            if (id.includes('date-fns') || id.includes('clsx') || id.includes('tailwind-merge')) {
-              return 'utils-vendor';
-            }
-            return 'vendor';
-          }
-          // Páginas principais
-          if (id.includes('/pages/Dashboard')) {
-            return 'dashboard';
-          }
-          if (id.includes('/pages/Agendamentos')) {
-            return 'agendamentos';
-          }
-          if (id.includes('/pages/') && (id.includes('Clientes') || id.includes('Tutor'))) {
-            return 'clientes';
-          }
-          if (id.includes('/pages/Pets')) {
-            return 'pets';
-          }
-          if (id.includes('/pages/Estoque')) {
-            return 'estoque';
-          }
-          if (id.includes('/pages/Financeiro')) {
-            return 'financeiro';
-          }
-          if (id.includes('/pages/Prontuario')) {
-            return 'prontuario';
-          }
-          // Componentes por categoria
-          if (id.includes('/components/dashboard')) {
-            return 'dashboard-components';
-          }
-          if (id.includes('/components/forms')) {
-            return 'forms-components';
-          }
-          if (id.includes('/components/ui')) {
-            return 'ui-components';
-          }
-        },
         // Otimizar nomes dos chunks
         chunkFileNames: 'assets/js/[name]-[hash].js',
         entryFileNames: 'assets/js/[name]-[hash].js',
         assetFileNames: 'assets/[ext]/[name]-[hash].[ext]'
       }
     },
-    // Configurações de chunk size
+    // ConfiguraÃ§Ãµes de chunk size
     chunkSizeWarningLimit: 1000
   },
-  // Otimizações de desenvolvimento
+  // OtimizaÃ§Ãµes de desenvolvimento
   optimizeDeps: {
     include: [
       'react', 
@@ -180,7 +123,7 @@ export default defineConfig(({ mode }) => {
     ],
     force: true
   },
-  // Configuração do Vitest
+  // ConfiguraÃ§Ã£o do Vitest
   test: {
     globals: true,
     environment: 'jsdom',
@@ -201,3 +144,4 @@ export default defineConfig(({ mode }) => {
   }
   };
 });
+
