@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/bootstrap.ts",
     "build": "tsc -p tsconfig.build.json",
-    "start": "node dist/src/bootstrap.js",
+    "start": "npx prisma migrate deploy && node dist/src/bootstrap.js",
     "seed": "ts-node prisma/seed.ts",
     "test": "jest",
     "test:watch": "jest --watch",
