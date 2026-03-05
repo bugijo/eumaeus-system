@@ -3,6 +3,7 @@ import cors from 'cors';
 import compression from 'compression';
 import cron from 'node-cron';
 import http from 'http';
+import bcrypt from 'bcrypt';
 import { tutorRoutes } from './routes/tutor.routes';
 import { petRoutes } from './routes/pet.routes';
 import { appointmentRoutes } from './routes/appointment.routes';
@@ -20,6 +21,8 @@ import { reminderService } from './services/reminderService';
 import { prisma } from './lib/prisma';
 
 const isTestEnv = process.env.NODE_ENV === 'test';
+const DEFAULT_ADMIN_EMAIL = process.env.DEFAULT_ADMIN_EMAIL || 'admin@eumaeus.com';
+const DEFAULT_ADMIN_PASSWORD = process.env.DEFAULT_ADMIN_PASSWORD || '123456';
 
 export const app = express();
 const PORT = Number(process.env.PORT) || 3333;
@@ -197,7 +200,50 @@ if (!isTestEnv) {
 
 let server: http.Server | undefined;
 
+const ensureDefaultAdminUser = async () => {
+  try {
+    await prisma.role.upsert({
+      where: { name: 'DONO' as any },
+      update: {},
+      create: {
+        name: 'DONO' as any,
+        description: 'Acesso total ao sistema.',
+      },
+    });
+
+    const existingAuthProfile = await prisma.authProfile.findUnique({
+      where: { email: DEFAULT_ADMIN_EMAIL },
+    });
+
+    if (existingAuthProfile) {
+      return;
+    }
+
+    const hashedPassword = await bcrypt.hash(DEFAULT_ADMIN_PASSWORD, 10);
+    const authProfile = await prisma.authProfile.create({
+      data: {
+        email: DEFAULT_ADMIN_EMAIL,
+        password: hashedPassword,
+      },
+    });
+
+    await prisma.user.create({
+      data: {
+        name: 'Administrador',
+        roleName: 'DONO' as any,
+        authProfileId: authProfile.id,
+      },
+    });
+
+    console.log(`✅ Usuário admin padrão criado: ${DEFAULT_ADMIN_EMAIL}`);
+  } catch (error) {
+    console.error('⚠️ Falha ao garantir usuário admin padrão:', error);
+  }
+};
+
 if (!isTestEnv) {
+  ensureDefaultAdminUser();
+
   // Inicia o servidor
   server = app.listen(PORT, HOST, () => {
     console.log(`🚀 Backend rodando e acessível na rede em http://192.168.3.12:${PORT}`);

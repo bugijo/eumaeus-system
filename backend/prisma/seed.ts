@@ -1,68 +1,77 @@
-// Em prisma/seed.ts
-import { PrismaClient } from '@prisma/client';
+﻿import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
-async function main() {
-  console.log('Iniciando o processo de seeding...');
-
-  // 1. Criar os Cargos (Roles) se eles não existirem
+async function ensureRoles() {
   const rolesToCreate = [
     { name: 'DONO', description: 'Acesso total ao sistema.' },
-    { name: 'VETERINARIO', description: 'Acesso a agendamentos e prontuários.' },
-    { name: 'FUNCIONARIO', description: 'Acesso a agendamentos e cadastros básicos.' },
-    { name: 'FINANCEIRO', description: 'Acesso a relatórios e faturamento.' },
+    { name: 'VETERINARIO', description: 'Acesso a agendamentos e prontuarios.' },
+    { name: 'FUNCIONARIO', description: 'Acesso a agendamentos e cadastros basicos.' },
+    { name: 'FINANCEIRO', description: 'Acesso a relatorios e faturamento.' },
   ];
 
   for (const role of rolesToCreate) {
     await prisma.role.upsert({
-      where: { name: role.name },
+      where: { name: role.name as any },
       update: {},
-      create: role,
+      create: role as any,
     });
   }
-  console.log('Cargos criados/verificados com sucesso.');
+}
 
-  // 2. Criar um Usuário Administrador Padrão com nova estrutura AuthProfile
-  const adminEmail = 'admin@eumaeus.com';
-  const plainPassword = 'admin123'; // Lembre-se, esta é uma senha apenas para desenvolvimento!
+async function ensureDefaultUsers() {
+  const defaultPassword = '123456';
+  const hashedPassword = await bcrypt.hash(defaultPassword, 10);
 
-  const hashedPassword = await bcrypt.hash(plainPassword, 10);
+  const users = [
+    { email: 'admin@eumaeus.com', name: 'Admin do Sistema', roleName: 'DONO' },
+    { email: 'veterinario@eumaeus.com', name: 'Dra. Maria Silva', roleName: 'VETERINARIO' },
+    { email: 'funcionario@eumaeus.com', name: 'Joao Santos', roleName: 'FUNCIONARIO' },
+    { email: 'financeiro@eumaeus.com', name: 'Ana Costa', roleName: 'FINANCEIRO' },
+  ];
 
-  // Verificar se o AuthProfile já existe
-  const existingAuthProfile = await prisma.authProfile.findUnique({
-    where: { email: adminEmail }
-  });
+  for (const user of users) {
+    const existingAuthProfile = await prisma.authProfile.findUnique({
+      where: { email: user.email },
+    });
 
-  if (!existingAuthProfile) {
-    // Criar AuthProfile
+    if (existingAuthProfile) {
+      console.log(`Usuario ja existe: ${user.email}`);
+      continue;
+    }
+
     const authProfile = await prisma.authProfile.create({
       data: {
-        email: adminEmail,
+        email: user.email,
         password: hashedPassword,
-      }
+      },
     });
 
-    // Criar User linkado ao AuthProfile
-    const adminUser = await prisma.user.create({
+    await prisma.user.create({
       data: {
-        name: 'Admin do Sistema',
-        roleName: 'DONO',
+        name: user.name,
+        roleName: user.roleName as any,
         authProfileId: authProfile.id,
-      }
+      },
     });
 
-    console.log(`Usuário administrador criado: ${authProfile.email}`);
-  } else {
-    console.log(`Usuário administrador já existe: ${adminEmail}`);
+    console.log(`Usuario criado: ${user.email}`);
   }
-  console.log('Seeding concluído com sucesso! 🌱');
+
+  console.log('Credenciais padrao: senha 123456');
+}
+
+async function main() {
+  console.log('Iniciando seed do backend...');
+  await ensureRoles();
+  await ensureDefaultUsers();
+  console.log('Seed concluido com sucesso.');
 }
 
 main()
-  .catch((e) => {
-    console.error(e);
+  .catch((error) => {
+    console.error('Erro no seed:', error);
     process.exit(1);
   })
   .finally(async () => {
