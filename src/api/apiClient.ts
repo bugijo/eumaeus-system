@@ -427,7 +427,12 @@ class HttpClient {
   }
 }
 
-const baseURL = normalizeBaseUrl(import.meta.env.VITE_API_URL ?? 'http://localhost:3333');
+const runtimeDefaultBaseUrl =
+  typeof window !== 'undefined' && window.location.hostname !== 'localhost'
+    ? window.location.origin
+    : 'http://localhost:3333';
+
+const baseURL = normalizeBaseUrl(import.meta.env.VITE_API_URL ?? runtimeDefaultBaseUrl);
 const client = new HttpClient(`${baseURL}/api`);
 
 const apiClient = ((config: RequestConfig | string, maybeConfig?: RequestConfig) =>
@@ -528,7 +533,10 @@ apiClient.interceptors.response.use(
     const originalRequest = error.config ?? {};
     const status = error.response?.status ?? error.status;
 
-    if (status === 401 && !originalRequest._retry) {
+    const requestUrl = typeof originalRequest.url === 'string' ? originalRequest.url : '';
+    const isAuthRoute = requestUrl.includes('/auth/');
+
+    if (status === 401 && !originalRequest._retry && !originalRequest.skipAuth && !isAuthRoute) {
       originalRequest._retry = true;
 
       try {
