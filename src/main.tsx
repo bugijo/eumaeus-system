@@ -1,33 +1,34 @@
-import React, { StrictMode } from 'react'
+﻿import React from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
 import ErrorBoundary from './components/utils/ErrorBoundary'
 import { QueryProvider } from './providers/QueryProvider'
 
-// Expor React globalmente para compatibilidade com testes
+// Expor React globalmente para compatibilidade com testes.
 if (typeof window !== 'undefined') {
-  (window as any).React = React;
+  (window as any).React = React
 }
 
-// Registrar Service Worker para cache avançado
+// Desativa service workers antigos para evitar cache de chunks quebrados em producao.
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .then((registration) => {
-        console.log('[SW] Registered successfully:', registration.scope);
-        
-        // Limpar cache expirado a cada 30 minutos
-        setInterval(() => {
-          if (registration.active) {
-            registration.active.postMessage({ type: 'CLEAN_CACHE' });
-          }
-        }, 30 * 60 * 1000);
-      })
-      .catch((error) => {
-        console.log('[SW] Registration failed:', error);
-      });
-  });
+  window.addEventListener('load', async () => {
+    try {
+      const registrations = await navigator.serviceWorker.getRegistrations()
+      await Promise.all(registrations.map((registration) => registration.unregister()))
+
+      if ('caches' in window) {
+        const cacheKeys = await caches.keys()
+        await Promise.all(
+          cacheKeys
+            .filter((key) => key.startsWith('eumaeus-'))
+            .map((key) => caches.delete(key))
+        )
+      }
+    } catch (error) {
+      console.warn('[SW] Cleanup failed:', error)
+    }
+  })
 }
 
 createRoot(document.getElementById('root')!).render(
