@@ -52,10 +52,6 @@ export default {
         return res.status(403).json({ message: 'Acesso negado. Perfil não associado a uma conta ativa.' });
       }
 
-      // Gerar tokens e responder
-      const JWT_SECRET = process.env.JWT_SECRET!;
-      const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET!;
-
       const accessToken = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: '15m' });
       const refreshToken = jwt.sign({ authProfileId: authProfile.id }, REFRESH_TOKEN_SECRET, { expiresIn: '30d' });
 
@@ -83,7 +79,7 @@ export default {
       // 1. Verificar se o refresh token é válido
       let decoded;
       try {
-        decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET!) as { authProfileId: number };
+        decoded = jwt.verify(refreshToken, REFRESH_TOKEN_SECRET) as { authProfileId: number };
       } catch (error) {
         return res.status(401).json({ message: 'Refresh token inválido' });
       }
@@ -113,8 +109,8 @@ export default {
       const userPayload = { id: authProfile.user.id, name: authProfile.user.name, email: authProfile.email, role: authProfile.user.role.name, type: 'user' };
 
       // 5. Gerar novos tokens
-      const newAccessToken = jwt.sign(tokenPayload, process.env.JWT_SECRET!, { expiresIn: '15m' });
-      const newRefreshToken = jwt.sign({ authProfileId: authProfile.id }, process.env.REFRESH_TOKEN_SECRET!, { expiresIn: '30d' });
+      const newAccessToken = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: '15m' });
+      const newRefreshToken = jwt.sign({ authProfileId: authProfile.id }, REFRESH_TOKEN_SECRET, { expiresIn: '30d' });
 
       // 6. Atualizar o refresh token no banco
       await prisma.authProfile.update({
