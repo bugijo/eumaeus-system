@@ -9,7 +9,7 @@ services:
     plan: free
     rootDir: backend
     buildCommand: |
-      npm ci
+      npm install --include=dev
       npx prisma generate
       npm run build
     startCommand: npm start
