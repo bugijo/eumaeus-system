@@ -1,7 +1,18 @@
-import { Request, Response, NextFunction } from 'express';
+﻿import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'SEGREDO_SUPER_SECRETO';
+
+export const ROLE = {
+  DONO: 'DONO',
+  VETERINARIO: 'VETERINARIO',
+  RECEPCAO: 'RECEPCAO',
+  AUXILIAR: 'AUXILIAR',
+  FINANCEIRO: 'FINANCEIRO',
+  FUNCIONARIO: 'FUNCIONARIO',
+} as const;
+
+export type AppRole = (typeof ROLE)[keyof typeof ROLE];
 
 // Estende o tipo Request para incluir user
 interface AuthenticatedRequest extends Request {
@@ -29,7 +40,7 @@ export const authenticateToken = (req: AuthenticatedRequest, res: Response, next
 
     req.user = decoded;
     return next();
-  } catch (error) {
+  } catch (_error) {
     return res.status(403).json({ message: 'Token inválido' });
   }
 };
@@ -52,6 +63,28 @@ export const authenticateUser = (req: AuthenticatedRequest, res: Response, next:
     }
     return next();
   });
+};
+
+// RBAC para rotas de funcionários
+export const requireRoles = (...allowedRoles: AppRole[]) => {
+  const normalizedAllowedRoles = allowedRoles.map((role) => role.toUpperCase());
+  const roleAlias: Record<string, string> = {
+    FUNCIONARIO: ROLE.RECEPCAO,
+  };
+
+  return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    if (!req.user || req.user.type !== 'user') {
+      return res.status(403).json({ message: 'Acesso restrito a funcionários' });
+    }
+
+    const rawUserRole = (req.user.role || '').toUpperCase();
+    const normalizedUserRole = roleAlias[rawUserRole] || rawUserRole;
+    if (!normalizedUserRole || !normalizedAllowedRoles.includes(normalizedUserRole)) {
+      return res.status(403).json({ message: 'Permissão insuficiente para esta operação' });
+    }
+
+    return next();
+  };
 };
 
 export { AuthenticatedRequest };
