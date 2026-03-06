@@ -169,10 +169,10 @@ export function DashboardPage({ className }: DashboardPageProps) {
     );
   }
 
-  const tutors = tutorsData?.data || [];
-  const pets = petsData?.data || [];
-  const totalTutors = tutorsData?.pagination?.total || 0;
-  const totalPets = petsData?.pagination?.total || 0;
+  const tutors = Array.isArray(tutorsData?.data) ? tutorsData.data : [];
+  const pets = Array.isArray(petsData?.data) ? petsData.data : [];
+  const totalTutors = tutorsData?.total ?? tutorsData?.pagination?.total ?? tutors.length;
+  const totalPets = petsData?.total ?? petsData?.pagination?.total ?? pets.length;
 
   // Preparar dados para componentes
   const recentTutors = tutors.map((tutor: Tutor) => ({

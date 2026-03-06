@@ -105,7 +105,7 @@ export function PetsPage({ className }: PetsPageProps) {
     
     if (searchTerm) params.search = searchTerm;
     if (selectedSpecies) params.species = selectedSpecies;
-    if (selectedTutor) params.tutorId = selectedTutor;
+    if (selectedTutor) params.tutorId = Number(selectedTutor);
     
     setSearchParams(params);
     setCurrentPage(1);
@@ -181,10 +181,10 @@ export function PetsPage({ className }: PetsPageProps) {
     );
   }
 
-  const pets = petsData?.data || [];
-  const totalPages = petsData?.pagination?.totalPages || 1;
-  const totalItems = petsData?.pagination?.total || 0;
-  const tutors = tutorsData?.data || [];
+  const pets = Array.isArray(petsData?.data) ? petsData.data : [];
+  const totalPages = petsData?.totalPages ?? petsData?.pagination?.totalPages ?? 1;
+  const totalItems = petsData?.total ?? petsData?.pagination?.total ?? pets.length;
+  const tutors = Array.isArray(tutorsData?.data) ? tutorsData.data : [];
 
   const hasActiveFilters = searchTerm || selectedSpecies || selectedTutor;
 
@@ -300,9 +300,8 @@ export function PetsPage({ className }: PetsPageProps) {
           columns={columns}
           onEdit={handleEdit}
           onDelete={handleDelete}
-          isLoading={isLoading}
+          loading={isLoading}
           emptyMessage="Nenhum pet encontrado"
-          emptyDescription="Comece cadastrando o primeiro pet do sistema."
         />
       </div>
 

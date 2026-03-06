@@ -48,14 +48,17 @@ export const TutorListPage = () => {
   // Hook para estatísticas
   const { data: tutorStats, isLoading: isLoadingStats } = useTutorStats();
 
-  const tutors = tutorsData?.data || [];
+  const tutors = Array.isArray(tutorsData?.data) ? tutorsData.data : [];
 
   // Filtrar tutores baseado no termo de busca
-  const filteredTutors = tutors.filter(tutor =>
-    tutor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    tutor.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (tutor.phone && tutor.phone.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  const filteredTutors = tutors.filter(tutor => {
+    const name = String(tutor.name || '').toLowerCase();
+    const email = String(tutor.email || '').toLowerCase();
+    const phone = String(tutor.phone || '').toLowerCase();
+    const search = searchTerm.toLowerCase();
+
+    return name.includes(search) || email.includes(search) || phone.includes(search);
+  });
 
   const handleEditTutor = (tutor: Tutor) => {
     navigate(`/tutores/editar/${tutor.id}`);
