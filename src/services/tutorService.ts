@@ -1,4 +1,4 @@
-import apiClient from '../api/apiClient';
+﻿import apiClient from '../api/apiClient';
 import type { 
   Tutor, 
   CreateTutorData, 
@@ -21,19 +21,51 @@ export class TutorService {
   static async findAll(params?: TutorSearchParams): Promise<PaginatedResponse<Tutor>> {
     try {
       const response = await apiClient.get('/tutors', { params });
-      const tutors: Tutor[] = response.data;
-      
-      // Para manter compatibilidade com a interface PaginatedResponse
-      // Por enquanto retornamos todos os dados sem paginação real
-      const page = params?.page || 1;
-      const limit = params?.limit || 10;
-      
+
+      // Suporta tanto o formato legado (array) quanto o formato paginado
+      // vindo do backend ({ data, total, page, limit } ou { data, pagination }).
+      if (Array.isArray(response.data)) {
+        const tutors = response.data as Tutor[];
+        const page = params?.page || 1;
+        const limit = params?.limit || 10;
+
+        return {
+          data: tutors,
+          total: tutors.length,
+          page,
+          limit,
+          totalPages: Math.ceil(tutors.length / limit)
+        };
+      }
+
+      const payload = response.data as {
+        data?: Tutor[];
+        total?: number;
+        page?: number;
+        limit?: number;
+        totalPages?: number;
+        pagination?: {
+          total?: number;
+          page?: number;
+          limit?: number;
+          totalPages?: number;
+        };
+      };
+
+      const data = Array.isArray(payload?.data) ? payload.data : [];
+      const page = payload.page ?? payload.pagination?.page ?? params?.page ?? 1;
+      const limit = payload.limit ?? payload.pagination?.limit ?? params?.limit ?? 10;
+      const total = payload.total ?? payload.pagination?.total ?? data.length;
+      const totalPages = payload.totalPages
+        ?? payload.pagination?.totalPages
+        ?? Math.max(1, Math.ceil(total / Math.max(limit, 1)));
+
       return {
-        data: tutors,
-        total: tutors.length,
+        data,
+        total,
         page,
         limit,
-        totalPages: Math.ceil(tutors.length / limit)
+        totalPages
       };
     } catch (error) {
       console.error('Erro ao buscar tutores:', error);
