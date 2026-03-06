@@ -158,9 +158,9 @@ export function TutorsPage({ className }: TutorsPageProps) {
     );
   }
 
-  const tutors = tutorsData?.data || [];
-  const totalPages = tutorsData?.pagination?.totalPages || 1;
-  const totalItems = tutorsData?.pagination?.total || 0;
+  const tutors = Array.isArray(tutorsData?.data) ? tutorsData.data : [];
+  const totalPages = tutorsData?.totalPages ?? tutorsData?.pagination?.totalPages ?? 1;
+  const totalItems = tutorsData?.total ?? tutorsData?.pagination?.total ?? tutors.length;
 
   return (
     <div className={className}>
@@ -232,9 +232,8 @@ export function TutorsPage({ className }: TutorsPageProps) {
           columns={columns}
           onEdit={handleEdit}
           onDelete={handleDelete}
-          isLoading={isLoading}
+          loading={isLoading}
           emptyMessage="Nenhum tutor encontrado"
-          emptyDescription="Comece cadastrando o primeiro tutor do sistema."
         />
       </div>
 

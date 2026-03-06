@@ -8,6 +8,45 @@ import type {
 } from '../types';
 
 export class TutorService {
+  private static resolveTutorListPayload(raw: unknown): {
+    data: Tutor[];
+    total?: number;
+    page?: number;
+    limit?: number;
+    totalPages?: number;
+    pagination?: {
+      total?: number;
+      page?: number;
+      limit?: number;
+      totalPages?: number;
+    };
+  } {
+    if (Array.isArray(raw)) {
+      return { data: raw as Tutor[] };
+    }
+
+    const root = (raw && typeof raw === 'object') ? raw as Record<string, unknown> : {};
+    const nested = (root.data && typeof root.data === 'object' && !Array.isArray(root.data))
+      ? root.data as Record<string, unknown>
+      : null;
+
+    // Suporta payload direto ({ data, total... }) e envelope ({ success, data: { data, total... } }).
+    const source = Array.isArray(root.data) || root.total !== undefined || root.page !== undefined || root.pagination !== undefined
+      ? root
+      : (nested ?? root);
+
+    return {
+      data: Array.isArray(source.data) ? source.data as Tutor[] : [],
+      total: typeof source.total === 'number' ? source.total : undefined,
+      page: typeof source.page === 'number' ? source.page : undefined,
+      limit: typeof source.limit === 'number' ? source.limit : undefined,
+      totalPages: typeof source.totalPages === 'number' ? source.totalPages : undefined,
+      pagination: (source.pagination && typeof source.pagination === 'object')
+        ? source.pagination as { total?: number; page?: number; limit?: number; totalPages?: number }
+        : undefined,
+    };
+  }
+
   static async create(data: CreateTutorData): Promise<Tutor> {
     try {
       const response = await apiClient.post('/tutors', data);
@@ -21,38 +60,8 @@ export class TutorService {
   static async findAll(params?: TutorSearchParams): Promise<PaginatedResponse<Tutor>> {
     try {
       const response = await apiClient.get('/tutors', { params });
-
-      // Suporta tanto o formato legado (array) quanto o formato paginado
-      // vindo do backend ({ data, total, page, limit } ou { data, pagination }).
-      if (Array.isArray(response.data)) {
-        const tutors = response.data as Tutor[];
-        const page = params?.page || 1;
-        const limit = params?.limit || 10;
-
-        return {
-          data: tutors,
-          total: tutors.length,
-          page,
-          limit,
-          totalPages: Math.ceil(tutors.length / limit)
-        };
-      }
-
-      const payload = response.data as {
-        data?: Tutor[];
-        total?: number;
-        page?: number;
-        limit?: number;
-        totalPages?: number;
-        pagination?: {
-          total?: number;
-          page?: number;
-          limit?: number;
-          totalPages?: number;
-        };
-      };
-
-      const data = Array.isArray(payload?.data) ? payload.data : [];
+      const payload = TutorService.resolveTutorListPayload(response.data);
+      const data = payload.data;
       const page = payload.page ?? payload.pagination?.page ?? params?.page ?? 1;
       const limit = payload.limit ?? payload.pagination?.limit ?? params?.limit ?? 10;
       const total = payload.total ?? payload.pagination?.total ?? data.length;
