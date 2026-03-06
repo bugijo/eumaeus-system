@@ -1,10 +1,9 @@
 import { Router } from 'express';
 import { InvoiceController } from '../controllers/invoice.controller';
-import { authenticateUser, requireRoles, ROLE } from '../middlewares/auth.middleware';
+import { requireRoles, ROLE } from '../middlewares/auth.middleware';
 
 const router = Router();
 const invoiceController = new InvoiceController();
-router.use(authenticateUser);
 const canAccessFinancial = requireRoles(ROLE.DONO, ROLE.VETERINARIO, ROLE.FINANCEIRO);
 
 // POST /api/invoices/from-appointment/:appointmentId - Criar fatura a partir de agendamento

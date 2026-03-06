@@ -1,9 +1,8 @@
 import { Router } from 'express';
 import { AppointmentController } from '../controllers/appointment.controller';
-import { authenticateUser, requireRoles, ROLE } from '../middlewares/auth.middleware';
+import { requireRoles, ROLE } from '../middlewares/auth.middleware';
 
 const appointmentRoutes = Router();
-appointmentRoutes.use(authenticateUser);
 
 appointmentRoutes.get('/appointments', requireRoles(ROLE.DONO, ROLE.VETERINARIO, ROLE.RECEPCAO, ROLE.AUXILIAR), AppointmentController.getAllAppointments);
 appointmentRoutes.get('/appointments/:id', requireRoles(ROLE.DONO, ROLE.VETERINARIO, ROLE.RECEPCAO, ROLE.AUXILIAR), AppointmentController.getAppointmentById);

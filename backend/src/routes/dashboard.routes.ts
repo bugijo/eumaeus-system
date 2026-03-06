@@ -1,9 +1,8 @@
 import { Router } from 'express';
 import { dashboardController } from '../controllers/dashboardController';
-import { authenticateUser, requireRoles, ROLE } from '../middlewares/auth.middleware';
+import { requireRoles, ROLE } from '../middlewares/auth.middleware';
 
 const router = Router();
-router.use(authenticateUser);
 
 router.get('/stats', requireRoles(ROLE.DONO, ROLE.VETERINARIO, ROLE.RECEPCAO, ROLE.AUXILIAR, ROLE.FINANCEIRO), dashboardController.getStats);
 router.get('/upcoming-appointments', requireRoles(ROLE.DONO, ROLE.VETERINARIO, ROLE.RECEPCAO, ROLE.AUXILIAR), dashboardController.getUpcomingAppointments);

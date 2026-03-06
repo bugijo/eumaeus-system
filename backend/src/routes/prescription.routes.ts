@@ -1,9 +1,8 @@
 import { Router } from 'express';
 import { PrescriptionController } from '../controllers/prescription.controller';
-import { authenticateUser, requireRoles, ROLE } from '../middlewares/auth.middleware';
+import { requireRoles, ROLE } from '../middlewares/auth.middleware';
 
 const router = Router();
-router.use(authenticateUser);
 
 // POST /api/records/:recordId/prescriptions - Criar nova receita para um prontuário
 router.post('/records/:recordId/prescriptions', requireRoles(ROLE.DONO, ROLE.VETERINARIO), PrescriptionController.createPrescription);

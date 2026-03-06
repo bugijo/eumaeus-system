@@ -1,9 +1,8 @@
 import { Router } from 'express';
 import { ServiceController } from '../controllers/service.controller';
-import { authenticateUser, requireRoles, ROLE } from '../middlewares/auth.middleware';
+import { requireRoles, ROLE } from '../middlewares/auth.middleware';
 
 const router = Router();
-router.use(authenticateUser);
 
 /**
  * @route GET /api/services
