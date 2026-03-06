@@ -9,6 +9,7 @@
     "start": "npx prisma migrate deploy && node dist/src/bootstrap.js",
     "seed": "ts-node prisma/seed.ts",
     "simulate:30d": "ts-node prisma/simulate-30-days.ts",
+    "simulate:real": "node scripts/real-usage-simulation.mjs",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
