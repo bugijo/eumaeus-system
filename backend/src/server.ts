@@ -33,6 +33,7 @@ const DEFAULT_ASSISTANT_PASSWORD = process.env.DEFAULT_ASSISTANT_PASSWORD || '12
 export const app = express();
 const PORT = Number(process.env.PORT) || 3333;
 const HOST = '0.0.0.0'; // Aceitar conexÃµes de qualquer endereÃ§o na rede
+app.set('trust proxy', true);
 
 // Middleware de compressÃ£o simplificado
 app.use(compression());
@@ -58,28 +59,57 @@ app.use((req, res, next) => {
   return next();
 });
 
-// Middleware de rate limiting simples
-const requestCounts = new Map();
+// Middleware de rate limiting (por token/IP) com limites configuráveis
+const requestCounts = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT_WINDOW_MS = Number(process.env.RATE_LIMIT_WINDOW_MS || 60_000);
+const RATE_LIMIT_AUTH_MAX = Number(process.env.RATE_LIMIT_AUTH_MAX_REQUESTS || 180);
+const RATE_LIMIT_API_MAX = Number(process.env.RATE_LIMIT_API_MAX_REQUESTS || 400);
+const RATE_LIMIT_PUBLIC_MAX = Number(process.env.RATE_LIMIT_PUBLIC_MAX_REQUESTS || 300);
+
+const getClientKey = (req: express.Request) => {
+  const authHeader = req.headers.authorization || '';
+  if (authHeader.startsWith('Bearer ') && authHeader.length > 30) {
+    return `token:${authHeader.slice(-24)}`;
+  }
+
+  const forwardedFor = req.headers['x-forwarded-for'];
+  const forwardedIp = Array.isArray(forwardedFor)
+    ? forwardedFor[0]
+    : (forwardedFor || '').split(',')[0].trim();
+  const ip = forwardedIp || req.ip || req.socket.remoteAddress || 'unknown';
+  return `ip:${ip}`;
+};
+
 app.use((req, res, next) => {
-  const ip = req.ip || req.connection.remoteAddress;
   const now = Date.now();
-  const windowMs = 60 * 1000; // 1 minuto
-  const maxRequests = 100; // 100 requests por minuto
-  
-  if (!requestCounts.has(ip)) {
-    requestCounts.set(ip, { count: 1, resetTime: now + windowMs });
-  } else {
-    const record = requestCounts.get(ip);
-    if (now > record.resetTime) {
-      record.count = 1;
-      record.resetTime = now + windowMs;
-    } else {
-      record.count++;
-      if (record.count > maxRequests) {
-        return res.status(429).json({ error: 'Too many requests' });
+  const key = getClientKey(req);
+  const maxRequests = req.url.includes('/api/auth')
+    ? RATE_LIMIT_AUTH_MAX
+    : req.url.includes('/api/')
+      ? RATE_LIMIT_API_MAX
+      : RATE_LIMIT_PUBLIC_MAX;
+
+  if (Math.random() < 0.02) {
+    for (const [storedKey, entry] of requestCounts.entries()) {
+      if (now > entry.resetTime) {
+        requestCounts.delete(storedKey);
       }
     }
   }
+
+  const entry = requestCounts.get(key);
+  if (!entry || now > entry.resetTime) {
+    requestCounts.set(key, { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS });
+    return next();
+  }
+
+  entry.count += 1;
+  if (entry.count > maxRequests) {
+    const retryAfterSeconds = Math.max(1, Math.ceil((entry.resetTime - now) / 1000));
+    res.setHeader('Retry-After', String(retryAfterSeconds));
+    return res.status(429).json({ error: 'Too many requests' });
+  }
+
   return next();
 });
 
@@ -259,6 +289,35 @@ const ensureDefaultStaffUsers = async () => {
           },
         });
       }
+    }
+
+    const productCount = await prisma.product.count();
+    if (productCount === 0) {
+      await prisma.product.createMany({
+        data: [
+          {
+            name: 'Vacina V10',
+            description: JSON.stringify({ supplier: 'Laboratorio VetMed', expirationDate: '2027-12-31' }),
+            quantity: 120,
+            price: 90,
+            category: 'Vacina',
+          },
+          {
+            name: 'Vacina Antirrabica',
+            description: JSON.stringify({ supplier: 'Laboratorio SaudePet', expirationDate: '2027-10-31' }),
+            quantity: 90,
+            price: 75,
+            category: 'Vacina',
+          },
+          {
+            name: 'Anti-inflamatorio',
+            description: JSON.stringify({ supplier: 'Farmavet', expirationDate: '2027-09-15' }),
+            quantity: 140,
+            price: 42,
+            category: 'Medicamento',
+          },
+        ],
+      });
     }
 
     console.log('✅ Usuarios padrao por perfil garantidos com sucesso.');

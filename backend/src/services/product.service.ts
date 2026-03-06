@@ -1,97 +1,161 @@
+﻿import { PrismaClient } from '@prisma/client';
 import { Product, CreateProductData, UpdateProductData } from '../models/product.model';
 
-// Simulação de banco de dados em memória
-let products: Product[] = [
-  {
-    id: 1,
-    name: 'Ração Premium Cães',
-    supplier: 'Pet Food Brasil',
-    quantity: 50,
-    costPrice: 45.90,
-    expirationDate: '2024-12-31'
-  },
-  {
-    id: 2,
-    name: 'Vacina V10',
-    supplier: 'Laboratório VetMed',
-    quantity: 25,
-    costPrice: 35.00,
-    expirationDate: '2024-08-15'
-  },
-  {
-    id: 3,
-    name: 'Shampoo Antipulgas',
-    supplier: 'Higiene Pet',
-    quantity: 30,
-    costPrice: 18.50,
-    expirationDate: '2025-03-20'
-  }
-];
+const prisma = new PrismaClient();
 
-let nextId = 4;
+type ProductMetadata = {
+  supplier?: string;
+  expirationDate?: string;
+};
+
+function parseMetadata(description?: string | null): ProductMetadata {
+  if (!description) {
+    return {};
+  }
+
+  try {
+    const parsed = JSON.parse(description);
+    if (parsed && typeof parsed === 'object') {
+      return {
+        supplier: typeof parsed.supplier === 'string' ? parsed.supplier : undefined,
+        expirationDate: typeof parsed.expirationDate === 'string' ? parsed.expirationDate : undefined,
+      };
+    }
+  } catch {
+    // Mantém compatibilidade com descrições antigas sem JSON.
+  }
+
+  return {
+    supplier: description,
+  };
+}
+
+function buildDescription(metadata: ProductMetadata): string {
+  return JSON.stringify({
+    supplier: metadata.supplier || 'Não informado',
+    expirationDate: metadata.expirationDate || '2099-12-31',
+  });
+}
+
+function inferCategory(name: string): string {
+  return /vacina/i.test(name) ? 'Vacina' : 'Estoque';
+}
+
+function mapPrismaProductToLegacy(product: {
+  id: number;
+  name: string;
+  quantity: number;
+  price: number;
+  description: string | null;
+}): Product {
+  const metadata = parseMetadata(product.description);
+
+  return {
+    id: product.id,
+    name: product.name,
+    supplier: metadata.supplier || 'Não informado',
+    quantity: product.quantity,
+    costPrice: product.price,
+    expirationDate: metadata.expirationDate || '2099-12-31',
+  };
+}
 
 export class ProductService {
   static async getAllProducts(): Promise<Product[]> {
-    return products;
+    const products = await prisma.product.findMany({
+      orderBy: { name: 'asc' },
+    });
+
+    return products.map(mapPrismaProductToLegacy);
   }
 
   static async getProductById(id: number): Promise<Product | null> {
-    const product = products.find(p => p.id === id);
-    return product || null;
+    const product = await prisma.product.findUnique({
+      where: { id },
+    });
+
+    return product ? mapPrismaProductToLegacy(product) : null;
   }
 
   static async createProduct(productData: CreateProductData): Promise<Product> {
-    const newProduct: Product = {
-      id: nextId++,
-      ...productData
-    };
-    
-    products.push(newProduct);
-    return newProduct;
+    const created = await prisma.product.create({
+      data: {
+        name: productData.name,
+        description: buildDescription({
+          supplier: productData.supplier,
+          expirationDate: productData.expirationDate,
+        }),
+        quantity: productData.quantity,
+        price: productData.costPrice,
+        category: inferCategory(productData.name),
+      },
+    });
+
+    return mapPrismaProductToLegacy(created);
   }
 
   static async updateProduct(id: number, updateData: UpdateProductData): Promise<Product | null> {
-    const productIndex = products.findIndex(p => p.id === id);
-    
-    if (productIndex === -1) {
+    const current = await prisma.product.findUnique({
+      where: { id },
+    });
+
+    if (!current) {
       return null;
     }
-    
-    products[productIndex] = {
-      ...products[productIndex],
-      ...updateData
+
+    const currentMetadata = parseMetadata(current.description);
+    const mergedMetadata: ProductMetadata = {
+      supplier: updateData.supplier ?? currentMetadata.supplier,
+      expirationDate: updateData.expirationDate ?? currentMetadata.expirationDate,
     };
-    
-    return products[productIndex];
+
+    const updated = await prisma.product.update({
+      where: { id },
+      data: {
+        name: updateData.name ?? current.name,
+        quantity: updateData.quantity ?? current.quantity,
+        price: updateData.costPrice ?? current.price,
+        description: buildDescription(mergedMetadata),
+        category: inferCategory(updateData.name ?? current.name),
+      },
+    });
+
+    return mapPrismaProductToLegacy(updated);
   }
 
   static async deleteProduct(id: number): Promise<boolean> {
-    const productIndex = products.findIndex(p => p.id === id);
-    
-    if (productIndex === -1) {
+    const current = await prisma.product.findUnique({
+      where: { id },
+    });
+
+    if (!current) {
       return false;
     }
-    
-    products.splice(productIndex, 1);
+
+    await prisma.product.delete({ where: { id } });
     return true;
   }
 
   static async getStockStats() {
+    const products = await this.getAllProducts();
     const totalItems = products.length;
-    const totalValue = products.reduce((sum, product) => sum + (product.quantity * product.costPrice), 0);
-    const lowStockItems = products.filter(product => product.quantity < 10).length;
-    const expiringSoon = products.filter(product => {
+    const totalValue = products.reduce((sum, product) => sum + product.quantity * product.costPrice, 0);
+    const lowStockItems = products.filter((product) => product.quantity < 10).length;
+
+    const today = new Date();
+    const thirtyDaysFromNow = new Date();
+    thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
+
+    const expiringSoon = products.filter((product) => {
       const expirationDate = new Date(product.expirationDate);
-      const thirtyDaysFromNow = new Date();
-      thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
-      return expirationDate <= thirtyDaysFromNow;
+      return expirationDate >= today && expirationDate <= thirtyDaysFromNow;
     }).length;
 
     return {
       totalItems,
       totalValue,
       lowStockItems,
-      expiringSoon
+      expiringSoon,
     };
   }
 }
