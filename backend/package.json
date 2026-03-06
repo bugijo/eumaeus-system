@@ -8,6 +8,7 @@
     "build": "tsc -p tsconfig.build.json",
     "start": "npx prisma migrate deploy && node dist/src/bootstrap.js",
     "seed": "ts-node prisma/seed.ts",
+    "simulate:30d": "ts-node prisma/simulate-30-days.ts",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",

@@ -7,7 +7,9 @@ async function ensureRoles() {
   const rolesToCreate = [
     { name: 'DONO', description: 'Acesso total ao sistema.' },
     { name: 'VETERINARIO', description: 'Acesso a agendamentos e prontuarios.' },
-    { name: 'FUNCIONARIO', description: 'Acesso a agendamentos e cadastros basicos.' },
+    { name: 'FUNCIONARIO', description: 'Perfil legado. Equivale a recepcao.' },
+    { name: 'RECEPCAO', description: 'Acesso a agendamentos e cadastros basicos.' },
+    { name: 'AUXILIAR', description: 'Acesso operacional limitado e sem edicao de prontuario.' },
     { name: 'FINANCEIRO', description: 'Acesso a relatorios e faturamento.' },
   ];
 
@@ -27,6 +29,8 @@ async function ensureDefaultUsers() {
   const users = [
     { email: 'admin@eumaeus.com', name: 'Admin do Sistema', roleName: 'DONO' },
     { email: 'veterinario@eumaeus.com', name: 'Dra. Maria Silva', roleName: 'VETERINARIO' },
+    { email: 'recepcao@eumaeus.com', name: 'Joao da Recepcao', roleName: 'RECEPCAO' },
+    { email: 'auxiliar@eumaeus.com', name: 'Ana Auxiliar', roleName: 'AUXILIAR' },
     { email: 'funcionario@eumaeus.com', name: 'Joao Santos', roleName: 'FUNCIONARIO' },
     { email: 'financeiro@eumaeus.com', name: 'Ana Costa', roleName: 'FINANCEIRO' },
   ];

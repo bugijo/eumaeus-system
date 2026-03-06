@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import { ServiceController } from '../controllers/service.controller';
+import { authenticateUser, requireRoles, ROLE } from '../middlewares/auth.middleware';
 
 const router = Router();
+router.use(authenticateUser);
 
 /**
  * @route GET /api/services
@@ -12,14 +14,14 @@ const router = Router();
  * @example /api/services?category=Consulta
  * @example /api/services?search=vacina
  */
-router.get('/', ServiceController.getAllServices);
+router.get('/', requireRoles(ROLE.DONO, ROLE.VETERINARIO, ROLE.RECEPCAO, ROLE.AUXILIAR), ServiceController.getAllServices);
 
 /**
  * @route GET /api/services/categories
  * @desc Retorna serviços agrupados por categoria
  * @example /api/services/categories
  */
-router.get('/categories', ServiceController.getServicesByCategory);
+router.get('/categories', requireRoles(ROLE.DONO, ROLE.VETERINARIO, ROLE.RECEPCAO, ROLE.AUXILIAR), ServiceController.getServicesByCategory);
 
 /**
  * @route GET /api/services/:id
@@ -27,6 +29,6 @@ router.get('/categories', ServiceController.getServicesByCategory);
  * @param id - ID do serviço
  * @example /api/services/1
  */
-router.get('/:id', ServiceController.getServiceById);
+router.get('/:id', requireRoles(ROLE.DONO, ROLE.VETERINARIO, ROLE.RECEPCAO, ROLE.AUXILIAR), ServiceController.getServiceById);
 
 export default router;

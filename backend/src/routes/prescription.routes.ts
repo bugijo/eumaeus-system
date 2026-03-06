@@ -1,24 +1,26 @@
 import { Router } from 'express';
 import { PrescriptionController } from '../controllers/prescription.controller';
+import { authenticateUser, requireRoles, ROLE } from '../middlewares/auth.middleware';
 
 const router = Router();
+router.use(authenticateUser);
 
 // POST /api/records/:recordId/prescriptions - Criar nova receita para um prontuário
-router.post('/records/:recordId/prescriptions', PrescriptionController.createPrescription);
+router.post('/records/:recordId/prescriptions', requireRoles(ROLE.DONO, ROLE.VETERINARIO), PrescriptionController.createPrescription);
 
 // GET /api/records/:recordId/prescriptions - Buscar receita por prontuário
-router.get('/records/:recordId/prescriptions', PrescriptionController.getPrescriptionByMedicalRecord);
+router.get('/records/:recordId/prescriptions', requireRoles(ROLE.DONO, ROLE.VETERINARIO, ROLE.AUXILIAR), PrescriptionController.getPrescriptionByMedicalRecord);
 
 // GET /api/prescriptions/:id - Buscar receita por ID
-router.get('/prescriptions/:id', PrescriptionController.getPrescriptionById);
+router.get('/prescriptions/:id', requireRoles(ROLE.DONO, ROLE.VETERINARIO, ROLE.AUXILIAR), PrescriptionController.getPrescriptionById);
 
 // PUT /api/prescriptions/:id - Atualizar receita
-router.put('/prescriptions/:id', PrescriptionController.updatePrescription);
+router.put('/prescriptions/:id', requireRoles(ROLE.DONO, ROLE.VETERINARIO), PrescriptionController.updatePrescription);
 
 // DELETE /api/prescriptions/:id - Deletar receita
-router.delete('/prescriptions/:id', PrescriptionController.deletePrescription);
+router.delete('/prescriptions/:id', requireRoles(ROLE.DONO, ROLE.VETERINARIO), PrescriptionController.deletePrescription);
 
 // GET /api/prescriptions - Buscar todas as receitas
-router.get('/prescriptions', PrescriptionController.getAllPrescriptions);
+router.get('/prescriptions', requireRoles(ROLE.DONO, ROLE.VETERINARIO, ROLE.AUXILIAR), PrescriptionController.getAllPrescriptions);
 
 export default router;
