@@ -73,17 +73,19 @@ export const requireRoles = (...allowedRoles: AppRole[]) => {
   };
 
   return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    if (!req.user || req.user.type !== 'user') {
-      return res.status(403).json({ message: 'Acesso restrito a funcionários' });
-    }
+    return authenticateToken(req, res, () => {
+      if (!req.user || req.user.type !== 'user') {
+        return res.status(403).json({ message: 'Acesso restrito a funcionários' });
+      }
 
-    const rawUserRole = (req.user.role || '').toUpperCase();
-    const normalizedUserRole = roleAlias[rawUserRole] || rawUserRole;
-    if (!normalizedUserRole || !normalizedAllowedRoles.includes(normalizedUserRole)) {
-      return res.status(403).json({ message: 'Permissão insuficiente para esta operação' });
-    }
+      const rawUserRole = (req.user.role || '').toUpperCase();
+      const normalizedUserRole = roleAlias[rawUserRole] || rawUserRole;
+      if (!normalizedUserRole || !normalizedAllowedRoles.includes(normalizedUserRole)) {
+        return res.status(403).json({ message: 'Permissão insuficiente para esta operação' });
+      }
 
-    return next();
+      return next();
+    });
   };
 };
 

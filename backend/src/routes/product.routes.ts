@@ -1,9 +1,8 @@
 import { Router } from 'express';
 import { ProductController } from '../controllers/product.controller';
-import { authenticateUser, requireRoles, ROLE } from '../middlewares/auth.middleware';
+import { requireRoles, ROLE } from '../middlewares/auth.middleware';
 
 const router = Router();
-router.use(authenticateUser);
 
 // GET /api/products - Listar todos os produtos
 router.get('/', requireRoles(ROLE.DONO, ROLE.VETERINARIO, ROLE.RECEPCAO, ROLE.AUXILIAR), ProductController.getAllProducts);

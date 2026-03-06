@@ -1,9 +1,8 @@
 import { Router } from 'express';
 import ClinicSettingsController from '../controllers/clinicSettingsController';
-import { authenticateUser, requireRoles, ROLE } from '../middlewares/auth.middleware';
+import { requireRoles, ROLE } from '../middlewares/auth.middleware';
 
 const router = Router();
-router.use(authenticateUser);
 const canManageSettings = requireRoles(ROLE.DONO, ROLE.VETERINARIO);
 
 // GET /api/settings/notifications - Busca configurações de notificação

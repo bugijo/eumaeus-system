@@ -1,11 +1,9 @@
 import { Router } from 'express';
 import { TutorController } from '../controllers/tutor.controller';
 import { tutorPetRoutes } from './pet.routes';
-import { authenticateUser, requireRoles, ROLE } from '../middlewares/auth.middleware';
+import { requireRoles, ROLE } from '../middlewares/auth.middleware';
 
 const tutorRoutes = Router();
-
-tutorRoutes.use(authenticateUser);
 
 tutorRoutes.get('/tutors/stats', requireRoles(ROLE.DONO, ROLE.VETERINARIO, ROLE.RECEPCAO, ROLE.AUXILIAR), TutorController.getTutorStats);
 tutorRoutes.get('/tutors', requireRoles(ROLE.DONO, ROLE.VETERINARIO, ROLE.RECEPCAO, ROLE.AUXILIAR), TutorController.getAllTutors);

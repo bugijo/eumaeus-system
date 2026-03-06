@@ -6,10 +6,9 @@ import {
   getRecordByAppointment,
   getAvailableProducts
 } from '../controllers/medicalRecordController';
-import { authenticateUser, requireRoles, ROLE } from '../middlewares/auth.middleware';
+import { requireRoles, ROLE } from '../middlewares/auth.middleware';
 
 const router = Router();
-router.use(authenticateUser);
 
 // POST /api/records/direct - Criar prontuário diretamente para um pet
 router.post('/direct', requireRoles(ROLE.DONO, ROLE.VETERINARIO), createDirectMedicalRecord);
