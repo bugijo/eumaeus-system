@@ -1,4 +1,7 @@
 const { PrismaClient } = require('@prisma/client');
+const { assertMutationScriptAllowed } = require('./script-safety.cjs');
+
+assertMutationScriptAllowed('ALLOW_TEST_DATA_MUTATION');
 
 const prisma = new PrismaClient();
 
@@ -98,8 +101,9 @@ async function addTestData() {
     console.log('🎉 Dados de teste adicionados com sucesso!');
     console.log(`📋 Criados: ${tutor1.name} (${pet1.name}) e ${tutor2.name} (${pet2.name})`);
 
-  } catch (error) {
-    console.error('❌ Erro ao adicionar dados de teste:', error);
+  } catch {
+    console.error('❌ Erro ao adicionar dados de teste.');
+    process.exitCode = 1;
   } finally {
     await prisma.$disconnect();
   }

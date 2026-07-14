@@ -79,10 +79,15 @@ for (const relativeFile of trackedOrCandidateFiles) {
 
 const mutationScripts = [
   'create-test-data.cjs',
+  'add-test-data.cjs',
   'create-tutor-test.cjs',
   'fix-tutor-password.cjs',
   'migrate-auth-data.js',
+  'test-bcrypt.cjs',
+  'test-backend-tutor.cjs',
+  'verify-tutor.cjs',
   'prisma/seed.ts',
+  'prisma/seedProducts.ts',
   'backend/prisma/seed.ts',
   'backend/prisma/simulate-30-days.ts',
   'backend/prisma/migrate-v2.ts',

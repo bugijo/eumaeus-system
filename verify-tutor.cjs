@@ -1,5 +1,9 @@
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcrypt');
+const { assertMutationScriptAllowed, requireScriptSecret } = require('./script-safety.cjs');
+
+assertMutationScriptAllowed('ALLOW_CREDENTIAL_DIAGNOSTICS');
+const submittedPassword = requireScriptSecret('TEST_TUTOR_PASSWORD');
 
 const prisma = new PrismaClient();
 
@@ -20,7 +24,7 @@ async function verifyTutor() {
     console.log('✅ AuthProfile encontrado:');
     console.log(`   - ID: ${authProfile.id}`);
     console.log(`   - Email: ${authProfile.email}`);
-    console.log(`   - Senha Hash: ${authProfile.password ? authProfile.password.substring(0, 20) + '...' : 'NULL'}`);
+    console.log(`   - Senha Hash: ${authProfile.password ? 'presente; valor não exibido' : 'NULL'}`);
     
     if (!authProfile.password) {
       console.log('❌ Senha hash está NULL! O usuário não pode fazer login.');
@@ -43,14 +47,8 @@ async function verifyTutor() {
     console.log(`   - Email: ${tutor.email}`);
     console.log(`   - Telefone: ${tutor.phone}`);
     
-    // Testar senhas comuns
-    const commonPasswords = ['123456', 'tutor123', 'password'];
-    console.log('\n🔐 Testando senhas comuns:');
-    
-    for (const testPassword of commonPasswords) {
-      const isValid = await bcrypt.compare(testPassword, authProfile.password);
-      console.log(`   - "${testPassword}": ${isValid ? '✅ VÁLIDA' : '❌ inválida'}`);
-    }
+    const isValid = await bcrypt.compare(submittedPassword, authProfile.password);
+    console.log(`\n🔐 Credencial fornecida via ambiente: ${isValid ? '✅ VÁLIDA' : '❌ inválida'}`);
     
     // Buscar pets do tutor
     const pets = await prisma.pet.findMany({
@@ -62,8 +60,9 @@ async function verifyTutor() {
       console.log(`   - ${pet.name} (${pet.species})`);
     });
     
-  } catch (error) {
-    console.error('💥 Erro:', error.message);
+  } catch {
+    console.error('💥 Falha na verificação do tutor.');
+    process.exitCode = 1;
   } finally {
     await prisma.$disconnect();
   }
