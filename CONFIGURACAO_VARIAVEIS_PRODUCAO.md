@@ -137,12 +137,12 @@ curl https://Eumaeus-backend.render.com/health
 # Testar autenticação
 curl -X POST https://Eumaeus-backend.render.com/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@Eumaeus.com","password":"admin123"}'
+  -d '{"email":"<conta-provisionada-pelo-operador>","password":"<credencial-forte-não-versionada>"}'
 ```
 
 ### 🔍 Frontend (Vercel)
 1. **Acessar**: `https://vet-system-frontend-blitz.vercel.app`
-2. **Login**: `admin@Eumaeus.com` / `admin123`
+2. **Login**: use uma conta provisionada pelo operador e uma credencial forte não versionada.
 3. **Dashboard**: Verificar se carrega dados
 4. **Funcionalidades**: Testar tutores, agenda, etc.
 
@@ -208,7 +208,7 @@ curl -X POST https://Eumaeus-backend.render.com/api/test-email \
 ### ✅ Sucesso Total
 - **Backend**: `https://Eumaeus-backend.render.com` funcionando
 - **Frontend**: `https://vet-system-frontend-blitz.vercel.app` funcionando
-- **Login**: `admin@Eumaeus.com` / `admin123` funcional
+- **Login**: validar somente com conta provisionada pelo operador; não há credencial padrão.
 - **Dashboard**: Carregando dados corretamente
 - **Email**: Sistema de automação enviando lembretes
 

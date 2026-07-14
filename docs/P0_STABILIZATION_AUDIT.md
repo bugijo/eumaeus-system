@@ -32,7 +32,7 @@ Evidências no commit auditado, sem reproduzir valores:
 
 Impacto: acesso direto ao banco e possibilidade de assinatura de tokens fora da aplicação. A remoção no novo snapshot não revoga os valores nem remove os blobs de commits antigos.
 
-Resposta P0 no código: substituir todos os valores por placeholders e adicionar varredura no CI.
+Resposta P0 no código: todos os valores foram substituídos por placeholders e a CI agora examina somente a árvore candidata, sem imprimir valores. O histórico continua contaminado e não é considerado saneado.
 
 Ação operacional obrigatória, fora desta PR: rotacionar a senha do PostgreSQL e os dois segredos JWT, revogar refresh tokens e verificar logs de acesso. Nenhum valor antigo ou novo deve ser copiado para issue, PR, commit, log ou documentação.
 
@@ -77,10 +77,13 @@ Evidências:
 - criação de produtos em `backend/src/server.ts:294-320`;
 - execução em todo ambiente não teste em `backend/src/server.ts:329-330`;
 - scripts auxiliares com senhas conhecidas em `backend/prisma/seed.ts:25-66`, `backend/prisma/simulate-30-days.ts:6-20,93-123` e `backend/prisma/migrate-v2.ts:36-43,96-102`.
+- `backend/scripts/real-usage-simulation.mjs:3,8-13,155-207` apontava por padrão para o Render, autenticava com credenciais conhecidas e criava dados; scripts legados da raiz também podiam criar/apagar perfis sem trava.
 
 Impacto: contas privilegiadas conhecidas e mutação silenciosa de dados reais.
 
-Correção P0: remover provisionamento do startup; scripts de seed/simulação devem recusar produção e exigir senha efêmera explícita, sem default.
+Correção P0: remover provisionamento do startup; scripts de seed/simulação recusam qualquer ambiente diferente de `development`/`test`, exigem opt-in e senha efêmera explícitos, sem default. O login de produção também recusa senhas legadas com menos de 12 caracteres, neutralizando as credenciais curtas que versões anteriores criavam.
+
+Gate operacional: perfis já existentes precisam ser inventariados em clone restaurado e receber rotação ou desativação controlada. A branch não altera contas reais automaticamente e não afirma que o incidente está encerrado sem essa verificação.
 
 ### P0.5 — cache público de respostas autenticadas
 
@@ -116,7 +119,7 @@ Evidências:
 
 Também são reproduzíveis: `DATABASE_URL` ausente/inválida, banco indisponível e migração previamente falhada. Sem logs do último deploy e leitura de `_prisma_migrations`, não é possível afirmar qual cenário ocorreu em produção.
 
-Correção P0 de processo: validação da aplicação acontece antes do `listen`; migração é uma etapa explícita de deploy, não um efeito colateral de cada restart; Render usa `/health`. O baseline de uma base existente é uma operação única e controlada, descrita abaixo, não uma correção automática destrutiva.
+Correção P0 de processo: validação da aplicação e do schema acontece antes do `listen`; migração é uma etapa explícita do build do Render, não um efeito colateral de cada restart; Render usa `/health`. Como `preDeployCommand` não existe para web service gratuito, o build aplica `migrate deploy` e o start executa somente Node. `autoDeployTrigger` fica desligado até a auditoria do baseline. O baseline de uma base existente é uma operação única e controlada, descrita abaixo, não uma correção automática destrutiva.
 
 ### P0.8 — health check e testes não provam prontidão
 
@@ -129,7 +132,20 @@ Evidências:
 - Vitest não exclui `backend/` e pode coletar suítes Jest;
 - `.github/workflows/ci.yml` tem YAML inválido e não executa os gates obrigatórios.
 
-Correção P0: health retorna componentes `application` e `database`, com 503 quando o banco falha; mocks cobrem sucesso/falha; suites ficam isoladas; lockfile e CI executam exatamente a matriz de aceitação.
+Correção P0: health retorna componentes `application` e `database`, com 503 quando conexão ou schema oficial falham; startup também recusa PostgreSQL acessível sem `AuthProfile`; mocks cobrem sucesso/falha; suites ficam isoladas; lockfile e CI executam exatamente a matriz de aceitação.
+
+### P0.9 — credenciais opcionais e erros externos em logs
+
+Evidências:
+
+- `backend/src/services/emailService.ts:33-38` carregava usuário/senha placeholder no transporte SMTP e usava `EMAIL_PASSWORD`, enquanto a configuração central esperava `EMAIL_PASS`;
+- `backend/src/services/nfe.service.ts:86-123,294-296` anexava o token fiscal ao header Axios e registrava objetos de erro capazes de conter `Authorization`, URL e corpo da resposta.
+
+Correção P0: e-mail fica explicitamente desabilitado sem o par `EMAIL_USER`/`EMAIL_PASSWORD`, sem criar transporte ou fallback; erros SMTP são genéricos. Erros Focus NFe são reduzidos a código/status controlados, e teste com marcador sintético prova que header, URL, corpo e token não chegam ao logger.
+
+### P0.10 — dependências de produção vulneráveis
+
+`npm audit --omit=dev` no snapshot auditado encontrou advisories altos corrigíveis em Axios, Express/transitivos, Nodemailer e React Router. As versões foram atualizadas de forma dirigida, sem `--force`, e os dois grafos de produção agora retornam zero vulnerabilidades conhecidas. A CI bloqueia novos advisories altos de produção.
 
 ## P1 — próxima branch recomendada
 
@@ -137,7 +153,7 @@ Correção P0: health retorna componentes `application` e `database`, com 503 qu
 
 - `prisma/schema.prisma` é SQLite e diverge do PostgreSQL oficial em `backend/prisma/schema.prisma`; há diferenças em Appointment, Tutor/AuthProfile, Prescription, ClinicSettings, enums e roles.
 - A cadeia SQLite `prisma/migrations/20250707214459_add_auth_profile/migration.sql:4-50` não preserva usuários existentes e não deve ser executada sobre dados reais.
-- O initializer PostgreSQL contém defaults com mojibake em `backend/prisma/migrations/init-postgres/migration.sql:170-177`; não editar uma migração possivelmente aplicada. Corrigir por migração aditiva depois de verificar o checksum/estado.
+- O initializer PostgreSQL contém defaults com mojibake em `backend/prisma/migrations/init-postgres/migration.sql:170-177`; ele foi preservado byte a byte. A correção entrou em migração aditiva e transacional `backend/prisma/migrations/z_20260713000000_fix_clinic_settings_defaults/migration.sql:1-24`, que também alinha o índice implícito `_PermissionToRole` sem apagar dados.
 - Prescription existe só no schema SQLite; o serviço PostgreSQL está explicitamente desativado em `backend/src/services/prescription.service.ts:6-30`.
 
 Fonte oficial definida para evolução: `backend/prisma/schema.prisma` e `backend/prisma/migrations/`, com PostgreSQL. O diretório `prisma/` da raiz permanece legado nesta fase e não será apagado sem preservação/classificação.
@@ -161,7 +177,7 @@ Fonte oficial definida para evolução: `backend/prisma/schema.prisma` e `backen
 
 ### Operação
 
-- o plano PostgreSQL gratuito do Render não oferece a durabilidade/backups esperados de produção; mudança de plano exige autorização externa;
+- o plano PostgreSQL gratuito do Render expira, não possui backup gerenciado e não deve ser tratado como armazenamento de produção; mudança de plano exige autorização externa;
 - Node não está fixado de forma uniforme;
 - previews Vercel apontam para o backend de produção;
 - Cypress atual depende de backend externo, não autentica e usa contratos obsoletos; não será usado como gate até ficar efêmero e isolado.
@@ -216,3 +232,44 @@ Banco/startup:
 - remover cada variável obrigatória e confirmar saída rápida com status 1 e mensagem contendo somente os nomes ausentes.
 
 Nenhum comando de validação usará a URL encontrada no histórico ou qualquer banco de produção.
+
+## Gates operacionais antes de merge ou deploy
+
+Esta branch deve permanecer draft e não deve ser implantada até que um operador autorizado conclua os itens abaixo:
+
+1. Rotacionar a senha PostgreSQL e os dois segredos JWT; revogar todos os refresh tokens existentes.
+2. Auditar, em clone restaurado, contas criadas pelo bootstrap legado; rotacionar ou desativar as afetadas. O login novo bloqueia credenciais curtas conhecidas, mas não substitui o saneamento dos perfis.
+3. Obter backup externo, restaurar em ambiente isolado e inspecionar `_prisma_migrations`. Se o banco existente veio de `db push`/SQL manual, fazer o baseline somente após diff zero e revisão humana.
+4. Confirmar que o Render não fará deploy automático. O plano gratuito não suporta `preDeployCommand`; por isso a migração está no build e `autoDeployTrigger: off` até o baseline ser comprovado.
+5. Tratar o diff da PR como parte do incidente: ao comparar com `main`, a interface do GitHub pode renderizar os valores antigos nas linhas removidas, embora o novo snapshot não os contenha. Rotacionar antes de compartilhar ou implantar.
+6. Definir armazenamento PostgreSQL com retenção e backup adequados. O banco gratuito atual expira e não possui backup gerenciado.
+
+O initializer `init-postgres` não pode ser renomeado enquanto o estado de produção for desconhecido. Até uma futura normalização ensaiada, novas migrações desta linhagem devem usar prefixo lexicograficamente posterior `z_<timestamp>` e continuar sendo testadas do zero na CI.
+
+Referências operacionais: [deploy e limitação de pre-deploy do Render](https://render.com/docs/deploys), [limitações do plano gratuito](https://render.com/docs/free) e [baseline seguro do Prisma](https://www.prisma.io/docs/orm/prisma-migrate/workflows/baselining).
+
+## Resultado validado da implementação P0
+
+Validação local executada em 2026-07-13, sem usar infraestrutura ou credenciais de produção:
+
+| Área | Evidência executada | Resultado |
+| --- | --- | --- |
+| Frontend | `npm ci` | passou |
+| Frontend | `npm run lint` | passou, 0 erros e 16 avisos legados |
+| Frontend | `npm run build` | passou, 2.672 módulos |
+| Frontend | `npm test -- --run` | 6 arquivos, 69 testes aprovados |
+| Backend | `npm ci` | passou |
+| Backend | `npm run prisma:validate` e `npm run prisma:generate` | schema válido; Prisma Client 5.22.0 gerado |
+| Backend | `npm run build` | passou |
+| Backend | `npm test` | 9 suítes, 47 testes aprovados |
+| Banco | PostgreSQL 16 vazio + `prisma migrate deploy` | 2 migrações aplicadas; segunda execução sem pendências |
+| Banco | `prisma migrate status` e `prisma migrate diff --exit-code` | atualizado; diff zero |
+| Startup | variáveis ausentes | status 1; mensagem lista somente `DATABASE_URL`, `JWT_SECRET` e `REFRESH_TOKEN_SECRET` |
+| Startup | banco acessível sem schema | status 1; mensagem segura de banco/schema não pronto |
+| Startup | variáveis válidas + schema migrado | iniciou; `/health` retornou 200 com aplicação e banco `ok` |
+| Cache | health, 401 e resposta autenticada 200 | `private, no-store` |
+| Scripts | produção, staging/ausente e opt-in ausente | execução recusada antes de criar Prisma/conectar |
+| Política | `npm run test:policy` | 430 arquivos; sem DB rastreado, segredo literal suspeito, Prisma runtime extra ou Render incompatível |
+| Dependências | `npm audit --omit=dev` | 0 vulnerabilidades nos grafos de produção frontend/backend |
+
+O `npm ci` do frontend ainda reporta 7 advisories apenas em ferramentas de desenvolvimento (Cypress/Vite e transitivos); as correções disponíveis exigem upgrades major e ficam registradas como risco P1, sem `npm audit fix --force` nesta fase.
