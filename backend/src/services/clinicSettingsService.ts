@@ -1,12 +1,10 @@
-import { PrismaClient } from '@prisma/client';
 import {
   ClinicSettingsData,
   CreateClinicSettingsRequest,
   UpdateClinicSettingsRequest,
   ClinicSettingsResponse
 } from '../models/clinicSettings.model';
-
-const prisma = new PrismaClient();
+import { prisma } from '../lib/prisma';
 
 class ClinicSettingsService {
   /**
