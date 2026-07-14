@@ -71,7 +71,7 @@ class InterceptorManager<T> {
 
   async runError(error: any, reverse = false): Promise<any> {
     const handlers = reverse ? [...this.handlers].reverse() : this.handlers;
-    let currentError = error;
+    const currentError = error;
 
     for (const handler of handlers) {
       if (!handler?.onRejected) continue;

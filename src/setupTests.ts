@@ -36,7 +36,6 @@ vi.mock('@prisma/client', () => {
 
 declare global {
   // Permite que os testes escritos em Jest funcionem com Vitest
-  // eslint-disable-next-line no-var
   var jest: typeof vi;
   namespace jest {
     type Mock = ReturnType<typeof vi.fn>;
