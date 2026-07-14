@@ -17,6 +17,7 @@ const isPlaceholder = (value) => (
     .test(value)
 );
 const isLocalHost = (hostname) => new Set(['localhost', '127.0.0.1', '[::1]']).has(hostname);
+const legacyDefaultPasswordPattern = new RegExp(['mudar', '123'].join(''), 'i');
 
 const sourceFiles = new Map();
 
@@ -53,6 +54,10 @@ for (const relativeFile of trackedOrCandidateFiles) {
   for (let index = 0; index < lines.length; index += 1) {
     const line = lines[index];
     const postgresUrls = line.match(/postgres(?:ql)?:\/\/[^\s"'<>`]+/gi) || [];
+
+    if (legacyDefaultPasswordPattern.test(line)) {
+      addFinding(relativeFile, index + 1, 'known-default-password-in-snapshot');
+    }
 
     for (const candidate of postgresUrls) {
       const normalizedCandidate = candidate.replace(/[),.;]+$/, '');
@@ -139,6 +144,9 @@ if (/plan:\s*free/.test(renderBlueprint) && /preDeployCommand:/.test(renderBluep
 }
 if (!/buildCommand:[\s\S]*npm run db:migrate/.test(renderBlueprint)) {
   addFinding('render.yaml', 1, 'render-build-does-not-apply-migrations');
+}
+if (!/buildCommand:\s*\|\s*\r?\n\s+set -e(?:\s|$)/.test(renderBlueprint)) {
+  addFinding('render.yaml', 1, 'render-build-is-not-fail-fast');
 }
 if (!/autoDeployTrigger:\s*off/.test(renderBlueprint)) {
   addFinding('render.yaml', 1, 'render-autodeploy-must-wait-for-baseline-audit');

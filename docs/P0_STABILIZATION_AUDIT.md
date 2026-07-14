@@ -78,10 +78,11 @@ Evidências:
 - execução em todo ambiente não teste em `backend/src/server.ts:329-330`;
 - scripts auxiliares com senhas conhecidas em `backend/prisma/seed.ts:25-66`, `backend/prisma/simulate-30-days.ts:6-20,93-123` e `backend/prisma/migrate-v2.ts:36-43,96-102`.
 - `backend/scripts/real-usage-simulation.mjs:3,8-13,155-207` apontava por padrão para o Render, autenticava com credenciais conhecidas e criava dados; scripts legados da raiz também podiam criar/apagar perfis sem trava.
+- `GUIA_DEPLOY_PRODUCAO.md:259`, `CHECKLIST_PRE_LANCAMENTO_V2.md:59` e `RESUMO_EXECUTIVO_V2.md:144` ainda orientavam ou afirmavam o uso de uma senha temporária compartilhada conhecida.
 
 Impacto: contas privilegiadas conhecidas e mutação silenciosa de dados reais.
 
-Correção P0: remover provisionamento do startup; scripts de seed/simulação recusam qualquer ambiente diferente de `development`/`test`, exigem opt-in e senha efêmera explícitos, sem default. O login de produção também recusa senhas legadas com menos de 12 caracteres, neutralizando as credenciais curtas que versões anteriores criavam.
+Correção P0: remover provisionamento do startup; scripts de seed/simulação recusam qualquer ambiente diferente de `development`/`test`, exigem opt-in e senha efêmera explícitos, sem default. O login de produção também recusa senhas legadas com menos de 12 caracteres, neutralizando as credenciais curtas que versões anteriores criavam. A orientação de senha compartilhada foi removida e os relatórios antigos agora são marcados explicitamente como evidência histórica não válida para deploy.
 
 Gate operacional: perfis já existentes precisam ser inventariados em clone restaurado e receber rotação ou desativação controlada. A branch não altera contas reais automaticamente e não afirma que o incidente está encerrado sem essa verificação.
 
@@ -119,7 +120,7 @@ Evidências:
 
 Também são reproduzíveis: `DATABASE_URL` ausente/inválida, banco indisponível e migração previamente falhada. Sem logs do último deploy e leitura de `_prisma_migrations`, não é possível afirmar qual cenário ocorreu em produção.
 
-Correção P0 de processo: validação da aplicação e do schema acontece antes do `listen`; migração é uma etapa explícita do build do Render, não um efeito colateral de cada restart; Render usa `/health`. Como `preDeployCommand` não existe para web service gratuito, o build aplica `migrate deploy` e o start executa somente Node. `autoDeployTrigger` fica desligado até a auditoria do baseline. O baseline de uma base existente é uma operação única e controlada, descrita abaixo, não uma correção automática destrutiva.
+Correção P0 de processo: validação da aplicação e do schema acontece antes do `listen`; migração é uma etapa explícita do build do Render, não um efeito colateral de cada restart; Render usa `/health`. Como `preDeployCommand` não existe para web service gratuito, o build fail-fast aplica `migrate deploy` somente depois de instalação, geração e compilação bem-sucedidas, e o start executa somente Node. `autoDeployTrigger` fica desligado até a auditoria do baseline. O baseline de uma base existente é uma operação única e controlada, descrita abaixo, não uma correção automática destrutiva.
 
 ### P0.8 — health check e testes não provam prontidão
 
@@ -269,7 +270,7 @@ Validação local executada em 2026-07-13, sem usar infraestrutura ou credenciai
 | Startup | variáveis válidas + schema migrado | iniciou; `/health` retornou 200 com aplicação e banco `ok` |
 | Cache | health, 401 e resposta autenticada 200 | `private, no-store` |
 | Scripts | produção, staging/ausente e opt-in ausente | execução recusada antes de criar Prisma/conectar |
-| Política | `npm run test:policy` | 430 arquivos; sem DB rastreado, segredo literal suspeito, Prisma runtime extra ou Render incompatível |
+| Política | `npm run test:policy` | 430 arquivos; sem DB rastreado, senha padrão conhecida, segredo literal suspeito, Prisma runtime extra ou Render incompatível/não fail-fast |
 | Dependências | `npm audit --omit=dev` | 0 vulnerabilidades nos grafos de produção frontend/backend |
 
 O `npm ci` do frontend ainda reporta 7 advisories apenas em ferramentas de desenvolvimento (Cypress/Vite e transitivos); as correções disponíveis exigem upgrades major e ficam registradas como risco P1, sem `npm audit fix --force` nesta fase.
