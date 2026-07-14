@@ -43,7 +43,7 @@
 cd "C:\temp\postgresql-16-windows-x64\bin"
 
 # Executar pg_dump diretamente
-.\pg_dump.exe "postgresql://Eumaeus_db_user:VJHnvnF2uwgLg3MwMdgEvdyae5zdxZ7P@dpg-d1jh806mcj7s739repog-a.ohio-postgres.render.com/Eumaeus_db" > "C:\Users\WINDOWS 10\Desktop\Backups\Eumaeus_backup_v1.sql"
+.\pg_dump.exe "postgresql://USER:PASSWORD@HOST:PORT/DATABASE?schema=public" > "C:\Users\WINDOWS 10\Desktop\Backups\Eumaeus_backup_v1.sql"
 ```
 
 ### ✅ VANTAGENS
@@ -62,7 +62,7 @@ cd "C:\temp\postgresql-16-windows-x64\bin"
 docker --version
 
 # Executar pg_dump via container Docker
-docker run --rm postgres:16 pg_dump "postgresql://Eumaeus_db_user:VJHnvnF2uwgLg3MwMdgEvdyae5zdxZ7P@dpg-d1jh806mcj7s739repog-a.ohio-postgres.render.com/Eumaeus_db" > "C:\Users\WINDOWS 10\Desktop\Backups\Eumaeus_backup_v1.sql"
+docker run --rm postgres:16 pg_dump "postgresql://USER:PASSWORD@HOST:PORT/DATABASE?schema=public" > "C:\Users\WINDOWS 10\Desktop\Backups\Eumaeus_backup_v1.sql"
 ```
 
 ### ✅ VANTAGENS
@@ -105,7 +105,7 @@ import subprocess
 import os
 
 # URL de conexão
-db_url = "postgresql://Eumaeus_db_user:VJHnvnF2uwgLg3MwMdgEvdyae5zdxZ7P@dpg-d1jh806mcj7s739repog-a.ohio-postgres.render.com/Eumaeus_db"
+db_url = "postgresql://USER:PASSWORD@HOST:PORT/DATABASE?schema=public"
 
 # Comando pg_dump
 cmd = f'pg_dump "{db_url}" > Eumaeus_backup_v1.sql'
@@ -123,7 +123,7 @@ except subprocess.CalledProcessError as e:
 // backup_postgres.js
 const { exec } = require('child_process');
 
-const dbUrl = 'postgresql://Eumaeus_db_user:VJHnvnF2uwgLg3MwMdgEvdyae5zdxZ7P@dpg-d1jh806mcj7s739repog-a.ohio-postgres.render.com/Eumaeus_db';
+const dbUrl = 'postgresql://USER:PASSWORD@HOST:PORT/DATABASE?schema=public';
 
 const cmd = `pg_dump "${dbUrl}" > Eumaeus_backup_v1.sql`;
 
@@ -189,7 +189,7 @@ sudo apt update
 sudo apt install postgresql-client
 
 # Executar backup
-pg_dump "postgresql://Eumaeus_db_user:VJHnvnF2uwgLg3MwMdgEvdyae5zdxZ7P@dpg-d1jh806mcj7s739repog-a.ohio-postgres.render.com/Eumaeus_db" > /mnt/c/Users/"WINDOWS 10"/Desktop/Backups/Eumaeus_backup_v1.sql
+pg_dump "postgresql://USER:PASSWORD@HOST:PORT/DATABASE?schema=public" > /mnt/c/Users/"WINDOWS 10"/Desktop/Backups/Eumaeus_backup_v1.sql
 ```
 
 ### ✅ VANTAGENS
@@ -244,7 +244,7 @@ cd "C:\temp\postgresql-portable\bin"
 mkdir "C:\Users\WINDOWS 10\Desktop\Backups"
 
 # Executar backup
-.\pg_dump.exe "postgresql://Eumaeus_db_user:VJHnvnF2uwgLg3MwMdgEvdyae5zdxZ7P@dpg-d1jh806mcj7s739repog-a.ohio-postgres.render.com/Eumaeus_db" > "C:\Users\WINDOWS 10\Desktop\Backups\Eumaeus_backup_v1.sql"
+.\pg_dump.exe "postgresql://USER:PASSWORD@HOST:PORT/DATABASE?schema=public" > "C:\Users\WINDOWS 10\Desktop\Backups\Eumaeus_backup_v1.sql"
 
 # Verificar backup
 Get-ChildItem "C:\Users\WINDOWS 10\Desktop\Backups\Eumaeus_backup_v1.sql"

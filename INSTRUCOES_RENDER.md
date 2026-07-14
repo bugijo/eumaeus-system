@@ -7,12 +7,12 @@
 3. **Na aba "Info"**, copie a **External Database URL**
 4. **Substitua no arquivo `.env`** a linha:
    ```
-   DATABASE_URL="postgresql://username:password@localhost:5432/database_name"
+   DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE?schema=public"
    ```
    
    Pela External Database URL que você copiou, exemplo:
    ```
-   DATABASE_URL="postgresql://user:password@dpg-xxxxx-a.oregon-postgres.render.com/database_name"
+   DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE?schema=public"
    ```
 
 5. **Configurar acesso IP (se necessário)**:

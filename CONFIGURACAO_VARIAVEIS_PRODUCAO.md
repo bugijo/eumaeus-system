@@ -18,13 +18,13 @@
 
 #### 🗄️ Banco de Dados
 ```env
-DATABASE_URL=postgresql://Eumaeus_db_user:VJHnvnF2uwgLg3MwMdgEvdyae5zdxZ7P@dpg-d1jh806mcj7s739repog-a.ohio-postgres.render.com/Eumaeus_db
+DATABASE_URL=postgresql://USER:PASSWORD@HOST:PORT/DATABASE?schema=public
 ```
 
 #### 🔐 Autenticação JWT
 ```env
-JWT_SECRET=Eumaeus_jwt_super_secret_key_2025_v2
-REFRESH_TOKEN_SECRET=Eumaeus_refresh_token_secret_2025_v2
+JWT_SECRET=<configure-in-secret-manager>
+REFRESH_TOKEN_SECRET=<configure-in-secret-manager>
 ```
 
 #### 📧 Sistema de Email (Gmail)

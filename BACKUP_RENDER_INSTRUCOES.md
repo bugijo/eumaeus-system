@@ -36,7 +36,7 @@ mkdir "C:\Users\WINDOWS 10\Desktop\Backups"
 cd "C:\Users\WINDOWS 10\Desktop\Backups"
 
 # 2. Executar backup do banco de produção
-pg_dump "postgresql://Eumaeus_db_user:VJHnvnF2uwgLg3MwMdgEvdyae5zdxZ7P@dpg-d1jh806mcj7s739repog-a.ohio-postgres.render.com/Eumaeus_db" > Eumaeus_backup_v1.sql
+pg_dump "postgresql://USER:PASSWORD@HOST:PORT/DATABASE?schema=public" > Eumaeus_backup_v1.sql
 ```
 
 ### ✅ VERIFICAR BACKUP
@@ -143,7 +143,7 @@ Select-String "INSERT INTO" Eumaeus_backup_v1.sql
 
 ## 📞 INFORMAÇÕES IMPORTANTES
 
-**URL do Banco**: `postgresql://Eumaeus_db_user:VJHnvnF2uwgLg3MwMdgEvdyae5zdxZ7P@dpg-d1jh806mcj7s739repog-a.ohio-postgres.render.com/Eumaeus_db`
+**URL do Banco**: `postgresql://USER:PASSWORD@HOST:PORT/DATABASE?schema=public`
 
 **Arquivo de Backup**: `Eumaeus_backup_v1.sql`
 
@@ -151,7 +151,7 @@ Select-String "INSERT INTO" Eumaeus_backup_v1.sql
 
 **Comando Principal**:
 ```bash
-pg_dump "postgresql://Eumaeus_db_user:VJHnvnF2uwgLg3MwMdgEvdyae5zdxZ7P@dpg-d1jh806mcj7s739repog-a.ohio-postgres.render.com/Eumaeus_db" > Eumaeus_backup_v1.sql
+pg_dump "postgresql://USER:PASSWORD@HOST:PORT/DATABASE?schema=public" > Eumaeus_backup_v1.sql
 ```
 
 ---
