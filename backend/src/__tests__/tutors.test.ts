@@ -1,8 +1,13 @@
 import request from 'supertest';
+import jwt from 'jsonwebtoken';
 import { app } from '../server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/prisma';
 
-const prisma = new PrismaClient();
+const accessToken = jwt.sign(
+  { id: 1, type: 'user', role: 'DONO' },
+  process.env.JWT_SECRET as string,
+  { algorithm: 'HS256', expiresIn: '5m' },
+);
 
 describe('Tutors API', () => {
   beforeAll(async () => {
@@ -19,6 +24,7 @@ describe('Tutors API', () => {
     it('should return list of tutors', async () => {
       const response = await request(app)
         .get('/api/tutors')
+        .set('Authorization', `Bearer ${accessToken}`)
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
@@ -26,11 +32,14 @@ describe('Tutors API', () => {
       expect(response.body).toHaveProperty('page');
       expect(response.body).toHaveProperty('limit');
       expect(Array.isArray(response.body.data)).toBe(true);
+      expect(response.headers['cache-control']).toContain('private');
+      expect(response.headers['cache-control']).toContain('no-store');
     });
 
     it('should handle pagination parameters', async () => {
       const response = await request(app)
         .get('/api/tutors?page=1&limit=5')
+        .set('Authorization', `Bearer ${accessToken}`)
         .expect(200);
 
       expect(response.body.page).toBe(1);
@@ -56,6 +65,7 @@ describe('Tutors API', () => {
     it('should create a new tutor with valid data', async () => {
       const response = await request(app)
         .post('/api/tutors')
+        .set('Authorization', `Bearer ${accessToken}`)
         .send(validTutor)
         .expect(201);
 
@@ -72,6 +82,7 @@ describe('Tutors API', () => {
 
       await request(app)
         .post('/api/tutors')
+        .set('Authorization', `Bearer ${accessToken}`)
         .send(invalidTutor)
         .expect(400);
     });
@@ -80,11 +91,13 @@ describe('Tutors API', () => {
       // Primeiro, criar um tutor
       await request(app)
         .post('/api/tutors')
+        .set('Authorization', `Bearer ${accessToken}`)
         .send(validTutor);
 
       // Tentar criar outro com mesmo email
       await request(app)
         .post('/api/tutors')
+        .set('Authorization', `Bearer ${accessToken}`)
         .send(validTutor)
         .expect(409);
     });
@@ -94,6 +107,7 @@ describe('Tutors API', () => {
     it('should return tutor statistics', async () => {
       const response = await request(app)
         .get('/api/tutors/stats')
+        .set('Authorization', `Bearer ${accessToken}`)
         .expect(200);
 
       expect(response.body).toHaveProperty('total');
