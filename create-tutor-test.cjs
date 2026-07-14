@@ -1,5 +1,9 @@
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcrypt');
+const { assertMutationScriptAllowed, requireScriptSecret } = require('./script-safety.cjs');
+
+assertMutationScriptAllowed('ALLOW_TEST_DATA_MUTATION');
+const tutorPassword = requireScriptSecret('TEST_TUTOR_PASSWORD');
 
 const prisma = new PrismaClient();
 
@@ -8,7 +12,7 @@ async function createTutorTest() {
 
   try {
     // 1. Verificar se já existe e criar/atualizar AuthProfile para o tutor
-    const hashedPassword = await bcrypt.hash('123456', 10);
+    const hashedPassword = await bcrypt.hash(tutorPassword, 10);
     
     const authProfile = await prisma.authProfile.upsert({
       where: { email: 'tutor@example.com' },
@@ -93,7 +97,7 @@ async function createTutorTest() {
     console.log('✅ Tutor de teste criado com sucesso!');
     console.log('\n📧 Dados de login:');
     console.log('- Email: tutor@example.com');
-    console.log('- Senha: 123456');
+    console.log('- Senha: definida via TEST_TUTOR_PASSWORD; valor não exibido');
     console.log('\n🐕 Pets criados:');
     console.log('- Rex (Golden Retriever)');
     console.log('- Mimi (Gato SRD)');
@@ -102,7 +106,8 @@ async function createTutorTest() {
     console.log('- Mimi: Vacinação agendada (25/01/2024)');
 
   } catch (error) {
-    console.error('❌ Erro ao criar tutor de teste:', error);
+    console.error('❌ Erro ao criar tutor de teste.');
+    process.exitCode = 1;
   } finally {
     await prisma.$disconnect();
   }

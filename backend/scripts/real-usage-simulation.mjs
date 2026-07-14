@@ -1,15 +1,50 @@
-﻿import { performance } from 'node:perf_hooks';
+import { performance } from 'node:perf_hooks';
 
-const BASE_URL = process.env.SIM_BASE_URL || 'https://eumaeus-backend-oregon.onrender.com/api';
+const nodeEnvironment = process.env.NODE_ENV?.trim().toLowerCase();
+if (!['development', 'test'].includes(nodeEnvironment)) {
+  throw new Error('Simulação bloqueada: NODE_ENV deve ser development ou test.');
+}
+
+if (process.env.ALLOW_TEST_DATA_MUTATION?.trim().toLowerCase() !== 'true') {
+  throw new Error('Simulação bloqueada: defina ALLOW_TEST_DATA_MUTATION=true.');
+}
+
+function requireEnvironmentVariable(name, minimumLength = 1) {
+  const value = process.env[name];
+  if (!value || value.trim() !== value || value.length < minimumLength) {
+    throw new Error(`${name} é obrigatória para a simulação local.`);
+  }
+  return value;
+}
+
+const simulationUrl = new URL(requireEnvironmentVariable('SIM_BASE_URL'));
+const allowedHosts = new Set(['localhost', '127.0.0.1', '[::1]']);
+if (!['http:', 'https:'].includes(simulationUrl.protocol) || !allowedHosts.has(simulationUrl.hostname)) {
+  throw new Error('SIM_BASE_URL deve apontar explicitamente para localhost.');
+}
+
+const BASE_URL = simulationUrl.toString().replace(/\/$/, '');
 const DAYS = Number(process.env.SIM_DAYS || 30);
 const REQUEST_GAP_MS = Number(process.env.SIM_REQUEST_GAP_MS || 220);
 const MAX_RETRIES_429 = 4;
 
 const users = {
-  admin: { email: 'admin@eumaeus.com', password: '123456' },
-  vet: { email: 'veterinario@eumaeus.com', password: '123456' },
-  recepcao: { email: 'recepcao@eumaeus.com', password: '123456' },
-  auxiliar: { email: 'auxiliar@eumaeus.com', password: '123456' },
+  admin: {
+    email: requireEnvironmentVariable('SIM_ADMIN_EMAIL'),
+    password: requireEnvironmentVariable('SIM_ADMIN_PASSWORD', 12),
+  },
+  vet: {
+    email: requireEnvironmentVariable('SIM_VET_EMAIL'),
+    password: requireEnvironmentVariable('SIM_VET_PASSWORD', 12),
+  },
+  recepcao: {
+    email: requireEnvironmentVariable('SIM_RECEPCAO_EMAIL'),
+    password: requireEnvironmentVariable('SIM_RECEPCAO_PASSWORD', 12),
+  },
+  auxiliar: {
+    email: requireEnvironmentVariable('SIM_AUXILIAR_EMAIL'),
+    password: requireEnvironmentVariable('SIM_AUXILIAR_PASSWORD', 12),
+  },
 };
 
 const tutorFirst = ['Carlos', 'Mariana', 'Felipe', 'Patricia', 'Ricardo', 'Juliana', 'Anderson', 'Camila', 'Lucas', 'Fernanda'];

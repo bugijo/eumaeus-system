@@ -1,5 +1,10 @@
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcrypt');
+const { assertMutationScriptAllowed, requireScriptSecret } = require('./script-safety.cjs');
+
+assertMutationScriptAllowed('ALLOW_DESTRUCTIVE_TEST_DATA');
+const adminPassword = requireScriptSecret('TEST_ADMIN_PASSWORD');
+const veterinarianPassword = requireScriptSecret('TEST_VET_PASSWORD');
 
 const prisma = new PrismaClient();
 
@@ -70,14 +75,14 @@ async function createTestData() {
     const adminAuthProfile = await prisma.authProfile.create({
       data: {
         email: 'admin@clinic.local',
-        password: await bcrypt.hash('admin123', 10)
+        password: await bcrypt.hash(adminPassword, 10)
       }
     });
 
     const vetAuthProfile = await prisma.authProfile.create({
       data: {
         email: 'vet@clinic.local',
-        password: await bcrypt.hash('vet123', 10)
+        password: await bcrypt.hash(veterinarianPassword, 10)
       }
     });
 
@@ -109,13 +114,12 @@ async function createTestData() {
 
 
     console.log('\n🎉 Dados de teste criados com sucesso!');
-    console.log('\n📋 Credenciais para teste:');
-    console.log('   👑 Admin: admin@clinic.local / admin123');
-    console.log('   👩‍⚕️ Veterinário: vet@clinic.local / vet123');
+    console.log('\n📋 Credenciais definidas por variáveis de ambiente; valores não exibidos.');
     console.log('\n🔗 Teste a API em: http://localhost:3333/api/auth/login');
 
   } catch (error) {
-    console.error('❌ Erro ao criar dados de teste:', error);
+    console.error('❌ Erro ao criar dados de teste.');
+    process.exitCode = 1;
   } finally {
     await prisma.$disconnect();
   }

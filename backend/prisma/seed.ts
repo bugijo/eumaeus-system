@@ -1,6 +1,9 @@
-﻿import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
+import { assertMutationScriptAllowed, requireScriptSecret } from '../src/config/scriptSafety';
 
+assertMutationScriptAllowed('ALLOW_TEST_DATA_MUTATION');
+const seedStaffPassword = requireScriptSecret('SEED_STAFF_PASSWORD');
 const prisma = new PrismaClient();
 
 async function ensureRoles() {
@@ -23,8 +26,7 @@ async function ensureRoles() {
 }
 
 async function ensureDefaultUsers() {
-  const defaultPassword = '123456';
-  const hashedPassword = await bcrypt.hash(defaultPassword, 10);
+  const hashedPassword = await bcrypt.hash(seedStaffPassword, 10);
 
   const users = [
     { email: 'admin@eumaeus.com', name: 'Admin do Sistema', roleName: 'DONO' },
@@ -63,7 +65,7 @@ async function ensureDefaultUsers() {
     console.log(`Usuario criado: ${user.email}`);
   }
 
-  console.log('Credenciais padrao: senha 123456');
+  console.log('Credenciais de seed configuradas via SEED_STAFF_PASSWORD; valor não exibido.');
 }
 
 async function main() {

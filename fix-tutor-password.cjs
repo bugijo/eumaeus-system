@@ -1,5 +1,9 @@
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcrypt');
+const { assertMutationScriptAllowed, requireScriptSecret } = require('./script-safety.cjs');
+
+assertMutationScriptAllowed('ALLOW_TEST_DATA_MUTATION');
+const password = requireScriptSecret('TEST_TUTOR_PASSWORD');
 
 const prisma = new PrismaClient();
 
@@ -7,13 +11,10 @@ async function fixTutorPassword() {
   try {
     console.log('🔧 Corrigindo senha do tutor de teste...');
     
-    // Gerar hash da senha '123456'
-    const password = '123456';
     const saltRounds = 10;
     const passwordHash = await bcrypt.hash(password, saltRounds);
     
-    console.log(`🔐 Gerando hash para senha: ${password}`);
-    console.log(`📝 Hash gerado: ${passwordHash.substring(0, 20)}...`);
+    console.log('🔐 Gerando hash a partir de TEST_TUTOR_PASSWORD; valor não exibido.');
     
     // Atualizar o AuthProfile
     const updatedAuth = await prisma.authProfile.update({
@@ -29,12 +30,11 @@ async function fixTutorPassword() {
     const isValid = await bcrypt.compare(password, passwordHash);
     console.log(`🧪 Teste de validação: ${isValid ? '✅ PASSOU' : '❌ FALHOU'}`);
     
-    console.log('\n🎯 Dados de login atualizados:');
-    console.log('   - Email: tutor@example.com');
-    console.log('   - Senha: 123456');
+    console.log('\n🎯 Dados de login atualizados; senha não exibida.');
     
   } catch (error) {
-    console.error('💥 Erro:', error.message);
+    console.error('💥 Falha ao atualizar a senha de teste.');
+    process.exitCode = 1;
   } finally {
     await prisma.$disconnect();
   }
