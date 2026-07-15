@@ -1,5 +1,10 @@
 import { Appointment } from '../models/appointment.model';
 import { prisma } from '../lib/prisma';
+import {
+  InvalidAppointmentStatusError,
+  normalizeAppointmentStatus,
+  requireAppointmentStatus,
+} from '../utils/appointmentStatus';
 
 export class AppointmentService {
   static async getAllAppointments(): Promise<Appointment[]> {
@@ -38,7 +43,7 @@ export class AppointmentService {
         appointmentDate: appointment.appointmentDate,
         date: appointment.appointmentDate,
         time: appointment.appointmentDate.toTimeString().slice(0, 5),
-        status: this.mapStatusToLegacy(appointment.status),
+        status: this.mapStatusForResponse(appointment.status),
         createdAt: appointment.createdAt,
         updatedAt: appointment.updatedAt
       }));
@@ -102,7 +107,7 @@ export class AppointmentService {
         appointmentDate: createdAppointment.appointmentDate,
         date: createdAppointment.appointmentDate,
         time: createdAppointment.appointmentDate.toTimeString().slice(0, 5),
-        status: this.mapStatusToLegacy(createdAppointment.status),
+        status: this.mapStatusForResponse(createdAppointment.status),
         createdAt: createdAppointment.createdAt,
         updatedAt: createdAppointment.updatedAt
       };
@@ -112,14 +117,8 @@ export class AppointmentService {
     }
   }
 
-  private static mapStatusToLegacy(status: string): string {
-    const statusMap: { [key: string]: string } = {
-      'SCHEDULED': 'Agendado',
-      'CONFIRMED': 'Confirmado',
-      'COMPLETED': 'Concluído',
-      'CANCELLED': 'Cancelado'
-    };
-    return statusMap[status] || 'Agendado';
+  private static mapStatusForResponse(status: string): string {
+    return normalizeAppointmentStatus(status) ?? status;
   }
 
   static async getAppointmentById(id: number): Promise<Appointment | null> {
@@ -157,7 +156,7 @@ export class AppointmentService {
         appointmentDate: appointment.appointmentDate,
         date: appointment.appointmentDate,
         time: appointment.appointmentDate.toTimeString().slice(0, 5),
-        status: this.mapStatusToLegacy(appointment.status),
+        status: this.mapStatusForResponse(appointment.status),
         createdAt: appointment.createdAt,
         updatedAt: appointment.updatedAt
       };
@@ -169,8 +168,6 @@ export class AppointmentService {
 
   static async updateAppointment(id: number, updateData: Partial<Omit<Appointment, 'id'>>): Promise<Appointment | null> {
     try {
-      console.log(`Atualizando agendamento ${id}:`, updateData);
-      
       const updatePayload: any = {};
       
       if (updateData.date && updateData.time) {
@@ -178,13 +175,7 @@ export class AppointmentService {
       }
       
       if (updateData.status) {
-        const statusMap: { [key: string]: string } = {
-          'Agendado': 'SCHEDULED',
-          'Confirmado': 'CONFIRMED',
-          'Concluído': 'COMPLETED',
-          'Cancelado': 'CANCELLED'
-        };
-        updatePayload.status = statusMap[updateData.status] || 'SCHEDULED';
+        updatePayload.status = requireAppointmentStatus(updateData.status);
       }
 
       const updatedAppointment = await prisma.appointment.update({
@@ -219,12 +210,14 @@ export class AppointmentService {
         appointmentDate: updatedAppointment.appointmentDate,
         date: updatedAppointment.appointmentDate,
         time: updatedAppointment.appointmentDate.toTimeString().slice(0, 5),
-        status: this.mapStatusToLegacy(updatedAppointment.status),
+        status: this.mapStatusForResponse(updatedAppointment.status),
         createdAt: updatedAppointment.createdAt,
         updatedAt: updatedAppointment.updatedAt
       };
     } catch (error: any) {
-      console.error('Erro ao atualizar agendamento:', error);
+      if (!(error instanceof InvalidAppointmentStatusError)) {
+        console.error('Erro ao atualizar agendamento:', error);
+      }
       if (error?.code === 'P2025') {
         return null; // Registro não encontrado
       }
@@ -258,16 +251,7 @@ export class AppointmentService {
 
   static async updateAppointmentStatus(id: number, status: string): Promise<Appointment | null> {
     try {
-      console.log(`Atualizando status do agendamento ${id} para:`, status);
-      
-      const statusMap: { [key: string]: string } = {
-        'Agendado': 'SCHEDULED',
-        'Confirmado': 'CONFIRMED',
-        'Concluído': 'COMPLETED',
-        'Cancelado': 'CANCELLED'
-      };
-      
-      const prismaStatus = statusMap[status] || 'SCHEDULED';
+      const prismaStatus = requireAppointmentStatus(status);
       
       const updatedAppointment = await prisma.appointment.update({
         where: { id },
@@ -301,12 +285,14 @@ export class AppointmentService {
         appointmentDate: updatedAppointment.appointmentDate,
         date: updatedAppointment.appointmentDate,
         time: updatedAppointment.appointmentDate.toTimeString().slice(0, 5),
-        status: this.mapStatusToLegacy(updatedAppointment.status),
+        status: this.mapStatusForResponse(updatedAppointment.status),
         createdAt: updatedAppointment.createdAt,
         updatedAt: updatedAppointment.updatedAt
       };
     } catch (error: any) {
-      console.error('Erro ao atualizar status do agendamento:', error);
+      if (!(error instanceof InvalidAppointmentStatusError)) {
+        console.error('Erro ao atualizar status do agendamento:', error);
+      }
       if (error?.code === 'P2025') {
         return null; // Registro não encontrado
       }
