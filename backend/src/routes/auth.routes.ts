@@ -1,6 +1,7 @@
 // Em /src/routes/auth.routes.ts
 import { Router } from 'express';
 import authController from '../controllers/authController';
+import { authenticateToken } from '../middlewares/auth.middleware';
 
 const router = Router();
 
@@ -9,5 +10,7 @@ router.post('/login', authController.login);
 
 // Rota para renovar o access token usando o refresh token
 router.post('/refresh', authController.refresh);
+
+router.post('/logout', authenticateToken, authController.logout);
 
 export default router;

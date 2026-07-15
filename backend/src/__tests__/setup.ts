@@ -16,6 +16,7 @@ jest.mock('@prisma/client', () => {
       findUnique: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
+      updateMany: jest.fn(),
     },
     role: {
       upsert: jest.fn(),
