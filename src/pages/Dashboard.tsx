@@ -47,11 +47,6 @@ const Dashboard = () => {
     );
   };
   
-  // ============ NOSSOS ESPIÕES ============
-  console.log('DADOS REAIS DE AGENDAMENTOS:', upcomingAppointments);
-  console.log('DADOS REAIS DE ATIVIDADES:', recentActivities);
-  // ========================================
-
   return (
     <div className="bg-background p-6 rounded-xl space-y-6">
       {/* Cabeçalho */}
