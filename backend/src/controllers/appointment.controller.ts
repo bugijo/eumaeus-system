@@ -6,7 +6,7 @@ import { handleError, handleValidationError } from '../utils/errorHandler';
 
 // Schema de validação para atualização de status
 const updateStatusSchema = z.object({
-  status: z.enum(['SCHEDULED', 'CONFIRMED', 'COMPLETED', 'CANCELLED'])
+  status: z.string().trim().min(1)
 });
 
 export class AppointmentController {
