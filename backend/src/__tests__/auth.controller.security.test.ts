@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import authController, { shouldRejectProductionPassword } from '../controllers/authController';
+import { AuthenticatedRequest } from '../middlewares/auth.middleware';
 
 jest.mock('bcrypt', () => ({
   __esModule: true,
@@ -18,10 +19,12 @@ const createResponse = (): Response => {
   const response = {
     status: jest.fn(),
     json: jest.fn(),
+    send: jest.fn(),
   } as unknown as Response;
 
   (response.status as jest.Mock).mockReturnValue(response);
   (response.json as jest.Mock).mockReturnValue(response);
+  (response.send as jest.Mock).mockReturnValue(response);
   return response;
 };
 
@@ -36,6 +39,8 @@ describe('auth controller token security', () => {
     prisma.authProfile.findFirst.mockReset();
     prisma.authProfile.update.mockReset();
     prisma.authProfile.update.mockResolvedValue({});
+    prisma.authProfile.updateMany.mockReset();
+    prisma.authProfile.updateMany.mockResolvedValue({ count: 1 });
   });
 
   it('issues access and refresh tokens using HS256', async () => {
@@ -108,5 +113,64 @@ describe('auth controller token security', () => {
 
     expect(response.status).toHaveBeenCalledWith(401);
     expect(prisma.authProfile.findFirst).not.toHaveBeenCalled();
+  });
+
+  it('revokes a stored refresh token for the authenticated account', async () => {
+    const refreshToken = jwt.sign(
+      { authProfileId: 10 },
+      process.env.REFRESH_TOKEN_SECRET as string,
+      { algorithm: 'HS256', expiresIn: '1h' },
+    );
+    prisma.authProfile.findFirst.mockResolvedValue({
+      id: 10,
+      user: { id: 20 },
+      tutor: null,
+    });
+    const request = {
+      body: { refreshToken },
+      user: { id: 20, type: 'user', role: 'DONO' },
+    } as AuthenticatedRequest;
+    const response = createResponse();
+
+    await authController.logout(request, response);
+
+    expect(prisma.authProfile.updateMany).toHaveBeenCalledWith({
+      where: { id: 10, refreshToken },
+      data: { refreshToken: null },
+    });
+    expect(response.status).toHaveBeenCalledWith(204);
+  });
+
+  it('treats a nonexistent refresh token as an idempotent logout', async () => {
+    const request = {
+      body: { refreshToken: 'not-a-token' },
+      user: { id: 20, type: 'user', role: 'DONO' },
+    } as AuthenticatedRequest;
+    const response = createResponse();
+
+    await authController.logout(request, response);
+
+    expect(prisma.authProfile.findFirst).not.toHaveBeenCalled();
+    expect(prisma.authProfile.updateMany).not.toHaveBeenCalled();
+    expect(response.status).toHaveBeenCalledWith(204);
+  });
+
+  it('treats an already revoked refresh token as an idempotent logout', async () => {
+    const refreshToken = jwt.sign(
+      { authProfileId: 10 },
+      process.env.REFRESH_TOKEN_SECRET as string,
+      { algorithm: 'HS256', expiresIn: '1h' },
+    );
+    prisma.authProfile.findFirst.mockResolvedValue(null);
+    const request = {
+      body: { refreshToken },
+      user: { id: 20, type: 'user', role: 'DONO' },
+    } as AuthenticatedRequest;
+    const response = createResponse();
+
+    await authController.logout(request, response);
+
+    expect(prisma.authProfile.updateMany).not.toHaveBeenCalled();
+    expect(response.status).toHaveBeenCalledWith(204);
   });
 });

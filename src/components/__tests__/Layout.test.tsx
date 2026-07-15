@@ -4,10 +4,21 @@ import { BrowserRouter } from 'react-router-dom';
 import { vi } from 'vitest';
 import Layout from '../Layout';
 import { useAuthStore } from '../../stores/authStore';
+import { authApi } from '../../api/authApi';
+
+const { mockNavigate } = vi.hoisted(() => ({
+  mockNavigate: vi.fn()
+}));
 
 // Mock do store de autenticação
 vi.mock('../../stores/authStore', () => ({
   useAuthStore: vi.fn()
+}));
+
+vi.mock('../../api/authApi', () => ({
+  authApi: {
+    logout: vi.fn()
+  }
 }));
 
 // Mock do react-router-dom
@@ -16,7 +27,7 @@ vi.mock('react-router-dom', async () => {
   return {
     ...actual,
     useLocation: () => ({ pathname: '/' }),
-    useNavigate: () => vi.fn()
+    useNavigate: () => mockNavigate
   };
 });
 
@@ -28,6 +39,7 @@ const mockUser = {
 
 const mockAuthStore = {
   user: mockUser,
+  refreshToken: 'stored-refresh-token',
   logout: vi.fn()
 };
 
@@ -42,6 +54,7 @@ const renderLayout = (children = <div>Test Content</div>) => {
 describe('Layout Component', () => {
   beforeEach(() => {
     vi.mocked(useAuthStore).mockReturnValue(mockAuthStore);
+    vi.mocked(authApi.logout).mockResolvedValue();
     vi.clearAllMocks();
   });
 
@@ -90,13 +103,45 @@ describe('Layout Component', () => {
     expect(screen.getByText('Estoque')).toBeInTheDocument();
   });
 
-  it('deve chamar logout quando clicar no botão sair', () => {
+  it('deve revogar o token e limpar o estado local ao sair', async () => {
     renderLayout();
     
     const logoutButton = screen.getByLabelText(/sair do sistema/i);
     fireEvent.click(logoutButton);
     
-    expect(mockAuthStore.logout).toHaveBeenCalledTimes(1);
+    await waitFor(() => {
+      expect(authApi.logout).toHaveBeenCalledWith('stored-refresh-token');
+      expect(mockAuthStore.logout).toHaveBeenCalledTimes(1);
+      expect(mockNavigate).toHaveBeenCalledWith('/login');
+    });
+  });
+
+  it('deve limpar o estado local quando a revogação falha por erro de rede', async () => {
+    vi.mocked(authApi.logout).mockRejectedValueOnce(new Error('network error'));
+    renderLayout();
+
+    fireEvent.click(screen.getByLabelText(/sair do sistema/i));
+
+    await waitFor(() => {
+      expect(mockAuthStore.logout).toHaveBeenCalledTimes(1);
+      expect(mockNavigate).toHaveBeenCalledWith('/login');
+    });
+  });
+
+  it('deve evitar chamadas simultâneas de logout', async () => {
+    let finishLogout: (() => void) | undefined;
+    vi.mocked(authApi.logout).mockImplementationOnce(() => new Promise<void>((resolve) => {
+      finishLogout = resolve;
+    }));
+    renderLayout();
+
+    const logoutButton = screen.getByLabelText(/sair do sistema/i);
+    fireEvent.click(logoutButton);
+    fireEvent.click(logoutButton);
+
+    expect(authApi.logout).toHaveBeenCalledTimes(1);
+    finishLogout?.();
+    await waitFor(() => expect(mockAuthStore.logout).toHaveBeenCalledTimes(1));
   });
 
   it('deve ter estrutura semântica adequada para acessibilidade', () => {
@@ -166,6 +211,7 @@ describe('Layout Component', () => {
   it('deve renderizar com usuário padrão quando não há usuário logado', () => {
     vi.mocked(useAuthStore).mockReturnValue({
       user: null,
+      refreshToken: null,
       logout: vi.fn()
     });
     

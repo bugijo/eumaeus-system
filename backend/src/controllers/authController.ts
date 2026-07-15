@@ -4,6 +4,7 @@ import bcrypt from 'bcrypt';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import { config } from '../config/env';
 import { prisma } from '../lib/prisma';
+import { AuthenticatedRequest } from '../middlewares/auth.middleware';
 
 const isRefreshTokenPayload = (
   payload: string | JwtPayload,
@@ -169,5 +170,62 @@ export default {
       console.error('Erro no refresh.');
       return res.status(500).json({ message: 'Erro interno do servidor' });
     }
-  }
+  },
+
+  async logout(req: AuthenticatedRequest, res: Response): Promise<Response | void> {
+    const { refreshToken } = req.body ?? {};
+
+    if (typeof refreshToken !== 'string' || refreshToken.length === 0 || !req.user) {
+      return res.status(204).send();
+    }
+
+    let decoded: JwtPayload & { authProfileId: number };
+    try {
+      const verifiedPayload = jwt.verify(refreshToken, config.jwt.refreshSecret, {
+        algorithms: ['HS256'],
+      });
+
+      if (!isRefreshTokenPayload(verifiedPayload)) {
+        return res.status(204).send();
+      }
+
+      decoded = verifiedPayload;
+    } catch {
+      return res.status(204).send();
+    }
+
+    try {
+      const authProfile = await prisma.authProfile.findFirst({
+        where: {
+          id: decoded.authProfileId,
+          refreshToken,
+        },
+        include: {
+          user: true,
+          tutor: true,
+        },
+      });
+
+      const belongsToAuthenticatedAccount =
+        (req.user.type === 'user' && authProfile?.user?.id === req.user.id) ||
+        (req.user.type === 'tutor' && authProfile?.tutor?.id === req.user.id);
+
+      if (!authProfile || !belongsToAuthenticatedAccount) {
+        return res.status(204).send();
+      }
+
+      await prisma.authProfile.updateMany({
+        where: {
+          id: authProfile.id,
+          refreshToken,
+        },
+        data: { refreshToken: null },
+      });
+
+      return res.status(204).send();
+    } catch {
+      console.error('Erro ao revogar sessão.');
+      return res.status(500).json({ message: 'Erro interno do servidor' });
+    }
+  },
 };
