@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, 
@@ -22,6 +22,7 @@ import {
   Stethoscope
 } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
+import { authApi } from '../api/authApi';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -41,11 +42,24 @@ const Layout = ({ children }: LayoutProps) => {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
-  const { user, logout } = useAuthStore();
+  const { user, refreshToken, logout } = useAuthStore();
+  const logoutInProgress = useRef(false);
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
+  const handleLogout = async () => {
+    if (logoutInProgress.current) return;
+
+    logoutInProgress.current = true;
+    try {
+      if (refreshToken) {
+        await authApi.logout(refreshToken);
+      }
+    } catch {
+      // A sessão local sempre deve ser encerrada, mesmo se o backend estiver indisponível.
+    } finally {
+      logout();
+      navigate('/login');
+      logoutInProgress.current = false;
+    }
   };
 
   const navigationItems = [

@@ -1,4 +1,4 @@
-﻿import apiClient from './apiClient';
+import apiClient from './apiClient';
 
 interface LoginRequest {
   email: string;
@@ -75,6 +75,13 @@ export const authApi = {
       const message = error.response?.data?.message || 'Erro ao renovar token';
       throw new Error(message);
     }
+  },
+
+  async logout(refreshToken: string): Promise<void> {
+    await apiClient.post('/auth/logout', { refreshToken }, {
+      retry: 0,
+      timeout: 4000,
+    });
   },
 
   async validateToken(token: string): Promise<boolean> {

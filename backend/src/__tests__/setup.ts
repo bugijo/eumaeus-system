@@ -11,11 +11,13 @@ jest.mock('@prisma/client', () => {
     $connect: jest.fn(),
     $disconnect: jest.fn(),
     $queryRaw: jest.fn().mockResolvedValue([{ result: 1 }]),
+    $transaction: jest.fn(),
     authProfile: {
       findFirst: jest.fn(),
       findUnique: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
+      updateMany: jest.fn(),
     },
     role: {
       upsert: jest.fn(),
@@ -46,6 +48,15 @@ jest.mock('@prisma/client', () => {
       update: jest.fn(),
       delete: jest.fn(),
       count: jest.fn(),
+    },
+    medicalRecord: {
+      findMany: jest.fn(),
+      findUnique: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+    },
+    medicalRecordProduct: {
+      createMany: jest.fn(),
     },
     product: {
       findMany: jest.fn(),
