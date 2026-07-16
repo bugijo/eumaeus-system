@@ -158,6 +158,13 @@ export const FORMAT_CONFIG = {
   CURRENCY: 'BRL'
 } as const;
 
+// Contas a pagar ainda não possuem fonte persistida no backend.
+export const ACCOUNTS_PAYABLE_DATA_SOURCE = {
+  type: 'demo',
+  visible: false,
+  includedInRealTotals: false,
+} as const;
+
 // Cores do tema
 export const THEME_COLORS = {
   PRIMARY: '#3B82F6',

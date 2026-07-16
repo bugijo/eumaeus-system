@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,10 +13,10 @@ import {
   AlertTriangle,
   Eye,
   Check,
-  Edit,
   Loader2
 } from 'lucide-react';
 import { useFinancialStats, useInvoices } from '../api/invoiceApi';
+import { ACCOUNTS_PAYABLE_DATA_SOURCE } from '../constants';
 
 export default function Financeiro() {
   const [selectedPeriod, setSelectedPeriod] = useState('Este Mês');
@@ -35,42 +34,6 @@ export default function Financeiro() {
     status: invoice.status === 'PAID' ? 'Pago' : invoice.status === 'PENDING' ? 'Pendente' : 'Cancelado'
   })) || [];
 
-  // Dados de exemplo para contas a pagar (mantidos como estático por enquanto)
-  const contasPagar = [
-    {
-      id: 1,
-      fornecedor: "Aluguel da Clínica",
-      categoria: "Despesa Fixa",
-      dataVencimento: "2025-01-05",
-      valor: 2500.00,
-      status: "Pago"
-    },
-    {
-      id: 2,
-      fornecedor: "Fornecedor de Medicamentos",
-      categoria: "Estoque",
-      dataVencimento: "2025-01-15",
-      valor: 800.00,
-      status: "Pendente"
-    },
-    {
-      id: 3,
-      fornecedor: "Energia Elétrica",
-      categoria: "Despesa Fixa",
-      dataVencimento: "2025-01-10",
-      valor: 320.00,
-      status: "Pago"
-    },
-    {
-      id: 4,
-      fornecedor: "Material de Limpeza",
-      categoria: "Operacional",
-      dataVencimento: "2025-01-25",
-      valor: 150.00,
-      status: "Pendente"
-    }
-  ];
-  
   // Loading state
   if (statsLoading || invoicesLoading) {
     return (
@@ -157,10 +120,12 @@ export default function Financeiro() {
               <Plus className="w-4 h-4 mr-2" />
               Nova Receita
             </Button>
-            <Button variant="outline">
-              <Plus className="w-4 h-4 mr-2" />
-              Nova Despesa
-            </Button>
+            {ACCOUNTS_PAYABLE_DATA_SOURCE.visible && (
+              <Button variant="outline">
+                <Plus className="w-4 h-4 mr-2" />
+                Nova Despesa
+              </Button>
+            )}
           </div>
         </div>
       </div>
@@ -233,19 +198,21 @@ export default function Financeiro() {
         <CardContent className="p-0">
           <Tabs defaultValue="receber" className="w-full">
             <div className="border-b">
-              <TabsList className="grid w-full grid-cols-2 bg-transparent h-auto p-0">
+              <TabsList className={`grid w-full ${ACCOUNTS_PAYABLE_DATA_SOURCE.visible ? 'grid-cols-2' : 'grid-cols-1'} bg-transparent h-auto p-0`}>
                 <TabsTrigger 
                   value="receber" 
                   className="py-4 px-6 data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
                 >
                   Contas a Receber
                 </TabsTrigger>
-                <TabsTrigger 
-                  value="pagar"
-                  className="py-4 px-6 data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
-                >
-                  Contas a Pagar
-                </TabsTrigger>
+                {ACCOUNTS_PAYABLE_DATA_SOURCE.visible && (
+                  <TabsTrigger
+                    value="pagar"
+                    className="py-4 px-6 data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
+                  >
+                    Contas a Pagar
+                  </TabsTrigger>
+                )}
               </TabsList>
             </div>
 
@@ -285,45 +252,6 @@ export default function Financeiro() {
               </Table>
             </TabsContent>
 
-            <TabsContent value="pagar" className="p-6">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Fornecedor/Descrição</TableHead>
-                    <TableHead>Categoria</TableHead>
-                    <TableHead>Data de Vencimento</TableHead>
-                    <TableHead>Valor</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {contasPagar.map((conta) => (
-                    <TableRow key={conta.id}>
-                      <TableCell className="font-medium">{conta.fornecedor}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{conta.categoria}</Badge>
-                      </TableCell>
-                      <TableCell>{formatDate(conta.dataVencimento)}</TableCell>
-                      <TableCell className="font-semibold">{formatCurrency(conta.valor)}</TableCell>
-                      <TableCell>{getStatusBadge(conta.status)}</TableCell>
-                      <TableCell>
-                        <div className="flex space-x-2">
-                          {conta.status !== 'Pago' && (
-                            <Button size="sm" variant="outline">
-                              <Check className="w-4 h-4" />
-                            </Button>
-                          )}
-                          <Button size="sm" variant="outline">
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TabsContent>
           </Tabs>
         </CardContent>
       </Card>

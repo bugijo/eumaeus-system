@@ -16,19 +16,6 @@ const petWithRelations = Prisma.validator<Prisma.PetDefaultArgs>()({
 
 export type PetWithRelations = Prisma.PetGetPayload<typeof petWithRelations>;
 
-// Tipo para MedicalRecord com relacionamentos incluídos
-const medicalRecordWithRelations = Prisma.validator<Prisma.MedicalRecordDefaultArgs>()({
-  include: {
-    appointment: {
-      include: {
-        pet: { include: { tutor: true } },
-      },
-    },
-  },
-});
-
-export type MedicalRecordWithRelations = Prisma.MedicalRecordGetPayload<typeof medicalRecordWithRelations>;
-
 // Nota: Prescription não existe no schema atual, removido temporariamente
 
 // Tipo para Invoice com relacionamentos incluídos

@@ -1,18 +1,21 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, User } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 import { VirtualAppointmentList } from '@/components/ui/VirtualScrolling';
 import { AppointmentListSkeleton } from '@/components/ui/SkeletonLoader';
-import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import { formatDate, formatTime } from '@/lib/utils';
 
 interface Appointment {
   id: number;
-  appointmentDate: string;
-  appointmentTime: string;
+  appointmentDate?: string | null;
+  appointmentTime?: string;
   status: string;
   serviceType?: string;
   pet?: {
+    name: string;
+  };
+  tutor?: {
     name: string;
   };
 }
@@ -28,32 +31,6 @@ export const UpcomingAppointments: React.FC<UpcomingAppointmentsProps> = ({
   isLoading,
   onAppointmentClick
 }) => {
-  const getStatusBadgeClass = (status: string) => {
-    switch (status) {
-      case 'SCHEDULED':
-        return 'bg-blue-100 text-blue-800 hover:bg-blue-200';
-      case 'CONFIRMED':
-        return 'bg-green-100 text-green-800 hover:bg-green-200';
-      case 'COMPLETED':
-        return 'bg-gray-100 text-gray-800 hover:bg-gray-200';
-      default:
-        return 'bg-warning-muted text-warning-muted-foreground hover:bg-warning-muted';
-    }
-  };
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'SCHEDULED':
-        return 'Agendado';
-      case 'CONFIRMED':
-        return 'Confirmado';
-      case 'COMPLETED':
-        return 'Finalizado';
-      default:
-        return status;
-    }
-  };
-
   return (
     <Card className="bg-card rounded-lg shadow-md">
       <CardHeader className="p-4 border-b border-border">

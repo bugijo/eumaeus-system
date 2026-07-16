@@ -57,8 +57,6 @@ export const medicalRecordKeys = {
   all: ['medicalRecords'] as const,
   lists: () => [...medicalRecordKeys.all, 'list'] as const,
   list: (filters: Record<string, any>) => [...medicalRecordKeys.lists(), { filters }] as const,
-  details: () => [...medicalRecordKeys.all, 'detail'] as const,
-  detail: (id: number) => [...medicalRecordKeys.details(), id] as const,
   byPet: (petId: number) => [...medicalRecordKeys.all, 'byPet', petId] as const,
 };
 
@@ -78,18 +76,6 @@ export const productApi = {
 export const medicalRecordApi = {
   create: async (data: MedicalRecordFormData): Promise<MedicalRecord> => {
     const response = await apiClient.post('/records/direct', data);
-    return response.data;
-  },
-  getAll: async (): Promise<MedicalRecord[]> => {
-    const response = await apiClient.get('/records');
-    return response.data;
-  },
-  getById: async (id: number): Promise<MedicalRecord> => {
-    const response = await apiClient.get(`/records/${id}`);
-    return response.data;
-  },
-  getByPet: async (petId: number): Promise<MedicalRecord[]> => {
-    const response = await apiClient.get(`/records/pets/${petId}/records`);
     return response.data;
   }
 };
@@ -111,23 +97,6 @@ export function useMedicalRecords(petId: number) {
   });
 }
 
-// Hook para buscar um prontuário específico
-export function useMedicalRecord(id: number) {
-  return useQuery({
-    queryKey: ['medicalRecord', id],
-    queryFn: () => MedicalRecordService.getRecordById(id),
-    enabled: !!id,
-  });
-}
-
-// Hook para buscar todos os prontuários
-export function useAllMedicalRecords() {
-  return useQuery({
-    queryKey: ['medicalRecords', 'all'],
-    queryFn: () => MedicalRecordService.getAllRecords(),
-  });
-}
-
 // Hook para criar um novo prontuário
 export function useCreateMedicalRecord() {
   const queryClient = useQueryClient();
@@ -140,24 +109,6 @@ export function useCreateMedicalRecord() {
       queryClient.invalidateQueries({ queryKey: ['medicalRecords', newRecord.petId] });
       // Invalida todos os prontuários
       queryClient.invalidateQueries({ queryKey: ['medicalRecords', 'all'] });
-    },
-  });
-}
-
-// Hook para atualizar um prontuário existente
-export function useUpdateMedicalRecord() {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: ({ recordId, data }: { recordId: number; data: { notes: string; prescription: string } }) =>
-      MedicalRecordService.updateMedicalRecord(recordId, data),
-    onSuccess: (updatedRecord) => {
-      // Invalida e refetch os prontuários do pet
-      queryClient.invalidateQueries({ queryKey: ['medicalRecords', updatedRecord.petId] });
-      // Invalida todos os prontuários
-      queryClient.invalidateQueries({ queryKey: ['medicalRecords', 'all'] });
-      // Invalida o prontuário específico
-      queryClient.invalidateQueries({ queryKey: ['medicalRecord', updatedRecord.id] });
     },
   });
 }
@@ -230,23 +181,5 @@ export function useAllProducts() {
   return useQuery({
     queryKey: ['products', 'all'],
     queryFn: () => productApi.getAll(),
-  });
-}
-
-// Hook para buscar prontuários com as novas query keys
-export function useMedicalRecordsByPetNew(petId: number) {
-  return useQuery({
-    queryKey: medicalRecordKeys.byPet(petId),
-    queryFn: () => medicalRecordApi.getByPet(petId),
-    enabled: !!petId,
-  });
-}
-
-// Hook para buscar prontuário específico com as novas query keys
-export function useMedicalRecordNew(id: number) {
-  return useQuery({
-    queryKey: medicalRecordKeys.detail(id),
-    queryFn: () => medicalRecordApi.getById(id),
-    enabled: !!id,
   });
 }

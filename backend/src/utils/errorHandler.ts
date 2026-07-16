@@ -1,4 +1,5 @@
 import { Response } from 'express';
+import { InvalidAppointmentStatusError } from './appointmentStatus';
 
 export function handleError(error: unknown, res: Response, customMessage?: string): Response {
   if (error instanceof Error) {
@@ -16,6 +17,10 @@ export function handleError(error: unknown, res: Response, customMessage?: strin
 }
 
 export function handleValidationError(error: unknown, res: Response): Response {
+  if (error instanceof InvalidAppointmentStatusError) {
+    return res.status(400).json({ error: error.message });
+  }
+
   // Para erros de validação do Zod ou Prisma
   if (error instanceof Error && error.name === 'ZodError') {
     return res.status(400).json({ 

@@ -12,6 +12,7 @@ import { AppointmentFormModal } from '../components/forms/AppointmentForm';
 import { Button } from '../components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../components/ui/dialog';
 import { LegacyMedicalRecordForm } from '../components/forms/MedicalRecordForm';
+import { combineAppointmentDateTime } from '../lib/utils';
 import '../styles/calendar.css';
 
 export default function Agendamentos() {
@@ -30,15 +31,9 @@ export default function Agendamentos() {
 
   // Formata os dados para o formato que o FullCalendar entende
   const calendarEvents = useMemo(() => {
-    console.log('🔄 Recalculando eventos do calendário. Total de agendamentos:', appointments?.length);
     if (!appointments?.length) return [];
     
-    const events = appointments.map(apt => {
-      // Log para debug do agendamento ID 6 (ou outro que você está testando)
-      if (apt.id === 6) {
-        console.log('📋 Agendamento ID 6 - Status atual:', apt.status);
-      }
-      
+    const events = appointments.flatMap(apt => {
       // Mapeia o status do backend para as classes CSS
       const statusMap = {
         'SCHEDULED': 'scheduled',
@@ -52,11 +47,13 @@ export default function Agendamentos() {
       };
       
       const cssStatus = statusMap[apt.status] || 'scheduled';
+      const start = combineAppointmentDateTime(apt.date || apt.appointmentDate, apt.time);
+      if (!start) return [];
       
       const event = {
         id: apt.id.toString(),
         title: `${apt.serviceType} - Pet ID: ${apt.petId}`,
-        start: `${apt.date}T${apt.time}:00`,
+        start,
         className: `event-${cssStatus}`,
         extendedProps: {
           petId: apt.petId,
@@ -69,7 +66,7 @@ export default function Agendamentos() {
       
 
       
-      return event;
+      return [event];
     });
     
     return events;
@@ -96,7 +93,6 @@ export default function Agendamentos() {
         onSuccess: () => {
           // Este código SÓ roda DEPOIS que a API respondeu
           // e a invalidação padrão do hook já foi disparada.
-          console.log('✅ Mutação concluída, agora fechando o modal.');
           setIsStatusModalOpen(false);
           setSelectedAppointment(null);
         },

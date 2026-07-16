@@ -21,7 +21,6 @@ const Estoque = React.lazy(() => import("./pages/Estoque"));
 const Pets = React.lazy(() => import("./pages/Pets"));
 const LoginPage = React.lazy(() => import("./pages/LoginPage"));
 const NotFound = React.lazy(() => import("./pages/NotFound"));
-const MedicalHistoryPage = React.lazy(() => import("./pages/MedicalHistoryPage"));
 const TutorListPage = React.lazy(() => import("./pages/TutorListPage"));
 const TutorFormPage = React.lazy(() => import("./pages/TutorFormPage"));
 const TutorDetailPage = React.lazy(() => import("./pages/TutorDetailPage"));
@@ -153,9 +152,6 @@ function App() {
               } />
               <Route path="/pets" element={
                 <Layout><Pets /></Layout>
-              } />
-              <Route path="/prontuario/:petId" element={
-                <Layout><MedicalHistoryPage /></Layout>
               } />
               <Route path="/pets/:petId/prontuario" element={
                 <Layout><MedicalRecordPage /></Layout>

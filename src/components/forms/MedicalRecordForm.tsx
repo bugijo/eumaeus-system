@@ -264,10 +264,6 @@ export function MedicalRecordForm({ petId, petName, onSuccess, onCancel }: Medic
       // Remove observations do objeto pois já foi mapeado para notes
       delete formData.observations;
       
-      // 🕵️‍♂️ DEBUG VETDEV - PAYLOAD QUE O FRONTEND ESTÁ ENVIANDO:
-      console.log('🕵️‍♂️ DEBUG VETDEV - PAYLOAD QUE O FRONTEND ESTÁ ENVIANDO:', formData);
-      console.log('🔍 PRODUTOS TRANSFORMADOS:', transformedProducts);
-      
       await createMutation.mutateAsync(formData);
       
       // Reset form
