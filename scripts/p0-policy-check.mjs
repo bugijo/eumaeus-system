@@ -40,6 +40,8 @@ const providerTokenPatterns = [
   new RegExp(['sk', '-(?:proj-|svcacct-|live-)?', '[A-Za-z0-9_-]{24,}'].join('')),
 ];
 const sensitiveEnvironmentNamePattern = /(?:^|_)(?:PASSWORD|PASSWD|PWD|SECRET|TOKEN|API_KEY|PRIVATE_KEY|CREDENTIALS?)(?:_|$)/;
+const compressedArchivePattern = /\.(?:zip|7z|rar|tar|tar\.(?:gz|bz2|xz|zst)|tgz|tbz2|txz|gz|bz2|xz|zst)$/i;
+const databaseArchiveMarkerPattern = /(?:backup|dump|database|eumaeus|vetsystem|postgres|snapshot)/i;
 
 const grandfatheredLegacySql = new Set([
   'prisma/migrations/20250707145650_init_local_sqlite/migration.sql',
@@ -88,6 +90,10 @@ const prohibitedArtifactRule = (relativeFile, allowGrandfatheredLegacy = true) =
 
   if (/\.dir\.tar(?:\..+)?$/i.test(normalized)) {
     return 'database-export-archive';
+  }
+
+  if (compressedArchivePattern.test(basename) && databaseArchiveMarkerPattern.test(basename)) {
+    return 'compressed-database-export';
   }
 
   if (/\.sql(?:\..+)?$/i.test(normalized) && !isAllowedMigrationSql(normalized, allowGrandfatheredLegacy)) {
@@ -268,6 +274,11 @@ const runPolicySelfTest = () => {
     'backup.dump',
     'backup.backup.gz',
     'eumaeus-production.dir.tar.gz',
+    'backup.zip',
+    'dump.tar.gz',
+    'database.7z',
+    'Eumaeus_backup_v1.zip',
+    'vetsystem-snapshot.rar',
     'snapshot.sql',
     'snapshot.sql.gz',
     '.env.staging',
@@ -279,6 +290,7 @@ const runPolicySelfTest = () => {
     '.env.example',
     'backend/.env.production.example',
     'backend/prisma/migrations/20260716000000_example/migration.sql',
+    'frontend-assets.zip',
   ];
 
   if (rejectedPaths.some((candidate) => prohibitedArtifactRule(candidate) === null)) {
