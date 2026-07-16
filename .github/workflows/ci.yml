@@ -1,66 +1,176 @@
-name: CI - Continuous Integration
+name: CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop, codex/eumaeus-p0-stabilization]
   pull_request:
-    branches: [ main ]
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build-and-test:
+  security-policy:
+    name: P0 security policy
     runs-on: ubuntu-latest
+    timeout-minutes: 5
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '20'
-        cache: 'npm'
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
-    - name: Install Frontend Dependencies
-      run: npm install
+      - name: Scan current tree and enforce P0 invariants
+        run: npm run test:policy
 
-    # --- NOVA ETAPA DE TESTE COM CYPRESS ---
-    - name: Run Cypress E2E Tests
-      uses: cypress-io/github-action@v6
-      with:
-        # Diz ao Cypress para esperar o servidor iniciar antes de rodar
-        wait-on: 'http://localhost:3000'
-        # Timeout para aguardar o servidor iniciar (2 minutos)
-        wait-on-timeout: 120
-        # Comando para iniciar nosso servidor de dev para os testes
-        start: npm run dev
-        # Navegador que será usado para os testes
-        browser: chrome
-        # Usar configuração específica para CI
-        config-file: cypress.ci.config.js
-        # Executar testes específicos para CI
-         spec: |
-           cypress/e2e/ci-main-flow.cy.ts
-           cypress/e2e/teste-integracao-final.cy.ts
-      env:
-        # Passa a URL da nossa API de produção para o ambiente de teste do Cypress
-        VITE_API_URL: ${{ secrets.VITE_API_URL }}
-        # Configurações adicionais para CI
-         CI: true
-         NODE_ENV: test
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: security-policy
 
-    # Upload de artefatos em caso de falha
-    - name: Upload Cypress Screenshots
-      uses: actions/upload-artifact@v3
-      if: failure()
-      with:
-        name: cypress-screenshots
-        path: cypress/screenshots
-        retention-days: 7
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Upload Cypress Videos
-      uses: actions/upload-artifact@v3
-      if: failure()
-      with:
-        name: cypress-videos
-        path: cypress/videos
-        retention-days: 7
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+      - name: Test
+        run: npm test -- --run
+
+  backend:
+    name: Backend and PostgreSQL
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: security-policy
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      DATABASE_URL: postgresql://eumaeus_ci@localhost:5432/eumaeus_ci?schema=public
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: eumaeus_ci
+          POSTGRES_DB: eumaeus_ci
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U eumaeus_ci -d eumaeus_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Validate Prisma schema
+        run: npm run prisma:validate
+
+      - name: Generate Prisma Client
+        run: npm run prisma:generate
+
+      - name: Build
+        run: npm run build
+
+      - name: Test
+        run: npm test
+
+      - name: Apply migrations to empty PostgreSQL
+        run: npm run db:migrate
+
+      - name: Verify migration status
+        run: npm run db:status
+
+      - name: Verify migration idempotency
+        run: npm run db:migrate
+
+      - name: Verify schema drift
+        run: >-
+          npx prisma migrate diff
+          --from-schema-datasource prisma/schema.prisma
+          --to-schema-datamodel prisma/schema.prisma
+          --exit-code
+
+      - name: Verify clear failure with missing environment
+        shell: bash
+        run: |
+          set +e
+          env -u DATABASE_URL -u JWT_SECRET -u REFRESH_TOKEN_SECRET NODE_ENV=production \
+            node dist/src/bootstrap.js > "$RUNNER_TEMP/eumaeus-missing-env.log" 2>&1
+          status=$?
+          set -e
+
+          test "$status" -eq 1
+          grep -F 'DATABASE_URL' "$RUNNER_TEMP/eumaeus-missing-env.log"
+          grep -F 'JWT_SECRET' "$RUNNER_TEMP/eumaeus-missing-env.log"
+          grep -F 'REFRESH_TOKEN_SECRET' "$RUNNER_TEMP/eumaeus-missing-env.log"
+
+      - name: Verify valid startup and database health
+        shell: bash
+        run: |
+          access_secret="$(openssl rand -hex 32)"
+          refresh_secret="$(openssl rand -hex 32)"
+
+          JWT_SECRET="$access_secret" REFRESH_TOKEN_SECRET="$refresh_secret" \
+            NODE_ENV=production PORT=3333 \
+            npm start > "$RUNNER_TEMP/eumaeus-startup.log" 2>&1 &
+          server_pid=$!
+
+          cleanup() {
+            kill -TERM "$server_pid" >/dev/null 2>&1 || true
+            wait "$server_pid" >/dev/null 2>&1 || true
+          }
+          trap cleanup EXIT
+
+          for _ in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:3333/health \
+              > "$RUNNER_TEMP/eumaeus-health.json"; then
+              break
+            fi
+            sleep 1
+          done
+
+          curl --fail --show-error http://127.0.0.1:3333/health

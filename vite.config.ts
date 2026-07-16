@@ -1,4 +1,4 @@
-﻿import { defineConfig } from "vite";
+import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
@@ -18,9 +18,9 @@ export default defineConfig(({ mode }) => {
 
   return {
   server: {
-    host: "0.0.0.0", // Aceitar conexÃµes de qualquer endereÃ§o na rede
+    host: "0.0.0.0", // Aceitar conexões de qualquer endereço na rede
     port: 3000,
-    strictPort: true, // NÃ£o mudar automaticamente de porta
+    strictPort: true, // Não mudar automaticamente de porta
     hmr: {
       overlay: false // Desabilitar overlay de erros para melhor UX
     },
@@ -30,7 +30,7 @@ export default defineConfig(({ mode }) => {
   },
   // Cache configuration
   cacheDir: 'node_modules/.vite',
-  // Evitar recompilaÃ§Ãµes desnecessÃ¡rias
+  // Evitar recompilações desnecessárias
   define: {
     __DEV__: mode === 'development',
     global: 'globalThis'
@@ -54,7 +54,7 @@ export default defineConfig(({ mode }) => {
     },
   },
   build: {
-    // OtimizaÃ§Ãµes de performance
+    // Otimizações de performance
     target: 'esnext',
     minify: 'esbuild',
     sourcemap: false,
@@ -66,10 +66,10 @@ export default defineConfig(({ mode }) => {
         assetFileNames: 'assets/[ext]/[name]-[hash].[ext]'
       }
     },
-    // ConfiguraÃ§Ãµes de chunk size
+    // Configurações de chunk size
     chunkSizeWarningLimit: 1000
   },
-  // OtimizaÃ§Ãµes de desenvolvimento
+  // Otimizações de desenvolvimento
   optimizeDeps: {
     include: [
       'react', 
@@ -123,11 +123,18 @@ export default defineConfig(({ mode }) => {
     ],
     force: true
   },
-  // ConfiguraÃ§Ã£o do Vitest
+  // Configuração do Vitest
   test: {
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./src/setupTests.ts'],
+    include: ['src/**/*.{test,spec}.{js,jsx,ts,tsx}'],
+    exclude: [
+      'backend/**',
+      'cypress/**',
+      'dist/**',
+      'node_modules/**'
+    ],
     css: true,
     coverage: {
       provider: 'v8',
@@ -144,4 +151,3 @@ export default defineConfig(({ mode }) => {
   }
   };
 });
-

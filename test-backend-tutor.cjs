@@ -1,5 +1,9 @@
 const { PrismaClient } = require('./backend/node_modules/.prisma/client');
 const bcrypt = require('bcrypt');
+const { assertMutationScriptAllowed, requireScriptSecret } = require('./script-safety.cjs');
+
+assertMutationScriptAllowed('ALLOW_CREDENTIAL_DIAGNOSTICS');
+const submittedPassword = requireScriptSecret('TEST_TUTOR_PASSWORD');
 
 const prisma = new PrismaClient();
 
@@ -51,14 +55,14 @@ async function testBackendTutor() {
     }
     
     // Testar a senha
-    const testPassword = '123456';
-    const isPasswordValid = await bcrypt.compare(testPassword, authProfile.password);
+    const isPasswordValid = await bcrypt.compare(submittedPassword, authProfile.password);
     
-    console.log(`🔐 Teste de senha '${testPassword}': ${isPasswordValid ? '✅ Válida' : '❌ Inválida'}`);
-    console.log(`🔑 Hash armazenado: ${authProfile.password}`);
+    console.log(`🔐 Credencial fornecida via ambiente: ${isPasswordValid ? '✅ Válida' : '❌ Inválida'}`);
+    console.log('🔑 Hash armazenado: presente; valor não exibido');
     
-  } catch (error) {
-    console.error('❌ Erro:', error);
+  } catch {
+    console.error('❌ Falha no diagnóstico do tutor.');
+    process.exitCode = 1;
   } finally {
     await prisma.$disconnect();
   }

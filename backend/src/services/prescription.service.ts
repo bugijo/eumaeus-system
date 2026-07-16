@@ -1,7 +1,4 @@
-import { PrismaClient } from '@prisma/client';
 import { CreatePrescriptionRequest, UpdatePrescriptionRequest, PrescriptionResponse } from '../models/prescription.model';
-
-const prisma = new PrismaClient();
 
 // NOTA: Prescription model não existe no schema atual - temporariamente desabilitado
 export class PrescriptionService {

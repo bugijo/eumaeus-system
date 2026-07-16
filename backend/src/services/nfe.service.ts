@@ -1,5 +1,28 @@
 import axios, { AxiosInstance } from 'axios';
 
+export const sanitizeAxiosError = (error: unknown): Record<string, string | number> => {
+  if (!axios.isAxiosError(error)) {
+    return { kind: 'unexpected_error' };
+  }
+
+  const sanitized: Record<string, string | number> = { kind: 'axios_error' };
+  if (typeof error.code === 'string') {
+    sanitized.code = error.code;
+  }
+  if (typeof error.response?.status === 'number') {
+    sanitized.status = error.response.status;
+  }
+  return sanitized;
+};
+
+export const logNfeError = (
+  message: string,
+  error: unknown,
+  context: Record<string, string | number> = {},
+): void => {
+  console.error(message, { ...context, ...sanitizeAxiosError(error) });
+};
+
 // Tipos para NFS-e
 export interface NFSeData {
   prestador: {
@@ -103,7 +126,7 @@ export class NFeService {
         return config;
       },
       (error) => {
-        console.error('Erro na requisição para Focus NFe', error);
+        logNfeError('Erro na requisição para Focus NFe', error);
         return Promise.reject(error);
       }
     );
@@ -117,11 +140,7 @@ export class NFeService {
         return response;
       },
       (error) => {
-        console.error('Erro na resposta da Focus NFe', {
-          status: error.response?.status,
-          data: error.response?.data,
-          url: error.config?.url
-        });
+        logNfeError('Erro na resposta da Focus NFe', error);
         return Promise.reject(error);
       }
     );
@@ -154,14 +173,10 @@ export class NFeService {
       });
 
       return nfseResponse;
-    } catch (error: any) {
-      console.error('Erro ao emitir NFS-e', { 
-        referencia, 
-        error: error.message,
-        response: error.response?.data 
-      });
+    } catch (error: unknown) {
+      logNfeError('Erro ao emitir NFS-e', error, { referencia });
       
-      throw new Error(`Erro ao emitir NFS-e: ${error.response?.data?.message || error.message}`);
+      throw new Error('Erro ao emitir NFS-e');
     }
   }
 
@@ -190,13 +205,10 @@ export class NFeService {
       });
 
       return consultaResponse;
-    } catch (error: any) {
-      console.error('Erro ao consultar NFS-e', { 
-        referencia, 
-        error: error.message 
-      });
+    } catch (error: unknown) {
+      logNfeError('Erro ao consultar NFS-e', error, { referencia });
       
-      throw new Error(`Erro ao consultar NFS-e: ${error.response?.data?.message || error.message}`);
+      throw new Error('Erro ao consultar NFS-e');
     }
   }
 
@@ -212,13 +224,10 @@ export class NFeService {
       });
 
       console.log('NFS-e cancelada com sucesso', { referencia });
-    } catch (error: any) {
-      console.error('Erro ao cancelar NFS-e', { 
-        referencia, 
-        error: error.message 
-      });
+    } catch (error: unknown) {
+      logNfeError('Erro ao cancelar NFS-e', error, { referencia });
       
-      throw new Error(`Erro ao cancelar NFS-e: ${error.response?.data?.message || error.message}`);
+      throw new Error('Erro ao cancelar NFS-e');
     }
   }
 
@@ -236,13 +245,10 @@ export class NFeService {
       console.log('PDF da NFS-e baixado com sucesso', { referencia });
       
       return Buffer.from(response.data);
-    } catch (error: any) {
-      console.error('Erro ao baixar PDF da NFS-e', { 
-        referencia, 
-        error: error.message 
-      });
+    } catch (error: unknown) {
+      logNfeError('Erro ao baixar PDF da NFS-e', error, { referencia });
       
-      throw new Error(`Erro ao baixar PDF da NFS-e: ${error.response?.data?.message || error.message}`);
+      throw new Error('Erro ao baixar PDF da NFS-e');
     }
   }
 
@@ -258,13 +264,10 @@ export class NFeService {
       console.log('XML da NFS-e baixado com sucesso', { referencia });
       
       return response.data;
-    } catch (error: any) {
-      console.error('Erro ao baixar XML da NFS-e', { 
-        referencia, 
-        error: error.message 
-      });
+    } catch (error: unknown) {
+      logNfeError('Erro ao baixar XML da NFS-e', error, { referencia });
       
-      throw new Error(`Erro ao baixar XML da NFS-e: ${error.response?.data?.message || error.message}`);
+      throw new Error('Erro ao baixar XML da NFS-e');
     }
   }
 
@@ -292,7 +295,7 @@ export class NFeService {
       await this.api.get('/v2/empresas');
       return true;
     } catch (error) {
-      console.error('Configuração da Focus NFe inválida', error);
+      logNfeError('Configuração da Focus NFe inválida', error);
       return false;
     }
   }

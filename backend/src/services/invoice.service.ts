@@ -1,7 +1,5 @@
-import { PrismaClient } from '@prisma/client';
 import { InvoiceWithRelations } from '../types';
-
-const prisma = new PrismaClient();
+import { prisma } from '../lib/prisma';
 
 export class InvoiceService {
   // Criar fatura a partir de um agendamento

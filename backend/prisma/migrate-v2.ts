@@ -3,7 +3,10 @@
 
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
+import { assertMutationScriptAllowed, requireScriptSecret } from '../src/config/scriptSafety';
 
+assertMutationScriptAllowed('ALLOW_LEGACY_AUTH_MIGRATION');
+const migrationTemporaryPassword = requireScriptSecret('MIGRATE_V2_TEMP_PASSWORD');
 const prisma = new PrismaClient();
 
 async function main() {
@@ -39,8 +42,7 @@ async function main() {
       
       // Criar novo AuthProfile com email baseado no nome do usuário
       const email = `${user.name.toLowerCase().replace(/\s+/g, '.')}@eumaeus.com`;
-      const tempPassword = 'mudar123'; // Senha temporária
-      const hashedPassword = await bcrypt.hash(tempPassword, 10);
+      const hashedPassword = await bcrypt.hash(migrationTemporaryPassword, 10);
       
       try {
         const authProfile = await prisma.authProfile.create({
@@ -98,8 +100,8 @@ async function main() {
       console.log('📋 Resumo da migração:');
       console.log(`   - ${usersWithoutValidAuth.length} usuários migrados`);
       console.log('   - Todos os usuários agora possuem AuthProfile válido');
-      console.log('⚠️  IMPORTANTE: Usuários migrados têm senha temporária "mudar123"');
-      console.log('   - Solicite que alterem a senha no primeiro login');
+      console.log('⚠️  IMPORTANTE: a senha temporária foi fornecida via MIGRATE_V2_TEMP_PASSWORD e não será exibida');
+      console.log('   - Solicite que os usuários alterem a senha no primeiro login');
     } else {
       console.error(`❌ Erro: ${stillWithoutAuth.length} usuários ainda sem AuthProfile`);
       stillWithoutAuth.forEach(user => {

@@ -1,8 +1,9 @@
 // Service Worker v2 - Cache inteligente e sincronização avançada
 const CACHE_NAME = 'eumaeus-v2.0';
-const API_CACHE_NAME = 'eumaeus-api-v2.0';
 const STATIC_CACHE_NAME = 'eumaeus-static-v2.0';
 const DYNAMIC_CACHE_NAME = 'eumaeus-dynamic-v2.0';
+const EUMAEUS_CACHE_PREFIX = 'eumaeus-';
+const LEGACY_API_CACHE_PATTERN = /^eumaeus-api(?:-|$)/;
 
 // Estratégias de cache
 const CACHE_STRATEGIES = {
@@ -16,6 +17,10 @@ const CACHE_STRATEGIES = {
 // Configuração de rotas e estratégias
 const ROUTE_STRATEGIES = [
   {
+    pattern: /^\/api(?:\/|$)/,
+    strategy: CACHE_STRATEGIES.NETWORK_ONLY
+  },
+  {
     pattern: /\.(js|css|woff2?|ttf|eot)$/,
     strategy: CACHE_STRATEGIES.CACHE_FIRST,
     cacheName: STATIC_CACHE_NAME,
@@ -27,24 +32,6 @@ const ROUTE_STRATEGIES = [
     cacheName: STATIC_CACHE_NAME,
     maxAge: 30 * 24 * 60 * 60 * 1000 // 30 dias
   },
-  {
-    pattern: /\/api\/dashboard\//,
-    strategy: CACHE_STRATEGIES.STALE_WHILE_REVALIDATE,
-    cacheName: API_CACHE_NAME,
-    maxAge: 5 * 60 * 1000 // 5 minutos
-  },
-  {
-    pattern: /\/api\/(tutors|pets|appointments)$/,
-    strategy: CACHE_STRATEGIES.NETWORK_FIRST,
-    cacheName: API_CACHE_NAME,
-    maxAge: 2 * 60 * 1000 // 2 minutos
-  },
-  {
-    pattern: /\/api\//,
-    strategy: CACHE_STRATEGIES.NETWORK_FIRST,
-    cacheName: API_CACHE_NAME,
-    maxAge: 1 * 60 * 1000 // 1 minuto
-  }
 ];
 
 // URLs para pré-cache
@@ -271,14 +258,27 @@ function isExpired(response, maxAge) {
 // Limpar caches antigos
 async function cleanOldCaches() {
   const cacheNames = await caches.keys();
-  const validCaches = [CACHE_NAME, API_CACHE_NAME, STATIC_CACHE_NAME, DYNAMIC_CACHE_NAME];
+  const validCaches = [CACHE_NAME, STATIC_CACHE_NAME, DYNAMIC_CACHE_NAME];
   
   return Promise.all(
-    cacheNames.map(cacheName => {
-      if (!validCaches.includes(cacheName)) {
+    cacheNames.map(async cacheName => {
+      if (!cacheName.startsWith(EUMAEUS_CACHE_PREFIX)) {
+        return;
+      }
+
+      if (LEGACY_API_CACHE_PATTERN.test(cacheName) || !validCaches.includes(cacheName)) {
         console.log('[SW v2] Deleting old cache:', cacheName);
         return caches.delete(cacheName);
       }
+
+      const cache = await caches.open(cacheName);
+      const requests = await cache.keys();
+      const apiRequests = requests.filter(request => {
+        const pathname = new URL(request.url).pathname;
+        return /^\/api(?:\/|$)/.test(pathname);
+      });
+
+      return Promise.all(apiRequests.map(request => cache.delete(request)));
     })
   );
 }
@@ -344,7 +344,7 @@ function initializeMonitoring() {
 
 // Limpar cache expirado
 async function cleanExpiredCache() {
-  const cacheNames = [API_CACHE_NAME, DYNAMIC_CACHE_NAME];
+  const cacheNames = [DYNAMIC_CACHE_NAME];
   
   for (const cacheName of cacheNames) {
     try {

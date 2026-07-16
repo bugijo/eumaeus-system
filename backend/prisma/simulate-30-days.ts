@@ -1,10 +1,12 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
+import { assertMutationScriptAllowed, requireScriptSecret } from '../src/config/scriptSafety';
 
+assertMutationScriptAllowed('ALLOW_TEST_DATA_MUTATION');
+const simulationPassword = requireScriptSecret('SIM_DEFAULT_PASSWORD');
 const prisma = new PrismaClient();
 
 const SIM_DAYS = Number(process.env.SIM_DAYS || 30);
-const DEFAULT_PASSWORD = process.env.SIM_DEFAULT_PASSWORD || '123456';
 
 type StaffUserSeed = {
   email: string;
@@ -99,7 +101,7 @@ async function ensureStaffUsers() {
 
     let authProfileId = existingAuth?.id;
     if (!existingAuth) {
-      const password = await bcrypt.hash(DEFAULT_PASSWORD, 10);
+      const password = await bcrypt.hash(simulationPassword, 10);
       const created = await prisma.authProfile.create({
         data: {
           email: staff.email,
@@ -357,7 +359,7 @@ async function main() {
   console.log(`Aplicacoes de vacina: ${counters.vaccines}`);
   console.log(`Faturas geradas: ${counters.invoices}`);
   console.log(`Receita total simulada: R$ ${counters.revenue.toFixed(2)}`);
-  console.log('Logins para demonstracao (senha padrao 123456):');
+  console.log('Logins para demonstracao configurados via SIM_DEFAULT_PASSWORD; valor não exibido:');
   for (const user of staffUsers) {
     console.log(`- ${user.email} (${user.roleName})`);
   }

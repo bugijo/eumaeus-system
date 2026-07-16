@@ -1,7 +1,5 @@
-import { PrismaClient } from '@prisma/client';
 import { Appointment } from '../models/appointment.model';
-
-const prisma = new PrismaClient();
+import { prisma } from '../lib/prisma';
 
 export class AppointmentService {
   static async getAllAppointments(): Promise<Appointment[]> {

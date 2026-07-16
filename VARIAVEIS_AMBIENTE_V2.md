@@ -131,7 +131,7 @@ VITE_NODE_ENV=production
 DATABASE_URL="file:./dev.db"
 
 # JWT para desenvolvimento
-JWT_SECRET="desenvolvimento_jwt_secret_nao_usar_em_producao"
+JWT_SECRET="<generate-a-random-development-secret>"
 
 # Email de teste (opcional)
 EMAIL_USER=""

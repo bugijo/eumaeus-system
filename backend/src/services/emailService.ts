@@ -27,22 +27,36 @@ export interface VaccineReminderData {
 }
 
 class EmailService {
-  private transporter: nodemailer.Transporter;
+  private transporter: nodemailer.Transporter | undefined;
+  private from: string;
 
-  constructor() {
+  constructor(emailConfig = config.email) {
+    this.from = emailConfig.from;
+
+    if (!emailConfig.user || !emailConfig.pass) {
+      return;
+    }
+
     this.transporter = nodemailer.createTransport({
-      service: 'gmail',
+      host: emailConfig.host,
+      port: emailConfig.port,
+      secure: emailConfig.secure,
       auth: {
-        user: process.env.EMAIL_USER || 'seu-email@gmail.com',
-        pass: process.env.EMAIL_PASSWORD || 'sua-senha-de-app'
-      }
+        user: emailConfig.user,
+        pass: emailConfig.pass,
+      },
     });
   }
 
   async sendEmail(options: EmailOptions): Promise<boolean> {
+    if (!this.transporter) {
+      console.warn('Envio de e-mail desabilitado: credenciais SMTP não configuradas.');
+      return false;
+    }
+
     try {
       const mailOptions = {
-        from: process.env.EMAIL_USER || 'Eumaeus System <seu-email@gmail.com>',
+        from: this.from,
         to: options.to,
         subject: options.subject,
         html: options.html,
@@ -52,8 +66,8 @@ class EmailService {
       const result = await this.transporter.sendMail(mailOptions);
       console.log('📧 E-mail enviado com sucesso:', result.messageId);
       return true;
-    } catch (error) {
-      console.error('❌ Erro ao enviar e-mail:', error);
+    } catch {
+      console.error('❌ Erro ao enviar e-mail.');
       return false;
     }
   }
@@ -193,12 +207,16 @@ class EmailService {
   }
 
   async testConnection(): Promise<boolean> {
+    if (!this.transporter) {
+      return false;
+    }
+
     try {
       await this.transporter.verify();
       console.log('✅ Conexão com servidor de e-mail verificada com sucesso!');
       return true;
-    } catch (error) {
-      console.error('❌ Erro na conexão com servidor de e-mail:', error);
+    } catch {
+      console.error('❌ Erro na conexão com servidor de e-mail.');
       return false;
     }
   }

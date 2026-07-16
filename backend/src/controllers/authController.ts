@@ -1,17 +1,38 @@
 // Em /src/controllers/authController.ts
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
+import jwt, { JwtPayload } from 'jsonwebtoken';
+import { config } from '../config/env';
+import { prisma } from '../lib/prisma';
 
-const prisma = new PrismaClient();
-const JWT_SECRET = process.env.JWT_SECRET || 'SEGREDO_SUPER_SECRETO';
-const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET || 'REFRESH_SEGREDO_SUPER_SECRETO';
+const isRefreshTokenPayload = (
+  payload: string | JwtPayload,
+): payload is JwtPayload & { authProfileId: number } => (
+  typeof payload !== 'string' &&
+  Number.isInteger(payload.authProfileId) &&
+  payload.authProfileId > 0
+);
+
+export const shouldRejectProductionPassword = (
+  password: unknown,
+  environment = config.app.env,
+): boolean => (
+  environment.trim().toLowerCase() === 'production' &&
+  (typeof password !== 'string' || password.length < 12)
+);
 
 export default {
   async login(req: Request, res: Response): Promise<Response | void> {
     try {
       const { email, password } = req.body;
+
+      if (
+        typeof email !== 'string' ||
+        typeof password !== 'string' ||
+        shouldRejectProductionPassword(password)
+      ) {
+        return res.status(401).json({ message: 'Credenciais inválidas' });
+      }
 
       // PASSO 1: Buscar o AuthProfile e TUDO que precisamos de uma só vez com 'include'.
       // Esta é a forma mais segura de garantir que o TypeScript entenda os dados.
@@ -52,8 +73,14 @@ export default {
         return res.status(403).json({ message: 'Acesso negado. Perfil não associado a uma conta ativa.' });
       }
 
-      const accessToken = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: '15m' });
-      const refreshToken = jwt.sign({ authProfileId: authProfile.id }, REFRESH_TOKEN_SECRET, { expiresIn: '30d' });
+      const accessToken = jwt.sign(tokenPayload, config.jwt.secret, {
+        algorithm: 'HS256',
+        expiresIn: config.jwt.accessExpiresIn,
+      });
+      const refreshToken = jwt.sign({ authProfileId: authProfile.id }, config.jwt.refreshSecret, {
+        algorithm: 'HS256',
+        expiresIn: config.jwt.refreshExpiresIn,
+      });
 
       await prisma.authProfile.update({
         where: { id: authProfile.id },
@@ -62,8 +89,8 @@ export default {
 
       return res.status(200).json({ accessToken, refreshToken, user: userPayload });
 
-    } catch (error) {
-      console.error("Erro no login:", error);
+    } catch {
+      console.error('Erro no login.');
       return res.status(500).json({ message: "Erro interno do servidor" });
     }
   },
@@ -77,10 +104,18 @@ export default {
       }
 
       // 1. Verificar se o refresh token é válido
-      let decoded;
+      let decoded: JwtPayload & { authProfileId: number };
       try {
-        decoded = jwt.verify(refreshToken, REFRESH_TOKEN_SECRET) as { authProfileId: number };
-      } catch (error) {
+        const verifiedPayload = jwt.verify(refreshToken, config.jwt.refreshSecret, {
+          algorithms: ['HS256'],
+        });
+
+        if (!isRefreshTokenPayload(verifiedPayload)) {
+          return res.status(401).json({ message: 'Refresh token inválido' });
+        }
+
+        decoded = verifiedPayload;
+      } catch {
         return res.status(401).json({ message: 'Refresh token inválido' });
       }
 
@@ -109,8 +144,14 @@ export default {
       const userPayload = { id: authProfile.user.id, name: authProfile.user.name, email: authProfile.email, role: authProfile.user.role.name, type: 'user' };
 
       // 5. Gerar novos tokens
-      const newAccessToken = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: '15m' });
-      const newRefreshToken = jwt.sign({ authProfileId: authProfile.id }, REFRESH_TOKEN_SECRET, { expiresIn: '30d' });
+      const newAccessToken = jwt.sign(tokenPayload, config.jwt.secret, {
+        algorithm: 'HS256',
+        expiresIn: config.jwt.accessExpiresIn,
+      });
+      const newRefreshToken = jwt.sign({ authProfileId: authProfile.id }, config.jwt.refreshSecret, {
+        algorithm: 'HS256',
+        expiresIn: config.jwt.refreshExpiresIn,
+      });
 
       // 6. Atualizar o refresh token no banco
       await prisma.authProfile.update({
@@ -124,8 +165,8 @@ export default {
         refreshToken: newRefreshToken,
         user: userPayload,
       });
-    } catch (error) {
-      console.error('Erro no refresh:', error);
+    } catch {
+      console.error('Erro no refresh.');
       return res.status(500).json({ message: 'Erro interno do servidor' });
     }
   }

@@ -1,5 +1,11 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
+import scriptSafety from '../script-safety.cjs';
+
+const { assertMutationScriptAllowed, requireScriptSecret } = scriptSafety;
+
+assertMutationScriptAllowed('ALLOW_TEST_DATA_MUTATION');
+const staffPassword = requireScriptSecret('SEED_STAFF_PASSWORD');
 
 const prisma = new PrismaClient();
 
@@ -136,7 +142,7 @@ async function main() {
 
   // 4. Criar usuários de teste com nova estrutura AuthProfile
   console.log('👤 Criando usuários de teste...');
-  const hashedPassword = await bcrypt.hash('123456', 10);
+  const hashedPassword = await bcrypt.hash(staffPassword, 10);
   
   // Definir usuários de teste
   const testUsers = [
@@ -194,11 +200,7 @@ async function main() {
   }
 
   console.log('✅ Seed concluído com sucesso!');
-  console.log('\n📧 Usuários criados:');
-  console.log('- admin@eumaeus.com (senha: 123456) - DONO');
-  console.log('- veterinario@eumaeus.com (senha: 123456) - VETERINARIO');
-  console.log('- funcionario@eumaeus.com (senha: 123456) - FUNCIONARIO');
-  console.log('- financeiro@eumaeus.com (senha: 123456) - FINANCEIRO');
+  console.log('Credenciais de seed configuradas via SEED_STAFF_PASSWORD; valor não exibido.');
 }
 
 main()

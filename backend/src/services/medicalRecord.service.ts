@@ -1,8 +1,6 @@
 import { MedicalRecord, CreateMedicalRecordRequest } from '../models/medicalRecord.model';
-import { PrismaClient } from '@prisma/client';
 import { MedicalRecordWithRelations } from '../types';
-
-const prisma = new PrismaClient();
+import { prisma } from '../lib/prisma';
 
 export class MedicalRecordService {
 

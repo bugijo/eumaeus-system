@@ -1,7 +1,5 @@
-﻿import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { Request, Response } from 'express';
+import { prisma } from '../lib/prisma';
 
 // Cache simples para estatisticas (5 minutos)
 let statsCache: any = null;

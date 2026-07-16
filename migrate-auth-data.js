@@ -1,5 +1,10 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
+import scriptSafety from './script-safety.cjs';
+
+const { assertMutationScriptAllowed, requireScriptSecret } = scriptSafety;
+assertMutationScriptAllowed('ALLOW_LEGACY_AUTH_MIGRATION');
+const migrationTemporaryPassword = requireScriptSecret('MIGRATE_AUTH_TEMP_PASSWORD');
 
 const prisma = new PrismaClient();
 
@@ -27,8 +32,7 @@ async function migrateAuthData() {
     for (const user of usersWithoutAuth) {
       // Gerar email temporário se não existir
       const email = `user${user.id}@clinic.local`;
-      const password = 'temp123'; // Senha temporária
-      const hashedPassword = await bcrypt.hash(password, 10);
+      const hashedPassword = await bcrypt.hash(migrationTemporaryPassword, 10);
 
       console.log(`👤 Criando AuthProfile para usuário: ${user.name}`);
 
@@ -60,7 +64,7 @@ async function migrateAuthData() {
       const adminAuthProfile = await prisma.authProfile.create({
         data: {
           email: 'admin@clinic.local',
-          password: await bcrypt.hash('admin123', 10)
+          password: await bcrypt.hash(migrationTemporaryPassword, 10)
         }
       });
 
@@ -72,7 +76,7 @@ async function migrateAuthData() {
         }
       });
 
-      console.log('✅ Usuário admin criado com email: admin@clinic.local e senha: admin123');
+      console.log('✅ Usuário admin criado; credencial temporária não exibida.');
     }
 
     // Criar um tutor de exemplo com AuthProfile
@@ -86,7 +90,7 @@ async function migrateAuthData() {
       const tutorAuthProfile = await prisma.authProfile.create({
         data: {
           email: 'tutor@example.com',
-          password: await bcrypt.hash('tutor123', 10)
+          password: await bcrypt.hash(migrationTemporaryPassword, 10)
         }
       });
 
@@ -100,16 +104,15 @@ async function migrateAuthData() {
         }
       });
 
-      console.log('✅ Tutor de exemplo criado com email: tutor@example.com e senha: tutor123');
+      console.log('✅ Tutor de exemplo criado; credencial temporária não exibida.');
     }
 
     console.log('🎉 Migração de dados concluída com sucesso!');
-    console.log('\n📋 Credenciais de teste:');
-    console.log('   Admin: admin@clinic.local / admin123');
-    console.log('   Tutor: tutor@example.com / tutor123');
+    console.log('Credencial temporária fornecida via MIGRATE_AUTH_TEMP_PASSWORD; valor não exibido.');
 
   } catch (error) {
-    console.error('❌ Erro durante a migração:', error);
+    console.error('❌ Erro durante a migração de autenticação.');
+    process.exitCode = 1;
   } finally {
     await prisma.$disconnect();
   }

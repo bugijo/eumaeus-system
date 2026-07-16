@@ -1,7 +1,6 @@
-﻿import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'SEGREDO_SUPER_SECRETO';
+import { Request, Response, NextFunction } from 'express';
+import jwt, { JwtPayload } from 'jsonwebtoken';
+import { config } from '../config/env';
 
 export const ROLE = {
   DONO: 'DONO',
@@ -23,25 +22,41 @@ interface AuthenticatedRequest extends Request {
   };
 }
 
+type AccessTokenPayload = JwtPayload & NonNullable<AuthenticatedRequest['user']>;
+
+const isAccessTokenPayload = (payload: string | JwtPayload): payload is AccessTokenPayload => (
+  typeof payload !== 'string' &&
+  Number.isInteger(payload.id) &&
+  payload.id > 0 &&
+  (payload.type === 'user' || payload.type === 'tutor') &&
+  (payload.role === undefined || typeof payload.role === 'string')
+);
+
 export const authenticateToken = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
-  if (!token) {
+  if (!authHeader) {
     return res.status(401).json({ message: 'Token de acesso requerido' });
   }
 
+  const [scheme, token, ...extraParts] = authHeader.trim().split(/\s+/);
+  if (scheme?.toLowerCase() !== 'bearer' || !token || extraParts.length > 0) {
+    return res.status(401).json({ message: 'Token inválido' });
+  }
+
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as {
-      id: number;
-      type: 'user' | 'tutor';
-      role?: string;
-    };
+    const decoded = jwt.verify(token, config.jwt.secret, {
+      algorithms: ['HS256'],
+    });
+
+    if (!isAccessTokenPayload(decoded)) {
+      return res.status(401).json({ message: 'Token inválido' });
+    }
 
     req.user = decoded;
     return next();
   } catch (_error) {
-    return res.status(403).json({ message: 'Token inválido' });
+    return res.status(401).json({ message: 'Token inválido' });
   }
 };
 
