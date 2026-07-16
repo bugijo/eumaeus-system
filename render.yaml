@@ -1,32 +1,29 @@
-databases:
-  - name: Eumaeus-db
-    plan: free
-
+# Production-only Blueprint. Staging is intentionally managed as separate
+# resources and must never be attached to this file.
+#
+# IMPORTANT: Render Blueprint Auto Sync must remain disabled in the dashboard.
+# Synchronize this file manually only after approving the paid plan and creating
+# the production PostgreSQL database outside the Blueprint.
 services:
   - type: web
     name: Eumaeus-backend-oregon
     runtime: node
-    plan: free
+    plan: starter
+    region: oregon
     rootDir: backend
-    buildCommand: |
-      set -e
-      npm ci --include=dev
-      npm run prisma:generate
-      npm run build
-      npm run db:migrate
+    buildCommand: npm ci --include=dev && npm run prisma:generate && npm run build
+    preDeployCommand: npm run db:migrate
     startCommand: npm start
     healthCheckPath: /health
-    # Keep deployment manual until the existing database is backed up, cloned,
-    # and its Prisma baseline is verified. See docs/P0_STABILIZATION_AUDIT.md.
     autoDeployTrigger: off
     envVars:
       - key: DATABASE_URL
-        fromDatabase:
-          name: Eumaeus-db
-          property: connectionString
+        sync: false
       - key: JWT_SECRET
-        generateValue: true
+        sync: false
       - key: REFRESH_TOKEN_SECRET
-        generateValue: true
+        sync: false
       - key: NODE_ENV
         value: production
+      - key: ALLOW_TEST_DATA_MUTATION
+        value: "false"

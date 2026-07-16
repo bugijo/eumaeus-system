@@ -1,3 +1,8 @@
+# DOCUMENTO LEGADO — NÃO USAR PARA PRODUÇÃO
+
+Este arquivo orienta troca manual de URLs e retorno a SQLite, prática que não
+faz parte da arquitetura atual. Use `docs/PRODUCTION_READINESS_RUNBOOK.md`.
+
 # 🚨 AÇÃO NECESSÁRIA: Configurar External Database URL do Render
 
 ## Passos para obter a External Database URL:
