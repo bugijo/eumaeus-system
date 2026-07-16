@@ -9,6 +9,8 @@
     "start": "node dist/src/bootstrap.js",
     "db:migrate": "prisma migrate deploy",
     "db:status": "prisma migrate status",
+    "owner:provision": "node dist/src/commands/provisionFirstOwner.js",
+    "production:verify": "node dist/src/commands/verifyProductionReadiness.js",
     "seed": "ts-node prisma/seed.ts",
     "simulate:30d": "ts-node prisma/simulate-30-days.ts",
     "simulate:real": "node scripts/real-usage-simulation.mjs",
