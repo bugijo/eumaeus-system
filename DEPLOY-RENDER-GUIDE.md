@@ -1,3 +1,9 @@
+# DOCUMENTO LEGADO — NÃO USAR PARA PRODUÇÃO
+
+Este guia contém região e planos antigos. O procedimento vigente está em
+`docs/PRODUCTION_READINESS_RUNBOOK.md`. Nenhuma instrução abaixo autoriza
+contratação, sincronização de Blueprint ou deploy.
+
 # 🚀 Guia Completo de Deploy no Render - Eumaeus System
 
 ## ✅ Estágio 1: Checklist de Pré-Voo CONCLUÍDO
