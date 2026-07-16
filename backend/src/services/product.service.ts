@@ -1,7 +1,5 @@
-﻿import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/prisma';
 import { Product, CreateProductData, UpdateProductData } from '../models/product.model';
-
-const prisma = new PrismaClient();
 
 type ProductMetadata = {
   supplier?: string;

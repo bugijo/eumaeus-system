@@ -1,4 +1,8 @@
 import { PrismaClient } from '@prisma/client';
+import scriptSafety from '../script-safety.cjs';
+
+const { assertMutationScriptAllowed } = scriptSafety;
+assertMutationScriptAllowed('ALLOW_TEST_DATA_MUTATION');
 
 const prisma = new PrismaClient();
 
@@ -75,8 +79,8 @@ async function seedProducts() {
 }
 
 seedProducts()
-  .catch((e) => {
-    console.error('❌ Erro ao criar produtos:', e);
+  .catch(() => {
+    console.error('❌ Erro ao criar produtos.');
     process.exit(1);
   })
   .finally(async () => {

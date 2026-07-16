@@ -69,7 +69,7 @@ export default function StockPage() {
 
   // Filtrar e ordenar produtos
   const filteredAndSortedProducts = useMemo(() => {
-    let filtered = products.filter(product => {
+    const filtered = products.filter(product => {
       const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            product.supplier.toLowerCase().includes(searchTerm.toLowerCase());
       

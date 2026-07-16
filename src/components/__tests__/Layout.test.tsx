@@ -159,7 +159,7 @@ describe('Layout Component', () => {
     fireEvent.click(menuButton);
     
     // Verificar se o overlay está presente
-    const overlay = document.querySelector('.fixed.inset-0.bg-black\/50');
+    const overlay = document.querySelector('[class~="bg-black/50"]');
     expect(overlay).toBeInTheDocument();
   });
 

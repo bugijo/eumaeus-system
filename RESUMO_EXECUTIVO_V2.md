@@ -1,11 +1,15 @@
 # 🎉 RESUMO EXECUTIVO - Eumaeus V2.0
 
-## 🏆 STATUS FINAL: ✅ APROVADO PARA DEPLOY
+> **AVISO P0 (13/07/2026):** este relatório é legado. A afirmação de 100% abaixo
+> não foi aceita como evidência e não autoriza um deploy. Consulte a validação
+> reproduzível em [`docs/P0_STABILIZATION_AUDIT.md`](docs/P0_STABILIZATION_AUDIT.md).
+
+## 🏆 STATUS HISTÓRICO: NÃO VÁLIDO PARA DEPLOY
 
 **Data:** 26/07/2025  
 **Versão:** 2.0.0  
 **Responsável:** Sistema Automatizado de QA  
-**Resultado:** 100% dos testes passaram  
+**Resultado legado:** alegava 100% dos testes; não revalidado por este documento
 
 ---
 
@@ -141,7 +145,7 @@
 ## ⚠️ PONTOS DE ATENÇÃO
 
 ### 🚨 Críticos
-1. **Senhas Temporárias**: Usuários migrados têm senha "mudar123"
+1. **Credenciais migradas**: Redefinir cada acesso por um canal seguro antes de habilitá-lo
 2. **Email de Produção**: Configurar credenciais reais
 3. **Backup**: Fazer antes da migração
 4. **Monitoramento**: Acompanhar logs pós-deploy
@@ -190,4 +194,4 @@ O sistema está **APROVADO** para deploy em produção. Todas as validações fo
 
 **📞 Suporte**: Documentação completa disponível  
 **🔄 Última Atualização**: 26/07/2025  
-**✅ Status**: APROVADO PARA PRODUÇÃO
+**Status histórico**: substituído pelos gates P0 atuais

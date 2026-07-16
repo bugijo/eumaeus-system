@@ -1,3 +1,8 @@
+process.env.NODE_ENV = 'test';
+process.env.DATABASE_URL = 'postgresql://test_user:test_password@localhost:5432/eumaeus_test';
+process.env.JWT_SECRET = 'local-ci-access-key-2026-07-13-alpha';
+process.env.REFRESH_TOKEN_SECRET = 'local-ci-refresh-key-2026-07-13-beta';
+
 import { PrismaClient } from '@prisma/client';
 
 // Mock do Prisma para testes
@@ -5,6 +10,19 @@ jest.mock('@prisma/client', () => {
   const mockPrisma = {
     $connect: jest.fn(),
     $disconnect: jest.fn(),
+    $queryRaw: jest.fn().mockResolvedValue([{ result: 1 }]),
+    authProfile: {
+      findFirst: jest.fn(),
+      findUnique: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+    },
+    role: {
+      upsert: jest.fn(),
+    },
+    user: {
+      create: jest.fn(),
+    },
     tutor: {
       findMany: jest.fn(),
       findUnique: jest.fn(),
@@ -36,6 +54,7 @@ jest.mock('@prisma/client', () => {
       update: jest.fn(),
       delete: jest.fn(),
       count: jest.fn(),
+      createMany: jest.fn(),
     },
     invoice: {
       findMany: jest.fn(),

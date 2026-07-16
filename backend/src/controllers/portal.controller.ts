@@ -1,10 +1,8 @@
 import { Response } from 'express';
-import { PrismaClient } from '@prisma/client';
 import { AuthenticatedRequest } from '../middlewares/auth.middleware';
 import { AvailabilityService } from '../services/availability.service';
 import { ServiceService } from '../services/service.service';
-
-const prisma = new PrismaClient();
+import { prisma } from '../lib/prisma';
 
 export default {
   // GET /api/portal/my-pets/:petId

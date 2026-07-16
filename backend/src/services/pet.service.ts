@@ -1,7 +1,5 @@
 import { Pet } from '../models/pet.model';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '../lib/prisma';
 
 export class PetService {
   static async getAllPets(): Promise<Pet[]> {

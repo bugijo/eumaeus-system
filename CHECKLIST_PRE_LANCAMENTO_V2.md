@@ -1,5 +1,9 @@
 # 🚀 CHECKLIST DE PRÉ-LANÇAMENTO V2.0
 
+> **AVISO P0 (13/07/2026):** este checklist é histórico. Seus itens marcados não
+> substituem a validação atual nem autorizam um deploy; consulte
+> [`docs/P0_STABILIZATION_AUDIT.md`](docs/P0_STABILIZATION_AUDIT.md).
+
 ## 📋 STATUS GERAL
 **Data:** 26/07/2025  
 **Versão:** V2.0  
@@ -56,7 +60,7 @@
 
 ### ⚠️ Pontos Críticos
 - [x] AuthProfiles criados para usuários existentes
-- [x] Senhas temporárias definidas ("mudar123")
+- [ ] Credenciais individuais redefinidas por fluxo seguro antes de liberar o acesso
 - [x] Emails de usuários preservados
 - [x] Roles mantidos corretamente
 

@@ -1,8 +1,6 @@
-import { PrismaClient } from '@prisma/client';
 import { emailService, ReminderEmailData, VaccineReminderData } from './emailService';
 import { AppointmentWithRelations } from '../types';
-
-const prisma = new PrismaClient();
+import { prisma } from '../lib/prisma';
 
 export interface AppointmentReminder {
   id: string;

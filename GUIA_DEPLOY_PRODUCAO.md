@@ -1,5 +1,9 @@
 # 🚀 GUIA DE DEPLOY PARA PRODUÇÃO - V2.0
 
+> **AVISO P0 (13/07/2026):** este é um documento legado e seus resultados não
+> autorizam um deploy. Use os gates e evidências atuais de
+> [`docs/P0_STABILIZATION_AUDIT.md`](docs/P0_STABILIZATION_AUDIT.md).
+
 ## 📋 CHECKLIST FINAL ANTES DO DEPLOY
 
 ### ✅ PRÉ-REQUISITOS VALIDADOS
@@ -256,7 +260,8 @@ Temos o prazer de anunciar o lançamento da versão 2.0 do Eumaeus System!
 
 ⚠️ IMPORTANTE:
 Se você é um funcionário da clínica e sua senha não funcionar, 
-use a senha temporária "mudar123" e altere-a no primeiro login.
+solicite uma redefinição individual ao operador responsável. A credencial deve
+ser entregue por um canal seguro e nunca pode ser compartilhada ou versionada.
 
 Qualquer dúvida, entre em contato conosco.
 
