@@ -120,7 +120,7 @@ Evidências:
 
 Também são reproduzíveis: `DATABASE_URL` ausente/inválida, banco indisponível e migração previamente falhada. Sem logs do último deploy e leitura de `_prisma_migrations`, não é possível afirmar qual cenário ocorreu em produção.
 
-Correção P0 de processo: validação da aplicação e do schema acontece antes do `listen`; migração é uma etapa explícita do build do Render, não um efeito colateral de cada restart; Render usa `/health`. Como `preDeployCommand` não existe para web service gratuito, o build fail-fast aplica `migrate deploy` somente depois de instalação, geração e compilação bem-sucedidas, e o start executa somente Node. `autoDeployTrigger` fica desligado até a auditoria do baseline. O baseline de uma base existente é uma operação única e controlada, descrita abaixo, não uma correção automática destrutiva.
+Correção P0 original: validação da aplicação e do schema acontece antes do `listen`; Render usa `/health` e `autoDeployTrigger` permanece desligado. A migration no build era uma compatibilidade temporária com o plano Free. Para produção paga, essa decisão foi substituída pelo `preDeployCommand` controlado descrito em `docs/PRODUCTION_READINESS_RUNBOOK.md`. O baseline de uma base existente continua sendo uma operação única e controlada, nunca uma correção automática destrutiva.
 
 ### P0.8 — health check e testes não provam prontidão
 
