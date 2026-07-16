@@ -1,3 +1,9 @@
+# DOCUMENTO LEGADO — NÃO USAR PARA PRODUÇÃO
+
+O fluxo abaixo menciona plano Free e migration manual e está obsoleto. Use
+`docs/PRODUCTION_READINESS_RUNBOOK.md`. Nenhuma instrução deste arquivo autoriza
+contratação, sincronização de Blueprint ou deploy.
+
 # 🚀 Deploy do Backend no Render
 
 ## ✅ Checklist de Pré-Deploy Concluído

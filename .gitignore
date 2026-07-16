@@ -16,21 +16,81 @@
 .npm
 .eslintcache
 
-# Environment Variables
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-.env.production
+# Environment variables and local credential reports
+**/.env
+**/.env.*
+!**/.env.example
+!**/.env.*.example
+reports/private/
+*.credentials.*
+*.secrets.*
+*_com_credenciais*
 
 # Prisma
-*.sqlite
-*.sqlite-journal
 *.db
-*.db-journal
-*.db-shm
-*.db-wal
+*.db-*
+*.db.*
+*.sqlite
+*.sqlite-*
+*.sqlite.*
+*.sqlite3
+*.sqlite3-*
+*.sqlite3.*
+*.dump
+*.dump.*
+*.backup
+*.backup.*
+*.dir.tar
+*.dir.tar.*
+*.sql
+*.sql.*
+
+# Compressed database exports (the CI applies the same rule case-insensitively).
+*backup*.zip
+*backup*.7z
+*backup*.rar
+*backup*.tar
+*backup*.tar.*
+*backup*.tgz
+*backup*.gz
+*dump*.zip
+*dump*.7z
+*dump*.rar
+*dump*.tar
+*dump*.tar.*
+*dump*.tgz
+*dump*.gz
+*database*.zip
+*database*.7z
+*database*.rar
+*database*.tar
+*database*.tar.*
+*database*.tgz
+*database*.gz
+*eumaeus*.zip
+*eumaeus*.7z
+*eumaeus*.rar
+*eumaeus*.tar
+*eumaeus*.tar.*
+*eumaeus*.tgz
+*eumaeus*.gz
+*Eumaeus*.zip
+*Eumaeus*.7z
+*Eumaeus*.rar
+*Eumaeus*.tar
+*Eumaeus*.tar.*
+*Eumaeus*.tgz
+*Eumaeus*.gz
+*vetsystem*.zip
+*vetsystem*.7z
+*vetsystem*.rar
+*vetsystem*.tar
+*vetsystem*.tar.*
+*vetsystem*.tgz
+*vetsystem*.gz
+
+# New SQL is source code only in the official backend Prisma migrations.
+!backend/prisma/migrations/**/migration.sql
 
 # Logs
 logs

@@ -4,7 +4,6 @@ on:
   push:
     branches: [main, develop, codex/eumaeus-p0-stabilization]
   pull_request:
-    branches: [main]
 
 permissions:
   contents: read
@@ -15,21 +14,32 @@ concurrency:
 
 jobs:
   security-policy:
-    name: P0 security policy
+    name: Repository policy
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: Scan current tree and enforce P0 invariants
+      - name: Install policy dependencies
+        run: npm ci
+
+      - name: Scan current tree and enforce repository invariants
+        env:
+          POLICY_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          POLICY_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: npm run test:policy
+
+      - name: Validate production Render Blueprint
+        run: npm run validate:render
 
   frontend:
     name: Frontend
@@ -133,6 +143,59 @@ jobs:
           --from-schema-datasource prisma/schema.prisma
           --to-schema-datamodel prisma/schema.prisma
           --exit-code
+
+      - name: Verify secure first-owner provisioning on PostgreSQL
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          owner_password="Aa1!$(openssl rand -hex 24)"
+          access_secret="$(openssl rand -hex 32)"
+          refresh_secret="$(openssl rand -hex 32)"
+          first_log="$RUNNER_TEMP/eumaeus-owner-first.log"
+          second_log="$RUNNER_TEMP/eumaeus-owner-second.log"
+          verify_log="$RUNNER_TEMP/eumaeus-production-verify.log"
+
+          export NODE_ENV=test
+          export JWT_SECRET="$access_secret"
+          export REFRESH_TOKEN_SECRET="$refresh_secret"
+          export PROVISION_FIRST_OWNER_CONFIRMATION=CREATE_INITIAL_OWNER
+          export INITIAL_OWNER_NAME='CI Synthetic Owner'
+          export INITIAL_OWNER_EMAIL='owner-ci@example.invalid'
+          export INITIAL_OWNER_PASSWORD="$owner_password"
+
+          npm run owner:provision > "$first_log" 2>&1
+
+          export PRODUCTION_VERIFY_CONFIRMATION=RUN_READ_ONLY_PRODUCTION_CHECK
+          export VERIFY_EXPECT_EMPTY_BUSINESS_DATA=true
+          export VERIFY_EXPECT_OWNER=true
+          npm run production:verify > "$verify_log" 2>&1
+
+          export INITIAL_OWNER_PASSWORD="$owner_password"
+          set +e
+          npm run owner:provision > "$second_log" 2>&1
+          second_status=$?
+          set -e
+          unset INITIAL_OWNER_PASSWORD
+
+          test "$second_status" -ne 0
+          grep -F 'já existe uma conta DONO' "$second_log" > /dev/null
+
+          if grep -F -- "$owner_password" "$first_log" "$second_log" "$verify_log" > /dev/null; then
+            echo 'Plaintext owner password appeared in operational logs.' >&2
+            exit 1
+          fi
+
+          node -e '
+            const fs = require("node:fs");
+            const report = JSON.parse(fs.readFileSync(process.argv[1], "utf8").trim().split("\n").at(-1));
+            if (report.migrations.expected !== 2 || report.migrations.applied !== 2) process.exit(1);
+            if (report.migrations.failed || report.migrations.missing || report.migrations.unexpected) process.exit(1);
+            if (report.migrations.checksumMismatches) process.exit(1);
+            if (report.identity.users !== 1 || report.identity.authProfiles !== 1) process.exit(1);
+            if (report.identity.ownerAccounts !== 1 || report.identity.activeRefreshTokens !== 0) process.exit(1);
+            if (!report.expectations.emptyBusinessData || !report.expectations.ownerProvisioned) process.exit(1);
+          ' "$verify_log"
 
       - name: Verify clear failure with missing environment
         shell: bash
