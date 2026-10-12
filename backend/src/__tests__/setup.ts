@@ -82,7 +82,7 @@ jest.mock('@prisma/client', () => {
       delete: jest.fn(),
       count: jest.fn(),
     },
-    payment: { findFirst: jest.fn(), findMany: jest.fn(), create: jest.fn(), update: jest.fn() },
+    payment: { findFirst: jest.fn(), findMany: jest.fn(), create: jest.fn(), update: jest.fn(), updateMany: jest.fn() },
     communicationOutbox: {
       findFirst: jest.fn(),
       create: jest.fn(),
@@ -132,7 +132,7 @@ jest.mock('@prisma/client', () => {
 
   return {
     PrismaClient: jest.fn(() => mockPrisma),
-    Prisma: { Decimal: class Decimal { value: number; constructor(value: unknown) { this.value = Number(value); } plus(other: any) { return new (this.constructor as any)(this.value + Number(other.value ?? other)); } greaterThan(other: any) { return this.value > Number(other.value ?? other); } equals(other: any) { return this.value === Number(other.value ?? other); } toString() { return this.value.toFixed(2); } } },
+    Prisma: { TransactionIsolationLevel: { Serializable: 'Serializable' }, Decimal: class Decimal { value: number; constructor(value: unknown) { this.value = Number(value); } plus(other: any) { return new (this.constructor as any)(this.value + Number(other.value ?? other)); } greaterThan(other: any) { return this.value > Number(other.value ?? other); } equals(other: any) { return this.value === Number(other.value ?? other); } toString() { return this.value.toFixed(2); } } },
   };
 });
 

@@ -510,6 +510,16 @@ Confirmações pendentes preparadas: registrar despesa/recebimento/estorno finan
 - [ ] Ainda pendente: concorrência real de pagamentos, consumo de pacote e estoque em cenários isolados completos; a prova atual cobre isolamento, idempotência e rollback de auditoria, não todas as corridas de negócio.
 - [ ] Suíte frontend completa tentou execução serial com um worker, mas excedeu o limite operacional sem relatório final; fica inconclusiva. Não é contada como aprovação. Builds e testes focais continuam separados dessa tentativa.
 
+### Integração e concorrência — retomada a partir de `d011ee1` — 2026-10-12
+
+- [x] Auditoria frontend fechada: a causa da inconclusividade era `npm test` entrar em modo watch. Execução não interativa serial aprovou `81/81` testes em `10` arquivos, sem processos residuais; o relatório foi salvo em `reports/private/` e não é versionado. O commit `9281394` registra a evidência.
+- [x] Webhook WhatsApp montado no bootstrap antes de `express.json()`, preservando bytes originais: `/webhooks/whatsapp/:channelId`. Handshake Meta, HMAC, canal confiável (`channelId → clinicId`), rejeição de configuração/canal/contato inválido e persistência durável na outbox estão cobertos por `17/17` testes WhatsApp/financeiros no lote de integração.
+- [x] Referência primária atual consultada: [Meta Webhooks Getting Started](https://developers.facebook.com/docs/graph-api/webhooks/getting-started) e [referência atual de mensagens WhatsApp](https://developers.facebook.com/documentation/business-messaging/whatsapp/webhooks/reference/messages). O contrato exige `hub.challenge`, `hub.verify_token` e `X-Hub-Signature-256`; a rota não confia em `clinicId` do payload.
+- [x] Concorrência real PostgreSQL corrigida e repetida com conexões independentes: recebimento concorrente mantém uma linha e total correto; mesma chave mantém uma linha; parcelas iguais com chaves distintas mantêm duas; última sessão do pacote e estoque insuficiente não geram saldo negativo; estorno concorrente deixa uma reversão lógica. Runner retorna `ok=true`, fixtures removidas.
+- [x] Serviço financeiro usa lock de linha da fatura via SQL raw allowlisted, transação `Serializable` e estorno condicional `status=POSTED`. Regressão mockada financeira: `8/8`; build backend aprovado.
+- [ ] Pendente: o webhook persiste inbound na `CommunicationOutbox` como registro `RECEIVED`, mas ainda não há modelo histórico inbound dedicado nem worker que transforme todos os status do provedor em estado agregado persistido. A implementação é local/simulada; nenhum envio externo foi validado.
+- [ ] Pendente: validação HTTP end-to-end contra servidor backend em execução, incluindo reinício do processo e confirmação de deduplicação após reinício; os testes de rota usam store controlado e a prova PostgreSQL usa scripts independentes.
+
 ### Diagnóstico visual e frontend — 2026-10-11
 
 - [x] Nova aba suportada carregou `http://127.0.0.1:4173/login` com resposta HTTP local e árvore acessível completa (`Email`, `Senha`, `Entrar`). O bloqueio anterior foi do controle/sessão do navegador, não indisponibilidade da aplicação.

@@ -22,6 +22,9 @@ import financialRoutes from './routes/financial.routes';
 import specialistRoutes from './routes/specialist.routes';
 import clinicSettingsRoutes from './routes/clinicSettings.routes';
 import careRoutes from './routes/care.routes';
+import createWhatsAppWebhookRouter from './routes/whatsappWebhook.routes';
+import { loadWhatsAppLocalConfig } from './integrations/whatsapp/config';
+import { whatsappPrismaStore } from './integrations/whatsapp/prisma.store';
 import { reminderService } from './services/reminderService';
 import { disconnectPrisma, prisma } from './lib/prisma';
 import { runWithClinic } from './tenantContext';
@@ -144,6 +147,16 @@ app.use((req, res, next) => {
   return next();
 });
 
+const whatsappChannels = (() => {
+  try {
+    return loadWhatsAppLocalConfig().channels ?? {};
+  } catch {
+    return {};
+  }
+})();
+
+// Must precede express.json(): Meta signs the original request bytes.
+app.use('/webhooks/whatsapp', createWhatsAppWebhookRouter({ channels: whatsappChannels, store: whatsappPrismaStore }));
 app.use(express.json());
 
 type CheckStatus = 'ok' | 'error';

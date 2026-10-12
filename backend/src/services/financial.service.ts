@@ -32,6 +32,7 @@ export class FinancialService {
     const actorUserId = getCurrentUserId();
     if (!actorUserId) throw new Error('Autoria autenticada obrigatória');
     return prisma.$transaction(async (tx: any) => {
+      await tx.$queryRaw`SELECT "id" FROM "Invoice" WHERE "id" = ${invoiceId} FOR UPDATE`;
       const invoice = await tx.invoice.findFirst({ where: { id: invoiceId }, include: { items: true, discounts: true, payments: true } });
       if (!invoice) throw new Error('Fatura não encontrada');
       if (invoice.status === 'CANCELLED') throw new Error('Fatura cancelada não recebe pagamento');
@@ -49,7 +50,7 @@ export class FinancialService {
       const nextTotal = received.plus(paymentAmount);
       await tx.invoice.update({ where: { id: invoiceId }, data: { status: nextTotal.equals(invoice.totalAmount) ? 'PAID' : 'PENDING' } });
       return payment;
-    });
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
   }
 
   static async reversePayment(paymentId: number, reason: string) {
@@ -60,12 +61,21 @@ export class FinancialService {
       const payment = await tx.payment.findFirst({ where: { id: paymentId } });
       if (!payment) throw new Error('Recebimento não encontrado');
       if (payment.status === 'REVERSED') return payment;
-      const reversed = await tx.payment.update({ where: { id: paymentId }, data: { status: 'REVERSED', reversedAt: new Date(), reversalReason: reason.trim() } });
+      const changed = await tx.payment.updateMany({
+        where: { id: paymentId, status: 'POSTED' },
+        data: { status: 'REVERSED', reversedAt: new Date(), reversalReason: reason.trim() },
+      });
+      if (changed.count !== 1) {
+        const current = await tx.payment.findFirst({ where: { id: paymentId } });
+        if (current?.status === 'REVERSED') return current;
+        throw new Error('Recebimento não está disponível para estorno');
+      }
+      const reversed = await tx.payment.findFirst({ where: { id: paymentId } });
       await tx.financialAuditEvent.create({ data: { clinicId: payment.clinicId, eventType: 'PAYMENT_REVERSED', paymentId, actorUserId, metadata: { reason: reason.trim() } } });
       const invoice = await tx.invoice.findFirst({ where: { id: payment.invoiceId }, include: { payments: true } });
       const postedTotal = (invoice?.payments || []).filter((item: any) => item.status === 'POSTED').reduce((sum: Prisma.Decimal, item: any) => sum.plus(item.amount), new Prisma.Decimal(0));
       await tx.invoice.update({ where: { id: payment.invoiceId }, data: { status: invoice && postedTotal.equals(invoice.totalAmount) ? 'PAID' : 'PENDING' } });
       return reversed;
-    });
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
   }
 }
