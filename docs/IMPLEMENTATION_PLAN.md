@@ -496,6 +496,7 @@ Confirmações pendentes preparadas: registrar despesa/recebimento/estorno finan
 - [ ] A validação visual e o histórico pós-reload continuam pendentes; o adapter segue exclusivamente simulado e não há envio externo.
 - [x] Retry do worker agora agenda `availableAt` com backoff exponencial limitado a 60s; falha exaurida permanece `FAILED` sem re-enfileirar. O teste de comunicação `6/6` continua aprovado.
 - [x] O client da tela assistencial deixou de transmitir `createdById` ao registrar prescrição; a API filtra o campo e envia somente conteúdo clínico, mantendo autoria exclusivamente no servidor.
+- [x] Regressão integrada desta rodada: pacotes `5/5`, especialistas `4/4` e comunicação `6/6` aprovados no backend; nenhum teste alterou produção ou banco remoto.
 
 ### Diagnóstico visual e frontend — 2026-10-11
 
