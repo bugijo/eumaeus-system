@@ -523,6 +523,16 @@ Confirmações pendentes preparadas: registrar despesa/recebimento/estorno finan
 - [x] Nova worktree `/media/giovanni/HD/Projetos/Eumaeus-dev` criada a partir da `origin/main` publicada (`661d574bf8460573c4f8c6ce543938b57b3d05b3`); a worktree original e seus commits permanecem intactos.
 - [x] `docs/DEV_OFFICE.md` registra escopos, limites, critérios de aceite e a ausência da skill `eumaeus-dev`. Seis frentes fizeram auditoria somente leitura; navegador, migrations, integração e commits ficaram com o coordenador.
 - [x] Hipótese confirmada: chave de idempotência de pagamento reutilizada em outra fatura/valor agora é rejeitada; a UI gera uma chave por tentativa e preserva a mesma chave somente em retry da mesma tentativa. Regressão financeira: 8/8 aprovados no lote focal; build backend aprovado.
+
+### Auditoria isolada da suíte frontend — 2026-10-12
+
+- [x] Causa da execução anterior inconclusiva identificada: `package.json` define `test` como `vitest` sem `run`, portanto `npm test` sem argumentos entra em modo watch/interativo e não produz conclusão apropriada para automação.
+- [x] Execução reproduzível: `vitest run --maxWorkers=1 --minWorkers=1 --reporter=json --outputFile=reports/private/frontend-18-one-worker.json`; resultado `10` arquivos / `81` testes aprovados, sem falhas ou pendências. O relatório está em diretório ignorado.
+- [x] Revalidação pelo script oficial: `npm test -- --run --maxWorkers=1 --minWorkers=1 --reporter=json --outputFile=reports/private/frontend-npm-run-explicit-20261012.json`; resultado novamente `81/81`, exit `0`, sem processos Vitest residuais. Checksums dos relatórios: `438b626ba8a7742c73079c8df5292049fa1bb558fffcfbaddd7fec711b86b4bb` e `55788d72d4db25c322d32b1b951f3c22cdb237f1047f32ec0185f52644f39b85`.
+- [x] O maior arquivo foi `src/api/__tests__/apiClient.test.ts` (~4,53 s); `Financeiro.test.tsx` levou ~0,76 s. Não há evidência de timer aberto ou travamento funcional nesta execução.
+- [x] O commit `1eaf9c4` altera somente seis arquivos de `src/` (estoque, assistência, especialistas, operação e APIs); não adiciona testes. Nenhuma regressão foi reproduzida e nenhuma correção de produção foi necessária.
+- [ ] O número “18 testes focais” reportado anteriormente não corresponde a uma suíte nomeada ou arquivo distinto no checkout integrado; a evidência verificável desta rodada é a suíte completa `81/81`, sem somar contagens não rastreáveis.
+- [ ] Havia processos Jest de uma frente backend paralela durante a inspeção final; não foram alterados ou encerrados por esta auditoria, pois o escopo desta rodada excluía backend.
 - [x] Hipótese confirmada: marcar fatura como paga sem recebimentos POSTED foi removido da UI e rejeitado no serviço; estorno recalcula o estado pela soma Decimal dos pagamentos restantes.
 - [x] Hipótese confirmada: token assinado para usuário inexistente agora é recusado (`401 Acesso revogado`).
 - [x] Autoria de prescrições/orçamentos assistenciais agora deriva do usuário autenticado; campos de autoria enviados pelo cliente são ignorados. Lote focal combinado: 23/23 testes aprovados; build backend aprovado.
