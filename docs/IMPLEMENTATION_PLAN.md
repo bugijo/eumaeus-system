@@ -494,6 +494,8 @@ Confirmações pendentes preparadas: registrar despesa/recebimento/estorno finan
 - [x] Nova aba suportada carregou `http://127.0.0.1:4173/login` com resposta HTTP local e árvore acessível completa (`Email`, `Senha`, `Entrar`). O bloqueio anterior foi do controle/sessão do navegador, não indisponibilidade da aplicação.
 - [ ] Login e mutações visuais não foram executados neste checkpoint: não há credencial sintética aberta para inventar e não foram usadas APIs para substituir cliques.
 - [ ] O teste frontend de `Financeiro` iniciou mas não produziu resultado dentro de dois limites curtos; processos órfãos específicos foram encerrados. O build frontend chegou a `2673 modules transformed` e `rendering chunks`, mas não concluiu sob carga. Ambos permanecem inconclusivos, não aprovados.
+- [x] Nesta worktree, `npm run build` do frontend concluiu e gerou `dist/index.html` (artefato ignorado). `Financeiro.test.tsx` passou em execução isolada com um worker: `1` arquivo / `1` teste / `4,85s`.
+- [ ] A primeira execução sem limitação de workers excedeu 60s sem saída; classificada como inconclusiva por carga/concorrência do ambiente, não como falha funcional. A execução controlada posterior é a evidência válida.
 
 ### Continuidade no Escritório Dev local — 2026-10-12
 
