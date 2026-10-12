@@ -117,6 +117,7 @@ const SAFE_RAW_SQL = [
   /^SELECT\s+1\s+FROM\s+"public"\."AuthProfile"\s+LIMIT\s+1$/i,
   /^SELECT\s+DISTINCT\s+"clinicId"\s+FROM\s+"User"\s+WHERE\s+"clinicId"\s+IS\s+NOT\s+NULL\s+ORDER\s+BY\s+"clinicId"$/i,
   /^SELECT\s+pg_advisory_xact_lock\(/i,
+  /^SELECT\s+"id"\s+FROM\s+"Invoice"\s+WHERE\s+"id"\s*=\s*\$\d+\s+FOR\s+UPDATE$/i,
 ];
 
 const assertSafeRawQuery = (query: unknown): void => {

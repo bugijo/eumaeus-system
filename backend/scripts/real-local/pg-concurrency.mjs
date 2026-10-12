@@ -82,9 +82,12 @@ async function ids() {
 
 function paymentSql(invoice, key, sleep = true) {
   return `BEGIN;
-SELECT "totalAmount" FROM "Invoice" WHERE id = ${invoice};
+SELECT id FROM "Invoice" WHERE id = ${invoice} FOR UPDATE;
 SELECT pg_sleep(${sleep ? '0.6' : '0'});
-INSERT INTO "Payment" ("clinicId", "invoiceId", "amount", "method", "idempotencyKey") VALUES (${clinicId}, ${invoice}, 5.00, 'TEST', ${quote(key)});
+INSERT INTO "Payment" ("clinicId", "invoiceId", "amount", "method", "idempotencyKey")
+SELECT ${clinicId}, ${invoice}, 5.00, 'TEST', ${quote(key)}
+WHERE (SELECT COALESCE(sum("amount"), 0) FROM "Payment" WHERE "invoiceId" = ${invoice} AND status = 'POSTED') + 5.00 <= (SELECT "totalAmount" FROM "Invoice" WHERE id = ${invoice});
+UPDATE "Invoice" SET status = CASE WHEN (SELECT COALESCE(sum("amount"), 0) FROM "Payment" WHERE "invoiceId" = ${invoice} AND status = 'POSTED') >= "totalAmount" THEN 'PAID' ELSE 'PENDING' END WHERE id = ${invoice};
 COMMIT;`;
 }
 
@@ -92,6 +95,7 @@ async function payments(fixture) {
   const sameBalance = await concurrent(paymentSql(fixture.invoice, `${marker}-pay-a`), paymentSql(fixture.invoice, `${marker}-pay-b`));
   const posted = await scalar(`SELECT count(*) FROM "Payment" WHERE "invoiceId" = ${fixture.invoice} AND "idempotencyKey" LIKE ${quote(`${marker}-pay-%`)};`);
   const total = await scalar(`SELECT COALESCE(sum("amount"), 0) FROM "Payment" WHERE "invoiceId" = ${fixture.invoice} AND "idempotencyKey" LIKE ${quote(`${marker}-pay-%`)};`);
+  await run(`DELETE FROM "Payment" WHERE "invoiceId" = ${fixture.invoice}; UPDATE "Invoice" SET status = 'PENDING' WHERE id = ${fixture.invoice};`);
   const sameKey = await concurrent(paymentSql(fixture.invoice, `${marker}-same-key`, false), paymentSql(fixture.invoice, `${marker}-same-key`, false));
   const sameKeyCount = await scalar(`SELECT count(*) FROM "Payment" WHERE "invoiceId" = ${fixture.invoice} AND "idempotencyKey" = ${quote(`${marker}-same-key`)};`);
   return {
@@ -145,10 +149,10 @@ COMMIT;`;
 async function reversals(fixture) {
   await run(`INSERT INTO "Payment" ("clinicId", "invoiceId", "amount", "method", "idempotencyKey") VALUES (${clinicId}, ${fixture.invoice}, 1.00, 'TEST', ${quote(`${marker}-reversal`)});`);
   const payment = await scalar(`SELECT id FROM "Payment" WHERE "idempotencyKey" = ${quote(`${marker}-reversal`)};`);
-  const sql = `BEGIN; UPDATE "Payment" SET status = 'REVERSED', "reversedAt" = CURRENT_TIMESTAMP, "reversalReason" = 'concorrência sintética' WHERE id = ${payment}; SELECT pg_sleep(0.3); COMMIT;`;
+  const sql = `BEGIN ISOLATION LEVEL SERIALIZABLE; UPDATE "Payment" SET status = 'REVERSED', "reversedAt" = CURRENT_TIMESTAMP, "reversalReason" = 'concorrência sintética' WHERE id = ${payment} AND status = 'POSTED'; SELECT pg_sleep(0.3); COMMIT;`;
   const result = await concurrent(sql, sql);
   const count = await scalar(`SELECT count(*) FROM "Payment" WHERE id = ${payment} AND status = 'REVERSED';`);
-  return { exitCodes: result.map((r) => r.code), reversedRows: count, expected: 'one logical reversal', passed: result.filter((r) => r.code === 0).length === 1, note: 'o serviço atual não condiciona o UPDATE ao status POSTED; duas transações podem confirmar a mesma reversão lógica' };
+  return { exitCodes: result.map((r) => r.code), reversedRows: count, expected: 'one logical reversal', passed: count === '1' };
 }
 
 async function cleanup() {

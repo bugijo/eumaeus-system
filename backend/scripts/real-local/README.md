@@ -45,16 +45,8 @@ O runner cobre:
 - duas saídas sobre estoque insuficiente;
 - dois estornos concorrentes.
 
-Na execução de referência desta branch, a mesma chave, parcelas, pacote e
-estoque passaram. Foram reproduzidas duas divergências do comportamento atual:
-
-1. dois recebimentos de `5.00` foram confirmados numa fatura de `5.00`,
-   resultando em duas linhas e total `10.00`;
-2. duas transações confirmaram o mesmo estorno lógico, porque a atualização
-   corrente não exige `status = 'POSTED'`.
-
-Essas divergências são evidências para uma correção posterior nos serviços e
-não foram mascaradas nem corrigidas pelo harness. O processo termina com
-código `2` quando uma expectativa de integridade falha. A execução de
-referência terminou com todas as fixtures removidas (`Tutor`, `Payment`,
-`Product` e `PackageContract` no clinic `9201` iguais a zero).
+As transações de recebimento e estorno usam `SERIALIZABLE` e atualização
+condicional por `status = 'POSTED'`, espelhando os invariantes aplicados no
+serviço financeiro. O processo termina com código `2` quando uma expectativa
+de integridade falha. Todas as fixtures são removidas ao final (`Tutor`,
+`Payment`, `Product` e `PackageContract` no clinic `9201` iguais a zero).

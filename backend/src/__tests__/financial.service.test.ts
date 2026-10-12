@@ -66,7 +66,7 @@ describe('financial expense authorship and audit', () => {
 
   it('keeps an invoice paid when reversing one of several posted payments', async () => {
     db.payment.findFirst.mockResolvedValue({ id: 13, invoiceId: 4, clinicId: 4, status: 'POSTED' });
-    db.payment.update.mockResolvedValue({ id: 13, status: 'REVERSED' });
+    db.payment.updateMany.mockResolvedValue({ count: 1 });
     db.invoice.findFirst.mockResolvedValue({ id: 4, totalAmount: new Prisma.Decimal('10.00'), payments: [{ status: 'POSTED', amount: new Prisma.Decimal('10.00') }] });
     db.financialAuditEvent.create.mockResolvedValue({ id: 5 });
     await runWithClinic(4, () => runWithUser(12, () => FinancialService.reversePayment(13, 'Correção sintética')));
