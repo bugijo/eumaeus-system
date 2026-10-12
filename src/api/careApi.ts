@@ -11,7 +11,10 @@ export const careApi = {
   createSurgery: async (data: { petId: number; veterinarianId: number; notes?: string }) => (await apiClient.post<SurgeryCase>('/care/surgeries', data)).data,
   addTask: async (id: number, data: { title: string; scheduledAt?: string; notes?: string }) => (await apiClient.post(`/care/hospitalizations/${id}/tasks`, data)).data,
   executeTask: async (id: number, data: { notes?: string }) => (await apiClient.patch(`/care/hospitalization-tasks/${id}/execute`, data)).data,
-  addPrescription: async (id: number, data: { medication: string; instructions: string; createdById: number }) => (await apiClient.post(`/care/hospitalizations/${id}/prescriptions`, data)).data,
+  addPrescription: async (id: number, data: { medication: string; instructions: string; createdById?: number }) => {
+    const { medication, instructions } = data;
+    return (await apiClient.post(`/care/hospitalizations/${id}/prescriptions`, { medication, instructions })).data;
+  },
   discharge: async (id: number, data: { notes: string }) => (await apiClient.patch(`/care/hospitalizations/${id}/discharge`, data)).data,
   handoff: async (id: number, data: { toUserId: number; notes: string }) => (await apiClient.post(`/care/hospitalizations/${id}/handoffs`, data)).data,
   addBudget: async (id: number, data: { description: string; amount: string }) => (await apiClient.post(`/care/surgeries/${id}/budgets`, data)).data,
