@@ -20,6 +20,8 @@ import { ACCOUNTS_PAYABLE_DATA_SOURCE } from '../constants';
 import { useCreateExpense, useExpenses, useReceivePayment, useResultCenters, useReversePayment } from '@/api/financialApi';
 import { useAuthStore } from '@/stores/authStore';
 
+const newPaymentIdempotencyKey = () => `ui-payment-${globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`}`;
+
 export default function Financeiro() {
   const [selectedPeriod, setSelectedPeriod] = useState('Este Mês');
   
@@ -33,7 +35,7 @@ export default function Financeiro() {
   const { data: expenses = [] } = useExpenses();
   const expenseMutation = useCreateExpense();
   const [expense, setExpense] = useState({ description: '', amount: '', reason: '', resultCenterId: '' });
-  const [paymentDraft, setPaymentDraft] = useState({ invoiceId: '', amount: '', method: 'PIX' });
+  const [paymentDraft, setPaymentDraft] = useState({ invoiceId: '', amount: '', method: 'PIX', idempotencyKey: newPaymentIdempotencyKey() });
   const [reversalDraft, setReversalDraft] = useState({ paymentId: '', amount: '', reason: '' });
   const role = useAuthStore(state => state.user?.role);
   const canWriteFinancial = role === 'DONO' || role === 'FINANCEIRO';
@@ -264,7 +266,7 @@ export default function Financeiro() {
                       <TableCell>
                         <div className="flex space-x-2">
                           {conta.status !== 'Pago' && (
-                            <Button size="sm" variant="outline" aria-label={`Registrar recebimento da fatura ${conta.id}`} onClick={() => setPaymentDraft({ invoiceId: String(conta.id), amount: '', method: 'PIX' })}>
+                            <Button size="sm" variant="outline" aria-label={`Registrar recebimento da fatura ${conta.id}`} onClick={() => setPaymentDraft({ invoiceId: String(conta.id), amount: '', method: 'PIX', idempotencyKey: newPaymentIdempotencyKey() })}>
                               <Check className="w-4 h-4" />
                             </Button>
                           )}
@@ -300,8 +302,8 @@ export default function Financeiro() {
                       </select>
                     </label>
                     <div className="flex items-end gap-2">
-                      <Button disabled={!paymentDraft.amount || paymentMutation.isPending} onClick={() => { paymentMutation.mutate({ invoiceId: Number(paymentDraft.invoiceId), amount: Number(paymentDraft.amount.replace(',', '.')), method: paymentDraft.method }, { onSuccess: () => setPaymentDraft({ invoiceId: '', amount: '', method: 'PIX' }) }); }}>Registrar recebimento</Button>
-                      <Button type="button" variant="outline" onClick={() => setPaymentDraft({ invoiceId: '', amount: '', method: 'PIX' })}>Cancelar</Button>
+                      <Button disabled={!paymentDraft.amount || paymentMutation.isPending} onClick={() => { paymentMutation.mutate({ invoiceId: Number(paymentDraft.invoiceId), amount: Number(paymentDraft.amount.replace(',', '.')), method: paymentDraft.method, idempotencyKey: paymentDraft.idempotencyKey }, { onSuccess: () => setPaymentDraft({ invoiceId: '', amount: '', method: 'PIX', idempotencyKey: newPaymentIdempotencyKey() }) }); }}>Registrar recebimento</Button>
+                      <Button type="button" variant="outline" onClick={() => setPaymentDraft({ invoiceId: '', amount: '', method: 'PIX', idempotencyKey: newPaymentIdempotencyKey() })}>Cancelar</Button>
                     </div>
                   </div>
                   {paymentMutation.error && <p role="alert" className="mt-2 text-sm text-red-600">{paymentMutation.error instanceof Error ? paymentMutation.error.message : 'Não foi possível registrar o recebimento.'}</p>}

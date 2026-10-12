@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { Separator } from '../components/ui/separator';
-import { ArrowLeft, Calendar, User, Phone, Mail, DollarSign, FileText, Package } from 'lucide-react';
+import { ArrowLeft, Calendar, User, Phone, Mail, FileText, Package } from 'lucide-react';
 import NFSeControls from '../components/fiscal/NFSeControls';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -109,14 +109,6 @@ const InvoiceDetailPage: React.FC = () => {
           </Button>
           {invoice.status === 'PENDING' && (
             <>
-              <Button
-                onClick={() => handleStatusUpdate('PAID')}
-                size="sm"
-                disabled={updateStatusMutation.isPending}
-              >
-                <DollarSign className="w-4 h-4 mr-2" />
-                Marcar como Pago
-              </Button>
               <Button
                 onClick={() => handleStatusUpdate('CANCELLED')}
                 variant="destructive"

@@ -47,6 +47,13 @@ describe('financial expense authorship and audit', () => {
     await expect(runWithClinic(4, () => FinancialService.receive(4, 5, 'PIX', 'payment-test-2'))).rejects.toThrow('Autoria autenticada');
   });
 
+  it('rejects reusing an idempotency key for another invoice or amount', async () => {
+    db.invoice.findFirst.mockResolvedValue({ id: 5, clinicId: 4, status: 'PENDING', totalAmount: new Prisma.Decimal('10.00'), items: [], discounts: [], payments: [] });
+    db.payment.findFirst.mockResolvedValue({ id: 20, invoiceId: 4, amount: new Prisma.Decimal('5.00'), method: 'PIX' });
+    await expect(runWithClinic(4, () => runWithUser(12, () => FinancialService.receive(5, 6, 'PIX', 'payment-reused-key')))).rejects.toThrow('Chave de idempotência já usada');
+    expect(db.payment.create).not.toHaveBeenCalled();
+  });
+
   it('rolls back a payment when PAYMENT_RECEIVED audit creation fails', async () => {
     db.invoice.findFirst.mockResolvedValue({ id: 4, clinicId: 4, status: 'PENDING', totalAmount: new Prisma.Decimal('5.00'), items: [], discounts: [], payments: [] });
     db.payment.findFirst.mockResolvedValue(null);
@@ -55,5 +62,14 @@ describe('financial expense authorship and audit', () => {
     await expect(runWithClinic(4, () => runWithUser(12, () => FinancialService.receive(4, 5, 'PIX', 'payment-test-rollback')))).rejects.toThrow('payment audit unavailable');
     expect(db.payment.create).toHaveBeenCalledWith({ data: expect.objectContaining({ receivedByUserId: 12 }) });
     expect(db.invoice.update).not.toHaveBeenCalled();
+  });
+
+  it('keeps an invoice paid when reversing one of several posted payments', async () => {
+    db.payment.findFirst.mockResolvedValue({ id: 13, invoiceId: 4, clinicId: 4, status: 'POSTED' });
+    db.payment.update.mockResolvedValue({ id: 13, status: 'REVERSED' });
+    db.invoice.findFirst.mockResolvedValue({ id: 4, totalAmount: new Prisma.Decimal('10.00'), payments: [{ status: 'POSTED', amount: new Prisma.Decimal('10.00') }] });
+    db.financialAuditEvent.create.mockResolvedValue({ id: 5 });
+    await runWithClinic(4, () => runWithUser(12, () => FinancialService.reversePayment(13, 'Correção sintética')));
+    expect(db.invoice.update).toHaveBeenCalledWith({ where: { id: 4 }, data: { status: 'PAID' } });
   });
 });
