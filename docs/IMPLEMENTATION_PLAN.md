@@ -519,6 +519,8 @@ Confirmações pendentes preparadas: registrar despesa/recebimento/estorno finan
 - [x] Serviço financeiro usa lock de linha da fatura via SQL raw allowlisted, transação `Serializable` e estorno condicional `status=POSTED`. Regressão mockada financeira: `8/8`; build backend aprovado.
 - [ ] Pendente: o webhook persiste inbound na `CommunicationOutbox` como registro `RECEIVED`, mas ainda não há modelo histórico inbound dedicado nem worker que transforme todos os status do provedor em estado agregado persistido. A implementação é local/simulada; nenhum envio externo foi validado.
 - [ ] Pendente: validação HTTP end-to-end contra servidor backend em execução, incluindo reinício do processo e confirmação de deduplicação após reinício; os testes de rota usam store controlado e a prova PostgreSQL usa scripts independentes.
+- [x] Validação HTTP local executada no commit integrado: `GET /webhooks/whatsapp/synthetic-9301` devolveu `200` e `hub.challenge`; POST Meta sintético assinado com bytes crus devolveu `200` e `outboxId=24`; repetição devolveu o mesmo ID; assinatura inválida devolveu `401`; após reinício do backend, a repetição continuou com exatamente uma linha persistida. A fixture sintética foi removida depois.
+- [ ] O teste HTTP usou canal/tutor locais e não valida credencial Meta, entrega externa ou mensagem real. Esses estados permanecem dependentes de acesso externo e fora da autorização atual.
 
 ### Diagnóstico visual e frontend — 2026-10-11
 
