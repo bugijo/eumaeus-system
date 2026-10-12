@@ -511,3 +511,6 @@ Confirmações pendentes preparadas: registrar despesa/recebimento/estorno finan
 - [ ] Pendente: endurecer verificação de papel revogado em tokens já emitidos; a hipótese de papel stale foi confirmada por inspeção e ainda não tem regressão executada.
 - [x] Verificação de papel revogado concluída: `requireRoles` consulta `active`, `roleName` e `clinicId` atuais do usuário antes de liberar a rota. Regressão adicionada para token DONO emitido antes da troca para RECEPCAO: `9/9` testes de autenticação aprovados; build backend aprovado.
 - [ ] Pendente: corrigir validações explícitas de relações em operações aninhadas (`connect`, `disconnect`, `upsert`, `updateMany`) e cobrir leitura/escrita HTTP cruzada.
+- [x] Proxy endurecido contra sobrescrita explícita de `clinicId`: updates recebem o contexto autenticado e valores divergentes são rejeitados; relações `connect`/`disconnect` continuam bloqueadas no proxy para exigir validação de serviço.
+- [x] Regressão do proxy adicionada: derivação de `clinicId`, rejeição de associação relacional aninhada e rejeição de `clinicId` divergente; `27/27` testes focais e build backend aprovados.
+- [ ] Pendente: validação HTTP/PG de associação por chaves estrangeiras e operações em lote; a cobertura atual prova o guard do proxy, não a jornada HTTP completa.
