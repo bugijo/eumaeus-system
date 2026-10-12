@@ -8,9 +8,10 @@ import {
 const main = async (): Promise<void> => {
   const input = loadFirstOwnerInput(process.env);
   const { disconnectPrisma, prisma } = await import('../lib/prisma');
+  const { runWithClinic } = await import('../tenantContext');
 
   try {
-    await provisionFirstOwner(prisma, input);
+    await runWithClinic(1, () => provisionFirstOwner(prisma, input));
     console.log('[Eumaeus] Conta DONO inicial criada com segurança.');
   } finally {
     await disconnectPrisma().catch(() => undefined);

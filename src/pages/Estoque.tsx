@@ -37,6 +37,7 @@ import {
 } from '@/api/productApi';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useToast } from '@/components/ui/use-toast';
+import apiClient from '@/api/apiClient';
 import {
   Package,
   DollarSign,
@@ -61,6 +62,12 @@ export default function StockPage() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortBy, setSortBy] = useState('name');
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
+  const [movementProductId, setMovementProductId] = useState('');
+  const [lotCode, setLotCode] = useState('');
+  const [lotQuantity, setLotQuantity] = useState('');
+  const [lotExpiry, setLotExpiry] = useState('');
+  const [movementReason, setMovementReason] = useState('');
+  const [movementMessage, setMovementMessage] = useState('');
 
   const { data: products = [], isLoading: productsLoading, error: productsError } = useProducts();
   const { data: stats, isLoading: statsLoading } = useStockStats();
@@ -149,6 +156,13 @@ export default function StockPage() {
     setSelectedProduct(null);
   };
 
+  const registerReceipt = async () => {
+    try {
+      await apiClient.post('/inventory/receipts', { productId: Number(movementProductId), lotCode, quantity: Number(lotQuantity), expiresAt: lotExpiry || undefined, reason: movementReason, idempotencyKey: `ui-receipt-${movementProductId}-${lotCode}-${lotQuantity}-${lotExpiry}` });
+      setMovementMessage('Entrada registrada com lote e chave idempotente.');
+    } catch (error: any) { setMovementMessage(error.response?.data?.error ?? 'Entrada recusada.'); }
+  };
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -211,6 +225,19 @@ export default function StockPage() {
           Adicionar Produto
         </Button>
       </div>
+
+      <Card className="bg-white rounded-lg shadow-md">
+        <CardHeader><CardTitle className="text-base">Entrada por lote</CardTitle></CardHeader>
+        <CardContent className="grid gap-3 md:grid-cols-6">
+          <Select value={movementProductId} onValueChange={setMovementProductId}><SelectTrigger><SelectValue placeholder="Produto" /></SelectTrigger><SelectContent>{products.map(product => <SelectItem key={product.id} value={String(product.id)}>{product.name}</SelectItem>)}</SelectContent></Select>
+          <Input aria-label="Lote" placeholder="Lote" value={lotCode} onChange={event => setLotCode(event.target.value)} />
+          <Input aria-label="Quantidade" type="number" min="1" placeholder="Quantidade" value={lotQuantity} onChange={event => setLotQuantity(event.target.value)} />
+          <Input aria-label="Validade" type="date" value={lotExpiry} onChange={event => setLotExpiry(event.target.value)} />
+          <Input aria-label="Motivo" placeholder="Motivo" value={movementReason} onChange={event => setMovementReason(event.target.value)} />
+          <Button onClick={registerReceipt}>Registrar entrada</Button>
+          {movementMessage && <p className="text-sm md:col-span-6" role="status">{movementMessage}</p>}
+        </CardContent>
+      </Card>
 
       {/* Barra de Filtros e Busca */}
       <Card className="bg-white rounded-lg shadow-md">

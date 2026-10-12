@@ -12,9 +12,12 @@ router.get('/records/:recordId/prescriptions', requireRoles(ROLE.DONO, ROLE.VETE
 
 // GET /api/prescriptions/:id - Buscar receita por ID
 router.get('/prescriptions/:id', requireRoles(ROLE.DONO, ROLE.VETERINARIO, ROLE.AUXILIAR), PrescriptionController.getPrescriptionById);
+router.get('/prescriptions/:id/versions', requireRoles(ROLE.DONO, ROLE.VETERINARIO, ROLE.AUXILIAR), PrescriptionController.getPrescriptionVersions);
 
 // PUT /api/prescriptions/:id - Atualizar receita
 router.put('/prescriptions/:id', requireRoles(ROLE.DONO, ROLE.VETERINARIO), PrescriptionController.updatePrescription);
+router.patch('/prescriptions/:id/review', requireRoles(ROLE.DONO, ROLE.VETERINARIO), PrescriptionController.reviewPrescription);
+router.get('/prescriptions/:id/print', requireRoles(ROLE.DONO, ROLE.VETERINARIO, ROLE.AUXILIAR), PrescriptionController.printPrescription);
 
 // DELETE /api/prescriptions/:id - Deletar receita
 router.delete('/prescriptions/:id', requireRoles(ROLE.DONO, ROLE.VETERINARIO), PrescriptionController.deletePrescription);

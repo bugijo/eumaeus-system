@@ -14,6 +14,11 @@ export interface Prescription {
   createdAt: string;
   updatedAt: string;
   medicalRecordId: number;
+  status?: string;
+  currentVersion?: number;
+  signatureMode?: string;
+  cancelReason?: string | null;
+  cancelledAt?: string | null;
   items: PrescriptionItem[];
   medicalRecord?: {
     id: number;
@@ -63,6 +68,25 @@ export const prescriptionApi = {
   // Atualizar receita
   async updatePrescription(id: number, data: UpdatePrescriptionRequest): Promise<Prescription> {
     const response = await apiClient.put(`/prescriptions/${id}`, data);
+    return response.data;
+  },
+
+  async reviewPrescription(id: number, status: 'APPROVED' | 'REJECTED', reviewNotes?: string): Promise<Prescription> {
+    const response = await apiClient.patch(`/prescriptions/${id}/review`, { status, reviewNotes });
+    return response.data;
+  },
+
+  async cancelPrescription(id: number, reason: string): Promise<void> {
+    await apiClient.delete(`/prescriptions/${id}`, { data: { reason } });
+  },
+
+  async getVersions(id: number): Promise<PrescriptionItem[]> {
+    const response = await apiClient.get(`/prescriptions/${id}/versions`);
+    return response.data;
+  },
+
+  async getPrintableHtml(id: number): Promise<string> {
+    const response = await apiClient.get<string>(`/prescriptions/${id}/print`);
     return response.data;
   },
 

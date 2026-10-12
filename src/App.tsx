@@ -29,6 +29,9 @@ const ProductFormPage = React.lazy(() => import("./pages/ProductFormPage"));
 const InvoiceDetailPage = React.lazy(() => import("./pages/InvoiceDetailPage"));
 const MedicalRecordPage = React.lazy(() => import("./pages/MedicalRecordPage"));
 const ReceitaPrintPage = React.lazy(() => import("./pages/ReceitaPrintPage"));
+const OperacaoPage = React.lazy(() => import("./pages/OperacaoPage"));
+const Especialistas = React.lazy(() => import("./pages/Especialistas"));
+const CarePage = React.lazy(() => import("./pages/CarePage"));
 
 // Componente de loading otimizado para Suspense
 const PageLoader = () => {
@@ -141,6 +144,9 @@ function App() {
               } />
               <Route path="/configuracoes" element={<Layout><Configuracoes /></Layout>} />
               <Route path="/financeiro" element={<Layout><Financeiro /></Layout>} />
+              <Route path="/operacao" element={<Layout><OperacaoPage /></Layout>} />
+              <Route path="/especialistas" element={<Layout><Especialistas /></Layout>} />
+              <Route path="/assistencia" element={<Layout><CarePage /></Layout>} />
               <Route path="/estoque" element={
                 <Layout><ProductListPage /></Layout>
               } />

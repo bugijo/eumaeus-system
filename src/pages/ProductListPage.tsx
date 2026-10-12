@@ -11,12 +11,24 @@ import { useProducts, useDeleteProduct, useStockStats } from '@/api/productApi';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import { useToast } from '@/components/ui/use-toast';
 import type { Product } from '@/api/productApi';
+import apiClient from '@/api/apiClient';
 
 const ProductListPage: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+  const [movementProductId, setMovementProductId] = useState('');
+  const [lotCode, setLotCode] = useState('');
+  const [lotQuantity, setLotQuantity] = useState('');
+  const [lotExpiry, setLotExpiry] = useState('');
+  const [movementReason, setMovementReason] = useState('');
+  const [movementMessage, setMovementMessage] = useState('');
+  const [changeLotId, setChangeLotId] = useState('');
+  const [changeQuantity, setChangeQuantity] = useState('');
+  const [changeReason, setChangeReason] = useState('');
+  const [movementHistory, setMovementHistory] = useState<any[]>([]);
+  const [historyProductName, setHistoryProductName] = useState('');
   
   const { data: products = [], isLoading, error } = useProducts();
   const { data: stats } = useStockStats();
@@ -71,6 +83,28 @@ const ProductListPage: React.FC = () => {
         variant: 'destructive',
       });
     }
+  };
+
+  const registerReceipt = async () => {
+    try {
+      await apiClient.post('/inventory/receipts', { productId: Number(movementProductId), lotCode, quantity: Number(lotQuantity), expiresAt: lotExpiry || undefined, reason: movementReason, idempotencyKey: `ui-receipt-${movementProductId}-${lotCode}-${lotQuantity}-${lotExpiry}` });
+      setMovementMessage('Entrada registrada com lote e chave idempotente.');
+    } catch (error: any) { setMovementMessage(error.response?.data?.error ?? 'Entrada recusada.'); }
+  };
+
+  const loadMovementHistory = async (product: Product) => {
+    try {
+      const response = await apiClient.get(`/inventory/movements?productId=${product.id}`);
+      setMovementHistory(response.data.data ?? []);
+      setHistoryProductName(product.name);
+    } catch (error: any) { setMovementMessage(error.response?.data?.error ?? 'Histórico indisponível.'); }
+  };
+
+  const registerChange = async (type: 'adjustments' | 'losses' | 'returns') => {
+    try {
+      await apiClient.post(`/inventory/${type}`, { productId: Number(movementProductId), lotId: Number(changeLotId), quantity: Number(changeQuantity), reason: changeReason, idempotencyKey: `ui-${type}-${movementProductId}-${changeLotId}-${changeQuantity}-${changeReason}` });
+      setMovementMessage(`${type === 'adjustments' ? 'Ajuste' : type === 'losses' ? 'Perda' : 'Devolução'} registrada.`);
+    } catch (error: any) { setMovementMessage(error.response?.data?.error ?? 'Movimento recusado.'); }
   };
 
   if (isLoading) {
@@ -147,6 +181,24 @@ const ProductListPage: React.FC = () => {
           </Card>
         </div>
       )}
+
+      <Card>
+        <CardHeader><CardTitle className="text-base">Entrada por lote</CardTitle><CardDescription>Registre validade e motivo; a chave evita duplicação acidental.</CardDescription></CardHeader>
+        <CardContent className="grid gap-3 md:grid-cols-6">
+          <select aria-label="Produto do lote" className="h-10 rounded-md border bg-background px-3" value={movementProductId} onChange={event => setMovementProductId(event.target.value)}><option value="">Produto</option>{products.map(product => <option key={product.id} value={product.id}>{product.name}</option>)}</select>
+          <Input aria-label="Lote" placeholder="Lote" value={lotCode} onChange={event => setLotCode(event.target.value)} />
+          <Input aria-label="Quantidade" type="number" min="1" placeholder="Quantidade" value={lotQuantity} onChange={event => setLotQuantity(event.target.value)} />
+          <Input aria-label="Validade" type="date" value={lotExpiry} onChange={event => setLotExpiry(event.target.value)} />
+          <Input aria-label="Motivo" placeholder="Motivo" value={movementReason} onChange={event => setMovementReason(event.target.value)} />
+          <Button onClick={registerReceipt}>Registrar entrada</Button>
+          {movementMessage && <p role="status" className="text-sm md:col-span-6">{movementMessage}</p>}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle className="text-base">Ajuste, perda ou devolução</CardTitle><CardDescription>Ajustes exigem permissão de DONO; todos exigem justificativa e lote.</CardDescription></CardHeader>
+        <CardContent className="grid gap-3 md:grid-cols-5"><Input aria-label="ID do lote" placeholder="ID do lote" value={changeLotId} onChange={event => setChangeLotId(event.target.value)} /><Input aria-label="Quantidade do movimento" type="number" min="1" placeholder="Quantidade" value={changeQuantity} onChange={event => setChangeQuantity(event.target.value)} /><Input aria-label="Justificativa do movimento" placeholder="Justificativa" value={changeReason} onChange={event => setChangeReason(event.target.value)} /><Button variant="outline" onClick={() => registerChange('adjustments')}>Ajuste</Button><div className="flex gap-2"><Button variant="outline" onClick={() => registerChange('losses')}>Perda</Button><Button variant="outline" onClick={() => registerChange('returns')}>Devolução</Button></div></CardContent>
+      </Card>
 
       {/* Filtros e Busca */}
       <Card>
@@ -230,6 +282,11 @@ const ProductListPage: React.FC = () => {
                           <Button
                             variant="outline"
                             size="sm"
+                            onClick={() => loadMovementHistory(product)}
+                          >Histórico</Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
                             onClick={() => navigate(`/estoque/editar/${product.id}`)}
                           >
                             <Edit className="h-4 w-4" />
@@ -252,6 +309,8 @@ const ProductListPage: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+
+      {historyProductName && <Card><CardHeader><CardTitle className="text-base">Histórico de movimentações — {historyProductName}</CardTitle></CardHeader><CardContent><div className="space-y-2 text-sm">{movementHistory.map(item => <div key={item.id} className="flex justify-between border-b pb-2"><span>{item.type} · {item.reason}</span><span>{item.quantity} · lote {item.lot?.lotCode ?? item.lotId}</span></div>)}{!movementHistory.length && <p className="text-muted-foreground">Nenhuma movimentação registrada.</p>}</div></CardContent></Card>}
 
       {/* Dialog de Confirmação de Exclusão */}
       <AlertDialog open={!!productToDelete} onOpenChange={() => setProductToDelete(null)}>

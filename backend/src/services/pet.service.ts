@@ -33,6 +33,11 @@ export class PetService {
   static async createPet(newPetData: Omit<Pet, 'id' | 'createdAt' | 'updatedAt' | 'tutor'>): Promise<Pet> {
     try {
       console.log('Recebido para criação:', newPetData);
+
+      const tutor = await prisma.tutor.findFirst({ where: { id: newPetData.tutorId, deletedAt: null } });
+      if (!tutor) {
+        throw new Error('Tutor não encontrado na clínica autenticada');
+      }
       
       // Tratar formatação da data de nascimento
       let formattedBirthDate: Date | null = null;

@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { AvailabilityController } from '../controllers/availability.controller';
+import { requireRoles, ROLE } from '../middlewares/auth.middleware';
 
 const router = Router();
 
@@ -12,7 +13,7 @@ const router = Router();
  * @example /api/availability?year=2025&month=1
  * @example /api/availability?year=2025&month=2&serviceType=Consulta
  */
-router.get('/', AvailabilityController.getAvailability);
+router.get('/', requireRoles(ROLE.DONO, ROLE.VETERINARIO, ROLE.RECEPCAO, ROLE.AUXILIAR), AvailabilityController.getAvailability);
 
 /**
  * @route GET /api/availability/check
@@ -21,6 +22,6 @@ router.get('/', AvailabilityController.getAvailability);
  * @query time - Hora no formato HH:mm (obrigatório)
  * @example /api/availability/check?date=2025-01-15&time=09:00
  */
-router.get('/check', AvailabilityController.checkSlotAvailability);
+router.get('/check', requireRoles(ROLE.DONO, ROLE.VETERINARIO, ROLE.RECEPCAO, ROLE.AUXILIAR), AvailabilityController.checkSlotAvailability);
 
 export default router;

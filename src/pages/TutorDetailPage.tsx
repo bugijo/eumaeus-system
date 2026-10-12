@@ -128,7 +128,9 @@ export const TutorDetailPage = () => {
               <div className="flex items-center gap-2 text-gray-600">
                 <Calendar className="w-4 h-4" />
                 <span>
-                  Cadastrado em {format(new Date(tutor.createdAt), 'dd/MM/yyyy', { locale: ptBR })}
+                  Cadastrado em {tutor.createdAt && !Number.isNaN(new Date(tutor.createdAt).getTime())
+                    ? format(new Date(tutor.createdAt), 'dd/MM/yyyy', { locale: ptBR })
+                    : 'Não informado'}
                 </span>
               </div>
             </CardContent>

@@ -2,16 +2,35 @@ import React from 'react';
 import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import Financeiro from '../Financeiro';
-import { useFinancialStats, useInvoices } from '../../api/invoiceApi';
+import { useApplyInvoiceDiscount, useFinancialStats, useInvoices } from '../../api/invoiceApi';
 import { ACCOUNTS_PAYABLE_DATA_SOURCE } from '../../constants';
+import { useCreateExpense, useExpenses, useReceivePayment, useResultCenters, useReversePayment } from '../../api/financialApi';
+import { useAuthStore } from '../../stores/authStore';
+
+vi.mock('../../stores/authStore', () => ({ useAuthStore: vi.fn() }));
 
 vi.mock('../../api/invoiceApi', () => ({
   useFinancialStats: vi.fn(),
   useInvoices: vi.fn(),
+  useApplyInvoiceDiscount: vi.fn(),
+}));
+vi.mock('../../api/financialApi', () => ({
+  useCreateExpense: vi.fn(),
+  useExpenses: vi.fn(),
+  useReceivePayment: vi.fn(),
+  useReversePayment: vi.fn(),
+  useResultCenters: vi.fn(),
 }));
 
 describe('Financeiro', () => {
   it('uses only backend invoice values in real totals and hides demo expenses', () => {
+    vi.mocked(useApplyInvoiceDiscount).mockReturnValue({ mutate: vi.fn() } as any);
+    vi.mocked(useAuthStore).mockImplementation((selector: any) => selector({ user: { role: 'DONO' } }));
+    vi.mocked(useReceivePayment).mockReturnValue({ mutate: vi.fn() } as any);
+    vi.mocked(useReversePayment).mockReturnValue({ mutate: vi.fn() } as any);
+    vi.mocked(useCreateExpense).mockReturnValue({ mutate: vi.fn(), isPending: false, isError: false } as any);
+    vi.mocked(useExpenses).mockReturnValue({ data: [] } as any);
+    vi.mocked(useResultCenters).mockReturnValue({ data: [] } as any);
     vi.mocked(useFinancialStats).mockReturnValue({
       data: {
         paid: { amount: 100, count: 1 },

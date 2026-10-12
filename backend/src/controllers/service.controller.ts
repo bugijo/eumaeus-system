@@ -2,6 +2,36 @@ import { Request, Response } from 'express';
 import { ServiceService } from '../services/service.service';
 
 export class ServiceController {
+  static async createService(req: Request, res: Response) {
+    try {
+      const service = await ServiceService.createService({
+        name: req.body.name,
+        description: req.body.description,
+        duration: Number(req.body.duration ?? req.body.durationMinutes),
+        price: Number(req.body.price),
+        category: req.body.category,
+        active: req.body.active,
+      });
+      return res.status(201).json({ success: true, data: service });
+    } catch (error) {
+      return res.status(400).json({ error: error instanceof Error ? error.message : 'Dados de serviço inválidos' });
+    }
+  }
+
+  static async updateService(req: Request, res: Response) {
+    try {
+      const service = await ServiceService.updateService(Number(req.params.id), {
+        ...req.body,
+        ...(req.body.duration !== undefined || req.body.durationMinutes !== undefined
+          ? { duration: Number(req.body.duration ?? req.body.durationMinutes) } : {}),
+        ...(req.body.price !== undefined ? { price: Number(req.body.price) } : {}),
+      });
+      if (!service) return res.status(404).json({ error: 'Serviço não encontrado' });
+      return res.json({ success: true, data: service });
+    } catch (error) {
+      return res.status(400).json({ error: error instanceof Error ? error.message : 'Dados de serviço inválidos' });
+    }
+  }
   /**
    * GET /api/services
    * Retorna todos os serviços disponíveis
@@ -15,13 +45,13 @@ export class ServiceController {
       
       if (search) {
         // Busca por termo
-        services = ServiceService.searchServices(search as string);
+        services = await ServiceService.searchServices(search as string);
       } else if (category) {
         // Filtra por categoria
-        services = ServiceService.getServicesByCategoryName(category as string);
+        services = await ServiceService.getServicesByCategoryName(category as string);
       } else {
         // Retorna todos os serviços
-        services = ServiceService.getAllServices();
+        services = await ServiceService.getAllServices();
       }
       
       res.json({
@@ -46,7 +76,7 @@ export class ServiceController {
    */
   static async getServicesByCategory(req: Request, res: Response) {
     try {
-      const categories = ServiceService.getServicesByCategory();
+      const categories = await ServiceService.getServicesByCategory();
       
       res.json({
         success: true,
@@ -79,7 +109,7 @@ export class ServiceController {
         });
       }
       
-      const service = ServiceService.getServiceById(serviceId);
+      const service = await ServiceService.getServiceById(serviceId);
       
       if (!service) {
         return res.status(404).json({

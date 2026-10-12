@@ -13,6 +13,7 @@ import { Button } from '../components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../components/ui/dialog';
 import { LegacyMedicalRecordForm } from '../components/forms/MedicalRecordForm';
 import { combineAppointmentDateTime } from '../lib/utils';
+import { useAssignSpecialist, useConfirmSpecialistAssignment, useSpecialists } from '../api/specialistApi';
 import '../styles/calendar.css';
 
 export default function Agendamentos() {
@@ -26,8 +27,13 @@ export default function Agendamentos() {
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
   const [isMedicalRecordModalOpen, setIsMedicalRecordModalOpen] = useState(false);
+  const [selectedSpecialistId, setSelectedSpecialistId] = useState('');
+  const [assignmentId, setAssignmentId] = useState<number | null>(null);
   
   const updateStatus = useUpdateAppointmentStatus();
+  const { data: specialists = [] } = useSpecialists();
+  const assignSpecialist = useAssignSpecialist();
+  const confirmSpecialist = useConfirmSpecialistAssignment();
 
   // Formata os dados para o formato que o FullCalendar entende
   const calendarEvents = useMemo(() => {
@@ -245,6 +251,18 @@ export default function Agendamentos() {
               </div>
               
               <div className="flex flex-col gap-2">
+                <div className="rounded border p-3 space-y-2">
+                  <p className="text-sm font-medium">Especialista responsável</p>
+                  <select aria-label="Especialista do agendamento" className="w-full rounded border px-3 py-2" value={selectedSpecialistId} onChange={event => setSelectedSpecialistId(event.target.value)}>
+                    <option value="">Selecione um especialista</option>
+                    {specialists.filter(specialist => specialist.active).map(specialist => <option key={specialist.id} value={specialist.id}>{specialist.user?.name || `Usuário #${specialist.userId}`} — {specialist.specialty}</option>)}
+                  </select>
+                  <div className="flex gap-2">
+                    <Button type="button" size="sm" disabled={!selectedSpecialistId || assignSpecialist.isPending} onClick={() => assignSpecialist.mutate({ appointmentId: selectedAppointment.id, specialistId: Number(selectedSpecialistId) }, { onSuccess: assignment => setAssignmentId(assignment.id) })}>Associar</Button>
+                    <Button type="button" size="sm" variant="outline" disabled={!assignmentId || confirmSpecialist.isPending} onClick={() => assignmentId && confirmSpecialist.mutate(assignmentId)}>Confirmar associação</Button>
+                  </div>
+                  {(assignSpecialist.isError || confirmSpecialist.isError) && <p className="text-xs text-red-600">{((assignSpecialist.error || confirmSpecialist.error) as Error).message}</p>}
+                </div>
                 <Button 
                   onClick={() => handleStatusUpdate('CONFIRMED')}
                   className="bg-blue-500 hover:bg-blue-600"

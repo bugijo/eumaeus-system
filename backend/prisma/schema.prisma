@@ -27,41 +27,49 @@ generator client {
 
 // 1. Modelo para o Tutor (Dono do Pet) modificado
 model Tutor {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   name      String
-  email     String   @unique // Mantemos o email aqui para comunicação
+  email     String    @unique // Mantemos o email aqui para comunicação
   phone     String
-  address   String?  // O '?' indica que o campo é opcional
-  clinicId  Int      @default(1) // Essencial para a V2 Multi-Tenant no futuro
+  address   String? // O '?' indica que o campo é opcional
+  clinicId  Int       @default(1) // Essencial para a V2 Multi-Tenant no futuro
   deletedAt DateTime? // Soft delete: quando preenchido, o registro está "excluído"
 
   // Relacionamento: Um Tutor pode ter vários Pets
-  pets         Pet[]
-  appointments Appointment[]
+  pets                     Pet[]
+  appointments             Appointment[]
+  communicationPreferences TutorCommunicationPreference[]
+  communicationOutbox      CommunicationOutbox[]
+  packageContracts         PackageContract[]
 
   // Relacionamento 1-para-1 opcional com AuthProfile
   // Nem todo tutor terá um login no portal
-  authProfileId Int?        @unique
+  authProfileId Int?         @unique
   authProfile   AuthProfile? @relation(fields: [authProfileId], references: [id], onDelete: SetNull)
 }
 
 // 2. Modelo para o Pet
 model Pet {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   name      String
-  species   String   // Ex: "Cachorro", "Gato"
-  breed     String   // Ex: "SRD", "Poodle"
+  species   String // Ex: "Cachorro", "Gato"
+  breed     String // Ex: "SRD", "Poodle"
   birthDate DateTime?
   deletedAt DateTime? // Soft delete: quando preenchido, o registro está "excluído"
+  clinicId  Int?
 
   // Relacionamento: Um Pet pertence a um Tutor
-  tutorId      Int
-  tutor        Tutor    @relation(fields: [tutorId], references: [id])
-  appointments Appointment[]
+  tutorId                   Int
+  tutor                     Tutor                      @relation(fields: [tutorId], references: [id])
+  appointments              Appointment[]
+  packageContracts          PackageContract[]
+  vaccinations              VaccinationRecord[]
+  hospitalizationAdmissions HospitalizationAdmission[]
+  surgeryCases              SurgeryCase[]
 }
 
 // 3. Modelo para o Agendamento
@@ -71,85 +79,161 @@ model Appointment {
   updatedAt       DateTime @updatedAt
   appointmentDate DateTime
   date            DateTime // Campo adicional para compatibilidade
-  time            String   // Campo adicional para horário (HH:MM)
-  status          String @default("SCHEDULED")
+  time            String // Campo adicional para horário (HH:MM)
+  status          String   @default("SCHEDULED")
   notes           String?
+  clinicId        Int?
 
   // Relacionamento: Um agendamento é para um Pet
-  petId           Int
-  pet             Pet      @relation(fields: [petId], references: [id])
-  
+  petId Int
+  pet   Pet @relation(fields: [petId], references: [id])
+
   // Relacionamento: E pertence a um Tutor
-  tutorId         Int
-  tutor           Tutor    @relation(fields: [tutorId], references: [id])
+  tutorId Int
+  tutor   Tutor @relation(fields: [tutorId], references: [id])
 
   // Relacionamento: Um agendamento gera um prontuário (1-para-1)
-  medicalRecord   MedicalRecord?
+  medicalRecord MedicalRecord?
 
   // Relacionamento: Um agendamento pode ter vários serviços (consulta, vacina, etc.)
-  services        Service[]
+  services Service[]
 
   // Relacionamento: Um agendamento pode gerar uma fatura (1-para-1)
-  invoice         Invoice?
+  invoice               Invoice?
+  packageSessions       PackageSession[]
+  specialistAssignments SpecialistAssignment[]
 }
 
 // 4. Modelo para o Prontuário Eletrônico
 model MedicalRecord {
-  id            Int      @id @default(autoincrement())
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  symptoms      String
-  diagnosis     String
-  treatment     String
-  notes         String?
+  id                Int      @id @default(autoincrement())
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  symptoms          String
+  diagnosis         String
+  treatment         String
+  notes             String?
+  responsibleUserId Int?
+  clinicId          Int?
 
   // Relacionamento: O prontuário pertence a um agendamento
-  appointmentId Int      @unique // @unique garante que cada agendamento só tenha um prontuário
+  appointmentId Int         @unique // @unique garante que cada agendamento só tenha um prontuário
   appointment   Appointment @relation(fields: [appointmentId], references: [id])
 
   // Relacionamento: Many-to-many com produtos utilizados
-  products      MedicalRecordProduct[]
+  products        MedicalRecordProduct[]
+  responsibleUser User?                  @relation("MedicalRecordResponsible", fields: [responsibleUserId], references: [id], onDelete: SetNull)
+  vaccinations    VaccinationRecord[]
+  prescriptions   Prescription[]
 }
 
 // 4.1. Modelo para registrar produtos utilizados no prontuário
 model MedicalRecordProduct {
-  id              Int           @id @default(autoincrement())
-  quantityUsed    Int
-  
+  id           Int  @id @default(autoincrement())
+  quantityUsed Int
+  clinicId     Int?
+
   // Relacionamentos
   medicalRecordId Int
   medicalRecord   MedicalRecord @relation(fields: [medicalRecordId], references: [id])
-  
-  productId       Int
-  product         Product       @relation(fields: [productId], references: [id])
+
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
 
   @@unique([medicalRecordId, productId]) // Evita duplicatas do mesmo produto no mesmo prontuário
 }
 
 // 4.2. Modelo para Produtos/Estoque
 model Product {
-  id          Int      @id @default(autoincrement())
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  name        String
-  description String?
-  quantity    Int      @default(0)
-  price       Float
-  category    String?  // Ex: "Medicamento", "Vacina", "Material"
+  id             Int      @id @default(autoincrement())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  name           String
+  description    String?
+  quantity       Int      @default(0)
+  price          Decimal  @db.Decimal(12, 2)
+  category       String? // Ex: "Medicamento", "Vacina", "Material"
+  clinicId       Int?
+  resultCenterId Int?
 
   // Relacionamento: Many-to-many com prontuários
   medicalRecords MedicalRecordProduct[]
+  lots           ProductLot[]
+  stockMovements StockMovement[]
+  resultCenter   ResultCenter?          @relation(fields: [resultCenterId], references: [id], onDelete: SetNull)
+}
+
+model ProductLot {
+  id        Int             @id @default(autoincrement())
+  createdAt DateTime        @default(now())
+  clinicId  Int
+  productId Int
+  lotCode   String
+  expiresAt DateTime?
+  quantity  Int             @default(0)
+  product   Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  movements StockMovement[]
+
+  @@unique([clinicId, productId, lotCode])
+  @@index([clinicId, expiresAt])
+}
+
+model StockMovement {
+  id                 Int        @id @default(autoincrement())
+  createdAt          DateTime   @default(now())
+  clinicId           Int
+  productId          Int
+  lotId              Int
+  type               String
+  quantity           Int
+  reason             String
+  idempotencyKey     String     @unique
+  appointmentId      Int?
+  authorizedByUserId Int?
+  product            Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  lot                ProductLot @relation(fields: [lotId], references: [id], onDelete: Cascade)
+
+  @@index([clinicId, productId, createdAt])
+  @@index([clinicId, appointmentId])
 }
 
 // 5. Modelo para Serviços e Produtos (para faturamento)
 model Service {
-  id            Int      @id @default(autoincrement())
-  name          String   // Ex: "Consulta", "Vacina V10", "Raio-X"
-  price         Float
-  
+  id               Int     @id @default(autoincrement())
+  name             String // Ex: "Consulta", "Vacina V10", "Raio-X"
+  price            Decimal @db.Decimal(12, 2)
+  durationMinutes  Int?
+  category         String?
+  clinicId         Int?
+  resultCenterId   Int?
+  catalogServiceId Int?
+
   // Relacionamento: O serviço está vinculado a um agendamento
-  appointmentId Int
-  appointment   Appointment @relation(fields: [appointmentId], references: [id])
+  appointmentId   Int
+  appointment     Appointment      @relation(fields: [appointmentId], references: [id])
+  resultCenter    ResultCenter?    @relation(fields: [resultCenterId], references: [id], onDelete: SetNull)
+  catalogService  CatalogService?  @relation(fields: [catalogServiceId], references: [id], onDelete: SetNull)
+  packageSessions PackageSession[]
+  invoiceItems    InvoiceItem[]
+}
+
+model CatalogService {
+  id              Int      @id @default(autoincrement())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  clinicId        Int
+  name            String
+  description     String?
+  price           Decimal  @db.Decimal(12, 2)
+  durationMinutes Int
+  category        String
+  active          Boolean  @default(true)
+
+  appointments    Service[]
+  coveredPackages ServicePackage[] @relation("PackageCoverage")
+
+  @@unique([clinicId, name])
+  @@index([clinicId, active])
 }
 
 // Enum para garantir que os nomes dos cargos sejam sempre os mesmos
@@ -162,17 +246,17 @@ model Service {
 
 // Modelo central que lida APENAS com login
 model AuthProfile {
-  id           Int     @id @default(autoincrement())
-  email        String  @unique
-  password     String  // O hash da senha, como já fazemos
-  refreshToken String? @unique
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  password     String // O hash da senha, como já fazemos
+  refreshToken String?  @unique
   createdAt    DateTime @default(now())
 
   // A que tipo de perfil este login pertence?
   // A relação é opcional em ambos os lados, pois um AuthProfile
   // pertence a um User OU a um Tutor, nunca aos dois.
-  user   User?
-  tutor  Tutor?
+  user  User?
+  tutor Tutor?
 }
 
 // Modelo User (funcionário) modificado
@@ -182,14 +266,102 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   clinicId  Int      @default(1) // Essencial para a V2 Multi-Tenant no futuro
+  active    Boolean  @default(true)
 
   // Relacionamento: Um usuário tem um cargo
-  roleName  String
-  role      Role     @relation(fields: [roleName], references: [name])
+  roleName String
+  role     Role   @relation(fields: [roleName], references: [name])
 
   // Relacionamento 1-para-1 com AuthProfile
-  authProfileId Int         @unique
-  authProfile   AuthProfile @relation(fields: [authProfileId], references: [id], onDelete: Cascade)
+  authProfileId                      Int                           @unique
+  authProfile                        AuthProfile                   @relation(fields: [authProfileId], references: [id], onDelete: Cascade)
+  responsibleMedicalRecords          MedicalRecord[]               @relation("MedicalRecordResponsible")
+  vaccinations                       VaccinationRecord[]
+  createdPrescriptions               Prescription[]                @relation("PrescriptionVeterinarian")
+  reviewedPrescriptions              Prescription[]                @relation("PrescriptionReviewer")
+  cancelledPrescriptions             Prescription[]                @relation("PrescriptionCanceller")
+  specialistProfiles                 SpecialistProfile[]
+  hospitalizationResponsible         HospitalizationAdmission[]    @relation("HospitalizationResponsible")
+  hospitalizationDischargeReviewer   HospitalizationAdmission[]    @relation("HospitalizationDischargeReviewer")
+  hospitalizationTaskExecutions      HospitalizationTask[]         @relation("HospitalizationTaskExecutor")
+  hospitalizationPrescriptionAuthors HospitalizationPrescription[] @relation("HospitalizationPrescriptionAuthor")
+  handoffsFrom                       HospitalizationHandoff[]      @relation("HospitalizationHandoffFrom")
+  handoffsTo                         HospitalizationHandoff[]      @relation("HospitalizationHandoffTo")
+  surgeryVeterinarianCases           SurgeryCase[]                 @relation("SurgeryVeterinarian")
+  surgeryBudgetAuthors               SurgeryBudgetVersion[]        @relation("SurgeryBudgetAuthor")
+  surgeryConsentRecordings           SurgeryConsent[]              @relation("SurgeryConsentRecorder")
+  surgeryChecklistCompletions        SurgeryChecklistItem[]        @relation("SurgeryChecklistCompleter")
+  surgeryInstructionApprovals        SurgeryInstruction[]          @relation("SurgeryInstructionApprover")
+  createdExpenses                    Expense[]                    @relation("ExpenseAuthor")
+  financialAuditEvents               FinancialAuditEvent[]        @relation("FinancialAuditActor")
+  receivedPayments                   Payment[]                    @relation("PaymentReceiver")
+}
+
+model Prescription {
+  id                       Int                @id @default(autoincrement())
+  createdAt                DateTime           @default(now())
+  updatedAt                DateTime           @updatedAt
+  clinicId                 Int
+  medicalRecordId          Int
+  veterinarianUserId       Int
+  reviewedByUserId         Int?
+  currentVersion           Int                @default(1)
+  status                   String             @default("PENDING_REVIEW")
+  clinicNameSnapshot       String
+  veterinarianNameSnapshot String
+  tutorNameSnapshot        String
+  petNameSnapshot          String
+  signatureMode            String             @default("VISUAL_ONLY")
+  reviewedAt               DateTime?
+  reviewNotes              String?
+  cancelledAt              DateTime?
+  cancelledByUserId        Int?
+  cancelReason             String?
+  medicalRecord            MedicalRecord      @relation(fields: [medicalRecordId], references: [id], onDelete: Cascade)
+  veterinarian             User               @relation("PrescriptionVeterinarian", fields: [veterinarianUserId], references: [id])
+  reviewedBy               User?              @relation("PrescriptionReviewer", fields: [reviewedByUserId], references: [id], onDelete: SetNull)
+  cancelledBy              User?              @relation("PrescriptionCanceller", fields: [cancelledByUserId], references: [id], onDelete: SetNull)
+  items                    PrescriptionItem[]
+
+  @@index([clinicId, medicalRecordId, createdAt])
+  @@index([clinicId, status])
+}
+
+model PrescriptionItem {
+  id             Int          @id @default(autoincrement())
+  clinicId       Int
+  prescriptionId Int
+  version        Int
+  medication     String
+  dosage         String
+  frequency      String
+  duration       String
+  instructions   String?
+  prescription   Prescription @relation(fields: [prescriptionId], references: [id], onDelete: Cascade)
+
+  @@index([prescriptionId, version])
+}
+
+model VaccinationRecord {
+  id                Int            @id @default(autoincrement())
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  clinicId          Int
+  petId             Int
+  medicalRecordId   Int?
+  responsibleUserId Int
+  vaccineName       String
+  manufacturer      String?
+  lotCode           String?
+  administeredAt    DateTime
+  nextDueAt         DateTime?
+  notes             String?
+  pet               Pet            @relation(fields: [petId], references: [id], onDelete: Cascade)
+  medicalRecord     MedicalRecord? @relation(fields: [medicalRecordId], references: [id], onDelete: SetNull)
+  responsibleUser   User           @relation(fields: [responsibleUserId], references: [id])
+
+  @@index([clinicId, petId, administeredAt])
+  @@index([clinicId, nextDueAt])
 }
 
 // O modelo para os Cargos (ou "Roles")
@@ -203,70 +375,484 @@ model Role {
 
 // O modelo para as Permissões individuais
 model Permission {
-  id          Int      @id @default(autoincrement())
-  action      String   // Ex: "view", "create", "edit", "delete"
-  subject     String   // Ex: "Tutor", "Pet", "Appointment", "Financials", "MedicalRecord"
+  id      Int    @id @default(autoincrement())
+  action  String // Ex: "view", "create", "edit", "delete"
+  subject String // Ex: "Tutor", "Pet", "Appointment", "Financials", "MedicalRecord"
 
   // Relacionamento: Uma permissão pode estar em muitos cargos
-  roles       Role[]
+  roles Role[]
 
   @@unique([action, subject]) // Garante que não tenhamos permissões duplicadas (ex: duas "view_Tutor")
 }
 
 // 6. Modelo para Faturas
 model Invoice {
-  id            Int           @id @default(autoincrement())
-  totalAmount   Float
-  status        String @default("PENDING")
-  createdAt     DateTime      @default(now())
-  nfeId         String?       // ID da NFS-e emitida (opcional)
+  id             Int      @id @default(autoincrement())
+  totalAmount    Decimal  @db.Decimal(12, 2)
+  status         String   @default("PENDING")
+  createdAt      DateTime @default(now())
+  nfeId          String? // ID da NFS-e emitida (opcional)
+  clinicId       Int?
+  resultCenterId Int?
 
-  appointmentId Int           @unique // Cada fatura está ligada a um único agendamento
-  appointment   Appointment   @relation(fields: [appointmentId], references: [id])
+  appointmentId Int         @unique // Cada fatura está ligada a um único agendamento
+  appointment   Appointment @relation(fields: [appointmentId], references: [id])
 
-  items         InvoiceItem[]
+  items        InvoiceItem[]
+  discounts    InvoiceDiscount[]
+  resultCenter ResultCenter?     @relation(fields: [resultCenterId], references: [id], onDelete: SetNull)
+  payments     Payment[]
 }
 
 // 6.1. Modelo para Itens da Fatura
 model InvoiceItem {
-  id          Int     @id @default(autoincrement())
-  description String  // Ex: "Consulta Padrão" ou "Vacina V10"
-  quantity    Int
-  unitPrice   Float
-  totalPrice  Float   // quantity * unitPrice
+  id               Int     @id @default(autoincrement())
+  description      String // Ex: "Consulta Padrão" ou "Vacina V10"
+  quantity         Int
+  unitPrice        Decimal @db.Decimal(12, 2)
+  totalPrice       Decimal @db.Decimal(12, 2) // quantity * unitPrice
+  clinicId         Int?
+  serviceId        Int?
+  packageSessionId Int?    @unique
+  coveredByPackage Boolean @default(false)
+  resultCenterId   Int?
 
-  invoiceId   Int
-  invoice     Invoice @relation(fields: [invoiceId], references: [id])
+  invoiceId      Int
+  invoice        Invoice         @relation(fields: [invoiceId], references: [id])
+  service        Service?        @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  packageSession PackageSession? @relation(fields: [packageSessionId], references: [id], onDelete: SetNull)
+  resultCenter   ResultCenter?   @relation(fields: [resultCenterId], references: [id], onDelete: SetNull)
+}
+
+model ResultCenter {
+  id           Int           @id @default(autoincrement())
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  clinicId     Int
+  code         String
+  name         String
+  active       Boolean       @default(true)
+  products     Product[]
+  services     Service[]
+  invoices     Invoice[]
+  invoiceItems InvoiceItem[]
+  expenses     Expense[]
+
+  @@unique([clinicId, code])
+  @@index([clinicId, active])
+}
+
+model Payment {
+  id             Int       @id @default(autoincrement())
+  createdAt      DateTime  @default(now())
+  clinicId       Int
+  invoiceId      Int
+  amount         Decimal   @db.Decimal(12, 2)
+  method         String
+  status         String    @default("POSTED")
+  receivedAt     DateTime  @default(now())
+  idempotencyKey String
+  reversedAt     DateTime?
+  reversalReason String?
+  receivedByUserId Int?
+  invoice        Invoice   @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  receivedByUser User?     @relation("PaymentReceiver", fields: [receivedByUserId], references: [id], onDelete: SetNull)
+  auditEvents    FinancialAuditEvent[]
+
+  @@unique([clinicId, idempotencyKey])
+  @@index([clinicId, invoiceId, status])
+}
+
+model Expense {
+  id             Int           @id @default(autoincrement())
+  createdAt      DateTime      @default(now())
+  clinicId       Int
+  description    String
+  amount         Decimal       @db.Decimal(12, 2)
+  resultCenterId Int?
+  incurredAt     DateTime      @default(now())
+  reason         String?
+  createdById    Int?
+  resultCenter   ResultCenter? @relation(fields: [resultCenterId], references: [id], onDelete: SetNull)
+  createdBy      User?         @relation("ExpenseAuthor", fields: [createdById], references: [id], onDelete: SetNull)
+  auditEvents    FinancialAuditEvent[]
+
+  @@index([clinicId, resultCenterId, incurredAt])
+}
+
+model FinancialAuditEvent {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  clinicId    Int
+  eventType   String
+  expenseId   Int?
+  paymentId   Int?
+  actorUserId Int
+  metadata    Json?
+  expense     Expense? @relation(fields: [expenseId], references: [id], onDelete: SetNull)
+  payment     Payment? @relation(fields: [paymentId], references: [id], onDelete: SetNull)
+  actor       User     @relation("FinancialAuditActor", fields: [actorUserId], references: [id], onDelete: Restrict)
+
+  @@index([clinicId, eventType, createdAt])
+  @@index([clinicId, expenseId])
+}
+
+model InvoiceDiscount {
+  id                 Int      @id @default(autoincrement())
+  createdAt          DateTime @default(now())
+  clinicId           Int?
+  invoiceId          Int
+  amount             Decimal  @db.Decimal(12, 2)
+  reason             String
+  authorizedByUserId Int
+  invoice            Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([clinicId, invoiceId])
+}
+
+model TutorCommunicationPreference {
+  id          Int       @id @default(autoincrement())
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  clinicId    Int
+  tutorId     Int
+  sender      String
+  category    String
+  enabled     Boolean   @default(true)
+  pausedUntil DateTime?
+  stopAll     Boolean   @default(false)
+  tutor       Tutor     @relation(fields: [tutorId], references: [id], onDelete: Cascade)
+
+  @@unique([clinicId, tutorId, sender, category])
+  @@index([clinicId, tutorId])
+}
+
+model CommunicationOutbox {
+  id            Int                    @id @default(autoincrement())
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
+  clinicId      Int
+  tutorId       Int
+  appointmentId Int?
+  eventType     String
+  category      String
+  dedupeKey     String                 @unique
+  payload       Json
+  status        String                 @default("QUEUED")
+  attempts      Int                    @default(0)
+  maxAttempts   Int                    @default(3)
+  availableAt   DateTime               @default(now())
+  sentAt        DateTime?
+  cancelledAt   DateTime?
+  lastError     String?
+  tutor         Tutor                  @relation(fields: [tutorId], references: [id], onDelete: Cascade)
+  attemptsLog   CommunicationAttempt[]
+
+  @@index([clinicId, status, availableAt])
+  @@index([clinicId, tutorId, appointmentId])
+}
+
+model CommunicationAttempt {
+  id        Int                 @id @default(autoincrement())
+  createdAt DateTime            @default(now())
+  outboxId  Int
+  attemptNo Int
+  status    String
+  error     String?
+  outbox    CommunicationOutbox @relation(fields: [outboxId], references: [id], onDelete: Cascade)
+
+  @@unique([outboxId, attemptNo])
+}
+
+model ServicePackage {
+  id                      Int               @id @default(autoincrement())
+  createdAt               DateTime          @default(now())
+  updatedAt               DateTime          @updatedAt
+  clinicId                Int
+  name                    String
+  description             String?
+  price                   Decimal           @db.Decimal(12, 2)
+  totalSessions           Int
+  validityDays            Int
+  active                  Boolean           @default(true)
+  coveredCatalogServiceId Int?
+  coveredCatalogService   CatalogService?   @relation("PackageCoverage", fields: [coveredCatalogServiceId], references: [id], onDelete: SetNull)
+  contracts               PackageContract[]
+
+  @@unique([clinicId, name])
+  @@index([clinicId, active])
+}
+
+model PackageContract {
+  id                Int              @id @default(autoincrement())
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  clinicId          Int
+  packageId         Int
+  tutorId           Int
+  petId             Int
+  contractedPrice   Decimal          @db.Decimal(12, 2)
+  totalSessions     Int
+  remainingSessions Int
+  expiresAt         DateTime
+  status            String           @default("ACTIVE")
+  package           ServicePackage   @relation(fields: [packageId], references: [id])
+  tutor             Tutor            @relation(fields: [tutorId], references: [id])
+  pet               Pet              @relation(fields: [petId], references: [id])
+  sessions          PackageSession[]
+
+  @@index([clinicId, tutorId, petId, status])
+  @@index([clinicId, expiresAt])
+}
+
+model PackageSession {
+  id             Int             @id @default(autoincrement())
+  createdAt      DateTime        @default(now())
+  reversedAt     DateTime?
+  reversalReason String?
+  clinicId       Int
+  contractId     Int
+  appointmentId  Int             @unique
+  serviceId      Int?
+  contract       PackageContract @relation(fields: [contractId], references: [id])
+  appointment    Appointment     @relation(fields: [appointmentId], references: [id])
+  service        Service?        @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  invoiceItem    InvoiceItem?
+
+  @@unique([clinicId, contractId, appointmentId])
+  @@index([clinicId, contractId, reversedAt])
 }
 
 // 7. Modelo para Configurações da Clínica (Sistema de Automação)
 model ClinicSettings {
-  id                          Int      @id @default(autoincrement())
-  createdAt                   DateTime @default(now())
-  updatedAt                   DateTime @updatedAt
-  
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // Configurações de Lembretes de Consulta
-  appointmentRemindersEnabled Boolean  @default(true)
-  appointmentReminderTemplate String   @default("Olá {tutor}! Não se esqueça da consulta do {pet} amanhã às {hora}. Até logo!")
-  
+  appointmentRemindersEnabled Boolean @default(true)
+  appointmentReminderTemplate String  @default("Olá {tutor}! Não se esqueça da consulta do {pet} amanhã às {hora}. Até logo!")
+
   // Configurações de Lembretes de Vacina
-  vaccineRemindersEnabled     Boolean  @default(true)
-  vaccineReminderTemplate     String   @default("Olá {tutor}! A vacina {vacina} do {pet} está próxima do vencimento em {data}. Agende a revacinação!")
-  
+  vaccineRemindersEnabled Boolean @default(true)
+  vaccineReminderTemplate String  @default("Olá {tutor}! A vacina {vacina} do {pet} está próxima do vencimento em {data}. Agende a revacinação!")
+
   // Configurações de E-mail
-  emailFromName               String   @default("Eumaeus Clínica Veterinária")
-  emailFromAddress            String   @default("contato@eumaeus.com.br")
-  
+  emailFromName    String @default("Eumaeus Clínica Veterinária")
+  emailFromAddress String @default("contato@eumaeus.com.br")
+
   // Configurações da Clínica
-  clinicName                  String   @default("Eumaeus Clínica Veterinária")
-  clinicPhone                 String   @default("(11) 99999-9999")
-  clinicAddress               String   @default("Rua das Flores, 123 - São Paulo, SP")
-  
+  clinicName    String @default("Eumaeus Clínica Veterinária")
+  clinicPhone   String @default("(11) 99999-9999")
+  clinicAddress String @default("Rua das Flores, 123 - São Paulo, SP")
+
   // Configurações de Horário
-  reminderSendTime            String   @default("08:00") // Formato HH:MM
-  vaccineReminderDaysBefore   Int      @default(7)      // Quantos dias antes avisar sobre vacinas
-  
-  clinicId                    Int      @default(1)      // Para multi-tenant no futuro
-  
+  reminderSendTime          String @default("08:00") // Formato HH:MM
+  vaccineReminderDaysBefore Int    @default(7) // Quantos dias antes avisar sobre vacinas
+
+  clinicId Int @default(1) // Para multi-tenant no futuro
+
   @@unique([clinicId]) // Garante que cada clínica tenha apenas uma configuração
+}
+
+model SpecialistProfile {
+  id             Int                      @id @default(autoincrement())
+  createdAt      DateTime                 @default(now())
+  updatedAt      DateTime                 @updatedAt
+  clinicId       Int
+  userId         Int
+  specialty      String
+  registration   String?
+  repasseRate    Decimal?                 @db.Decimal(5, 2)
+  active         Boolean                  @default(true)
+  user           User                     @relation(fields: [userId], references: [id])
+  availabilities SpecialistAvailability[]
+  assignments    SpecialistAssignment[]
+
+  @@unique([clinicId, userId])
+  @@index([clinicId, active])
+}
+
+model SpecialistAvailability {
+  id           Int               @id @default(autoincrement())
+  clinicId     Int
+  specialistId Int
+  weekday      Int
+  startTime    String
+  endTime      String
+  active       Boolean           @default(true)
+  specialist   SpecialistProfile @relation(fields: [specialistId], references: [id], onDelete: Cascade)
+
+  @@index([clinicId, specialistId, weekday])
+}
+
+model SpecialistAssignment {
+  id              Int               @id @default(autoincrement())
+  clinicId        Int
+  appointmentId   Int
+  specialistId    Int
+  status          String            @default("REQUESTED")
+  confirmedAt     DateTime?
+  repasseSnapshot Decimal?          @db.Decimal(5, 2)
+  appointment     Appointment       @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  specialist      SpecialistProfile @relation(fields: [specialistId], references: [id])
+
+  @@unique([clinicId, appointmentId, specialistId])
+  @@index([clinicId, specialistId, status])
+}
+
+model HospitalizationAdmission {
+  id                    Int                           @id @default(autoincrement())
+  createdAt             DateTime                      @default(now())
+  updatedAt             DateTime                      @updatedAt
+  clinicId              Int
+  petId                 Int
+  appointmentId         Int?
+  responsibleUserId     Int
+  status                String                        @default("ADMITTED")
+  admittedAt            DateTime                      @default(now())
+  dischargedAt          DateTime?
+  dischargeReviewedById Int?
+  dischargeNotes        String?
+  observations          String?
+  pet                   Pet                           @relation(fields: [petId], references: [id])
+  responsibleUser       User                          @relation("HospitalizationResponsible", fields: [responsibleUserId], references: [id])
+  dischargeReviewer     User?                         @relation("HospitalizationDischargeReviewer", fields: [dischargeReviewedById], references: [id])
+  tasks                 HospitalizationTask[]
+  prescriptions         HospitalizationPrescription[]
+  handoffs              HospitalizationHandoff[]
+
+  @@index([clinicId, status])
+  @@index([clinicId, petId])
+}
+
+model HospitalizationTask {
+  id           Int                      @id @default(autoincrement())
+  createdAt    DateTime                 @default(now())
+  clinicId     Int
+  admissionId  Int
+  title        String
+  scheduledAt  DateTime?
+  executedAt   DateTime?
+  executedById Int?
+  status       String                   @default("PENDING")
+  notes        String?
+  admission    HospitalizationAdmission @relation(fields: [admissionId], references: [id], onDelete: Cascade)
+  executedBy   User?                    @relation("HospitalizationTaskExecutor", fields: [executedById], references: [id])
+
+  @@index([clinicId, admissionId, status])
+}
+
+model HospitalizationPrescription {
+  id           Int                      @id @default(autoincrement())
+  createdAt    DateTime                 @default(now())
+  clinicId     Int
+  admissionId  Int
+  medication   String
+  instructions String
+  createdById  Int
+  active       Boolean                  @default(true)
+  admission    HospitalizationAdmission @relation(fields: [admissionId], references: [id], onDelete: Cascade)
+  createdBy    User                     @relation("HospitalizationPrescriptionAuthor", fields: [createdById], references: [id])
+
+  @@index([clinicId, admissionId])
+}
+
+model HospitalizationHandoff {
+  id          Int                      @id @default(autoincrement())
+  createdAt   DateTime                 @default(now())
+  clinicId    Int
+  admissionId Int
+  fromUserId  Int
+  toUserId    Int
+  notes       String
+  admission   HospitalizationAdmission @relation(fields: [admissionId], references: [id], onDelete: Cascade)
+  fromUser    User                     @relation("HospitalizationHandoffFrom", fields: [fromUserId], references: [id])
+  toUser      User                     @relation("HospitalizationHandoffTo", fields: [toUserId], references: [id])
+
+  @@index([clinicId, admissionId, createdAt])
+}
+
+model SurgeryCase {
+  id             Int                    @id @default(autoincrement())
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+  clinicId       Int
+  petId          Int
+  appointmentId  Int?
+  veterinarianId Int
+  status         String                 @default("PLANNED")
+  scheduledAt    DateTime?
+  notes          String?
+  pet            Pet                    @relation(fields: [petId], references: [id])
+  veterinarian   User                   @relation("SurgeryVeterinarian", fields: [veterinarianId], references: [id])
+  budgets        SurgeryBudgetVersion[]
+  consents       SurgeryConsent[]
+  checklist      SurgeryChecklistItem[]
+  instructions   SurgeryInstruction[]
+
+  @@index([clinicId, status])
+  @@index([clinicId, petId])
+}
+
+model SurgeryBudgetVersion {
+  id          Int              @id @default(autoincrement())
+  createdAt   DateTime         @default(now())
+  clinicId    Int
+  surgeryId   Int
+  version     Int
+  description String
+  amount      Decimal          @db.Decimal(12, 2)
+  createdById Int
+  surgery     SurgeryCase      @relation(fields: [surgeryId], references: [id], onDelete: Cascade)
+  createdBy   User             @relation("SurgeryBudgetAuthor", fields: [createdById], references: [id])
+  consents    SurgeryConsent[]
+
+  @@unique([surgeryId, version])
+  @@index([clinicId, surgeryId])
+}
+
+model SurgeryConsent {
+  id              Int                  @id @default(autoincrement())
+  createdAt       DateTime             @default(now())
+  clinicId        Int
+  surgeryId       Int
+  budgetVersionId Int
+  status          String               @default("PENDING")
+  notes           String?
+  recordedById    Int
+  surgery         SurgeryCase          @relation(fields: [surgeryId], references: [id], onDelete: Cascade)
+  budgetVersion   SurgeryBudgetVersion @relation(fields: [budgetVersionId], references: [id])
+  recordedBy      User                 @relation("SurgeryConsentRecorder", fields: [recordedById], references: [id])
+
+  @@index([clinicId, surgeryId])
+}
+
+model SurgeryChecklistItem {
+  id            Int         @id @default(autoincrement())
+  createdAt     DateTime    @default(now())
+  clinicId      Int
+  surgeryId     Int
+  label         String
+  completedAt   DateTime?
+  completedById Int?
+  notes         String?
+  surgery       SurgeryCase @relation(fields: [surgeryId], references: [id], onDelete: Cascade)
+  completedBy   User?       @relation("SurgeryChecklistCompleter", fields: [completedById], references: [id])
+
+  @@index([clinicId, surgeryId])
+}
+
+model SurgeryInstruction {
+  id           Int         @id @default(autoincrement())
+  createdAt    DateTime    @default(now())
+  clinicId     Int
+  surgeryId    Int
+  instruction  String
+  approvedAt   DateTime?
+  approvedById Int?
+  surgery      SurgeryCase @relation(fields: [surgeryId], references: [id], onDelete: Cascade)
+  approvedBy   User?       @relation("SurgeryInstructionApprover", fields: [approvedById], references: [id])
+
+  @@index([clinicId, surgeryId])
 }

@@ -1,0 +1,12 @@
+CREATE TABLE "SpecialistProfile" ("id" SERIAL NOT NULL,"createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,"updatedAt" TIMESTAMP(3) NOT NULL,"clinicId" INTEGER NOT NULL,"userId" INTEGER NOT NULL,"specialty" TEXT NOT NULL,"registration" TEXT,"repasseRate" DECIMAL(5,2),"active" BOOLEAN NOT NULL DEFAULT true,CONSTRAINT "SpecialistProfile_pkey" PRIMARY KEY ("id"));
+CREATE UNIQUE INDEX "SpecialistProfile_clinicId_userId_key" ON "SpecialistProfile"("clinicId","userId");
+CREATE INDEX "SpecialistProfile_clinicId_active_idx" ON "SpecialistProfile"("clinicId","active");
+CREATE TABLE "SpecialistAvailability" ("id" SERIAL NOT NULL,"clinicId" INTEGER NOT NULL,"specialistId" INTEGER NOT NULL,"weekday" INTEGER NOT NULL,"startTime" TEXT NOT NULL,"endTime" TEXT NOT NULL,"active" BOOLEAN NOT NULL DEFAULT true,CONSTRAINT "SpecialistAvailability_pkey" PRIMARY KEY ("id"));
+CREATE INDEX "SpecialistAvailability_clinicId_specialistId_weekday_idx" ON "SpecialistAvailability"("clinicId","specialistId","weekday");
+CREATE TABLE "SpecialistAssignment" ("id" SERIAL NOT NULL,"clinicId" INTEGER NOT NULL,"appointmentId" INTEGER NOT NULL,"specialistId" INTEGER NOT NULL,"status" TEXT NOT NULL DEFAULT 'REQUESTED',"confirmedAt" TIMESTAMP(3),"repasseSnapshot" DECIMAL(5,2),CONSTRAINT "SpecialistAssignment_pkey" PRIMARY KEY ("id"));
+CREATE UNIQUE INDEX "SpecialistAssignment_clinicId_appointmentId_specialistId_key" ON "SpecialistAssignment"("clinicId","appointmentId","specialistId");
+CREATE INDEX "SpecialistAssignment_clinicId_specialistId_status_idx" ON "SpecialistAssignment"("clinicId","specialistId","status");
+ALTER TABLE "SpecialistProfile" ADD CONSTRAINT "SpecialistProfile_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON UPDATE CASCADE;
+ALTER TABLE "SpecialistAvailability" ADD CONSTRAINT "SpecialistAvailability_specialistId_fkey" FOREIGN KEY ("specialistId") REFERENCES "SpecialistProfile"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "SpecialistAssignment" ADD CONSTRAINT "SpecialistAssignment_appointmentId_fkey" FOREIGN KEY ("appointmentId") REFERENCES "Appointment"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "SpecialistAssignment" ADD CONSTRAINT "SpecialistAssignment_specialistId_fkey" FOREIGN KEY ("specialistId") REFERENCES "SpecialistProfile"("id") ON UPDATE CASCADE;

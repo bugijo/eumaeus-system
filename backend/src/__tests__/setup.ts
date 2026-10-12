@@ -10,8 +10,8 @@ jest.mock('@prisma/client', () => {
   const mockPrisma = {
     $connect: jest.fn(),
     $disconnect: jest.fn(),
-    $queryRaw: jest.fn().mockResolvedValue([{ result: 1 }]),
     $transaction: jest.fn(),
+    $queryRaw: jest.fn().mockResolvedValue([{ result: 1 }]),
     authProfile: {
       findFirst: jest.fn(),
       findUnique: jest.fn(),
@@ -23,7 +23,9 @@ jest.mock('@prisma/client', () => {
       upsert: jest.fn(),
     },
     user: {
+      findFirst: jest.fn(),
       create: jest.fn(),
+      update: jest.fn(),
     },
     tutor: {
       findMany: jest.fn(),
@@ -35,6 +37,7 @@ jest.mock('@prisma/client', () => {
     },
     pet: {
       findMany: jest.fn(),
+      findFirst: jest.fn(),
       findUnique: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
@@ -43,6 +46,7 @@ jest.mock('@prisma/client', () => {
     },
     appointment: {
       findMany: jest.fn(),
+      findFirst: jest.fn(),
       findUnique: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
@@ -51,6 +55,7 @@ jest.mock('@prisma/client', () => {
     },
     medicalRecord: {
       findMany: jest.fn(),
+      findFirst: jest.fn(),
       findUnique: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
@@ -67,18 +72,67 @@ jest.mock('@prisma/client', () => {
       count: jest.fn(),
       createMany: jest.fn(),
     },
+    service: { findFirst: jest.fn() },
     invoice: {
       findMany: jest.fn(),
+      findFirst: jest.fn(),
       findUnique: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
       count: jest.fn(),
     },
+    payment: { findFirst: jest.fn(), create: jest.fn() },
+    communicationOutbox: {
+      findFirst: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+      updateMany: jest.fn(),
+      findMany: jest.fn(),
+    },
+    communicationAttempt: { create: jest.fn() },
+    tutorCommunicationPreference: { findFirst: jest.fn(), findMany: jest.fn(), create: jest.fn(), update: jest.fn() },
+    vaccinationRecord: {
+      findMany: jest.fn(),
+      create: jest.fn(),
+    },
+    packageSession: {
+      findFirst: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+    },
+    servicePackage: {
+      findFirst: jest.fn(),
+      create: jest.fn(),
+    },
+    packageContract: {
+      findFirst: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+      updateMany: jest.fn(),
+    },
+    specialistProfile: { findMany: jest.fn(), findFirst: jest.fn(), create: jest.fn() },
+    specialistAvailability: { create: jest.fn() },
+    specialistAssignment: { findFirst: jest.fn(), create: jest.fn(), update: jest.fn() },
+    invoiceItem: { findFirst: jest.fn() },
+    clinicSettings: { findFirst: jest.fn() },
+    prescription: {
+      findFirst: jest.fn(),
+      findMany: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+    },
+    prescriptionItem: { createMany: jest.fn() },
+    resultCenter: { findFirst: jest.fn() },
+    expense: { findMany: jest.fn(), create: jest.fn() },
+    financialAuditEvent: { create: jest.fn() },
   };
+
+  mockPrisma.$transaction.mockImplementation((callback: (tx: any) => unknown) => callback(mockPrisma));
 
   return {
     PrismaClient: jest.fn(() => mockPrisma),
+    Prisma: { Decimal: class Decimal { value: number; constructor(value: unknown) { this.value = Number(value); } plus(other: any) { return new (this.constructor as any)(this.value + Number(other.value ?? other)); } greaterThan(other: any) { return this.value > Number(other.value ?? other); } equals(other: any) { return this.value === Number(other.value ?? other); } toString() { return this.value.toFixed(2); } } },
   };
 });
 

@@ -22,6 +22,8 @@ export type PetWithRelations = Prisma.PetGetPayload<typeof petWithRelations>;
 const invoiceWithRelations = Prisma.validator<Prisma.InvoiceDefaultArgs>()({
   include: {
     items: true,
+    discounts: true,
+    payments: true,
     appointment: {
       include: {
         pet: {

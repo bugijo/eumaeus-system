@@ -5,6 +5,8 @@ import {
   normalizeAppointmentStatus,
   requireAppointmentStatus,
 } from '../utils/appointmentStatus';
+import { ServiceService } from './service.service';
+import { CommunicationService } from './communication.service';
 
 export class AppointmentService {
   static async getAllAppointments(): Promise<Appointment[]> {
@@ -59,43 +61,28 @@ export class AppointmentService {
       
       // Converter data e hora para DateTime
       const appointmentDateTime = new Date(`${newAppointmentData.date}T${newAppointmentData.time}:00`);
-      
-      const createdAppointment = await prisma.appointment.create({
-        data: {
-          petId: newAppointmentData.petId,
-          tutorId: newAppointmentData.tutorId,
-          appointmentDate: appointmentDateTime,
-          date: appointmentDateTime,
-          time: newAppointmentData.time,
-          status: 'SCHEDULED',
-          notes: newAppointmentData.notes || null
-        },
-        include: {
-          pet: {
-            select: {
-              id: true,
-              name: true
-            }
-          },
-          tutor: {
-            select: {
-              id: true,
-              name: true
-            }
-          }
-        }
-      });
 
-      // Se há serviceType, criar o serviço associado
-      if (newAppointmentData.serviceType) {
-        await prisma.service.create({
-          data: {
-            name: newAppointmentData.serviceType,
-            price: 50.0, // Preço padrão, pode ser ajustado
-            appointmentId: createdAppointment.id
-          }
-        });
+      const [pet, tutor] = await Promise.all([
+        prisma.pet.findFirst({ where: { id: newAppointmentData.petId, deletedAt: null } }),
+        prisma.tutor.findFirst({ where: { id: newAppointmentData.tutorId, deletedAt: null } }),
+      ]);
+      if (!pet || !tutor || pet.tutorId !== tutor.id) {
+        throw new Error('Pet e tutor devem pertencer à mesma clínica e relação');
       }
+      
+      const createdAppointment = await prisma.$transaction(async (tx: any) => {
+        const created = await tx.appointment.create({
+          data: { petId: newAppointmentData.petId, tutorId: newAppointmentData.tutorId, appointmentDate: appointmentDateTime, date: appointmentDateTime, time: newAppointmentData.time, status: 'SCHEDULED', notes: newAppointmentData.notes || null },
+          include: { pet: { select: { id: true, name: true } }, tutor: { select: { id: true, name: true } } },
+        });
+        if (newAppointmentData.serviceType) {
+          const catalogService = await ServiceService.getServiceByName(newAppointmentData.serviceType);
+          if (!catalogService) throw new Error('Serviço não encontrado no catálogo da clínica');
+          await tx.service.create({ data: { name: catalogService.name, price: catalogService.price, durationMinutes: catalogService.duration, category: catalogService.category, catalogServiceId: catalogService.id, appointmentId: created.id } });
+        }
+        await CommunicationService.enqueue(tx, { tutorId: created.tutorId, appointmentId: created.id, eventType: 'APPOINTMENT_CREATED', category: 'BASIC', payload: { appointmentId: created.id, appointmentDate: created.appointmentDate.toISOString() }, dedupeKey: `appointment:${created.id}:created` });
+        return created;
+      });
       
       console.log('Agendamento criado no banco:', createdAppointment);
       
@@ -178,29 +165,13 @@ export class AppointmentService {
         updatePayload.status = requireAppointmentStatus(updateData.status);
       }
 
-      const updatedAppointment = await prisma.appointment.update({
-        where: { id },
-        data: updatePayload,
-        include: {
-          pet: {
-            select: {
-              id: true,
-              name: true
-            }
-          },
-          tutor: {
-            select: {
-              id: true,
-              name: true
-            }
-          },
-          services: {
-            select: {
-              name: true,
-              price: true
-            }
-          }
+      const updatedAppointment = await prisma.$transaction(async (tx: any) => {
+        const updated = await tx.appointment.update({ where: { id }, data: updatePayload, include: { pet: { select: { id: true, name: true } }, tutor: { select: { id: true, name: true } }, services: { select: { name: true, price: true } } } });
+        await CommunicationService.cancelForAppointmentTx(tx, id);
+        if (updatePayload.appointmentDate) {
+          await CommunicationService.enqueue(tx, { tutorId: updated.tutorId, appointmentId: id, eventType: 'APPOINTMENT_RESCHEDULED', category: 'BASIC', payload: { appointmentId: id, appointmentDate: updated.appointmentDate.toISOString() }, dedupeKey: `appointment:${id}:rescheduled:${updated.appointmentDate.toISOString()}` });
         }
+        return updated;
       });
 
       return {
@@ -253,29 +224,18 @@ export class AppointmentService {
     try {
       const prismaStatus = requireAppointmentStatus(status);
       
-      const updatedAppointment = await prisma.appointment.update({
-        where: { id },
-        data: { status: prismaStatus },
-        include: {
-          pet: {
-            select: {
-              id: true,
-              name: true
-            }
-          },
-          tutor: {
-            select: {
-              id: true,
-              name: true
-            }
-          },
-          services: {
-            select: {
-              name: true,
-              price: true
-            }
-          }
-        }
+      const updatedAppointment = await prisma.$transaction(async (tx: any) => {
+        const updated = await tx.appointment.update({ where: { id }, data: { status: prismaStatus }, include: { pet: { select: { id: true, name: true } }, tutor: { select: { id: true, name: true } }, services: { select: { name: true, price: true } } } });
+        await CommunicationService.cancelForAppointmentTx(tx, id);
+        const eventByStatus: Record<string, { eventType: string; category: string }> = {
+          ARRIVED: { eventType: 'APPOINTMENT_ARRIVED', category: 'TRACKING' },
+          IN_PROGRESS: { eventType: 'APPOINTMENT_STARTED', category: 'TRACKING' },
+          READY: { eventType: 'PET_READY', category: 'READY' },
+          COMPLETED: { eventType: 'APPOINTMENT_COMPLETED', category: 'BASIC' },
+        };
+        const event = eventByStatus[prismaStatus];
+        if (event) await CommunicationService.enqueue(tx, { tutorId: updated.tutorId, appointmentId: id, eventType: event.eventType, category: event.category, payload: { appointmentId: id, status: prismaStatus }, dedupeKey: `appointment:${id}:status:${prismaStatus}:${updated.updatedAt.toISOString()}` });
+        return updated;
       });
 
       return {

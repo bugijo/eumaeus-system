@@ -1,0 +1,54 @@
+import { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { careApi, useAdmit, useAdmissions, useCreateSurgery, useSurgeries } from '@/api/careApi';
+
+export default function CarePage() {
+  const admissions = useAdmissions();
+  const surgeries = useSurgeries();
+  const admit = useAdmit();
+  const createSurgery = useCreateSurgery();
+  const [petId, setPetId] = useState('');
+  const [userId, setUserId] = useState('');
+  const [notes, setNotes] = useState('');
+  const [surgeryNotes, setSurgeryNotes] = useState('');
+  const [admissionId, setAdmissionId] = useState('');
+  const [surgeryId, setSurgeryId] = useState('');
+  const [taskTitle, setTaskTitle] = useState('');
+  const [taskNotes, setTaskNotes] = useState('');
+  const [medication, setMedication] = useState('');
+  const [instructions, setInstructions] = useState('');
+  const [dischargeNotes, setDischargeNotes] = useState('');
+  const [handoffUserId, setHandoffUserId] = useState('');
+  const [handoffNotes, setHandoffNotes] = useState('');
+  const [budgetDescription, setBudgetDescription] = useState('');
+  const [budgetAmount, setBudgetAmount] = useState('');
+  const [budgetVersionId, setBudgetVersionId] = useState('');
+  const [consentNotes, setConsentNotes] = useState('');
+  const [checklistLabel, setChecklistLabel] = useState('');
+  const [instructionText, setInstructionText] = useState('');
+  const [message, setMessage] = useState('');
+  const submitAdmission = async () => { try { await admit.mutateAsync({ petId: Number(petId), responsibleUserId: Number(userId), observations: notes }); setMessage('Admissão registrada.'); } catch (error) { setMessage(error instanceof Error ? error.message : 'Admissão recusada.'); } };
+  const submitSurgery = async () => { try { await createSurgery.mutateAsync({ petId: Number(petId), veterinarianId: Number(userId), notes: surgeryNotes }); setMessage('Cirurgia planejada.'); } catch (error) { setMessage(error instanceof Error ? error.message : 'Cirurgia recusada.'); } };
+  const run = async (action: () => Promise<unknown>, success: string) => { try { await action(); setMessage(success); await Promise.all([admissions.refetch(), surgeries.refetch()]); } catch (error) { setMessage(error instanceof Error ? error.message : 'Operação recusada.'); } };
+  const selectedAdmission = admissions.data?.find(item => String(item.id) === admissionId);
+  const selectedSurgery = surgeries.data?.find(item => String(item.id) === surgeryId) as (typeof surgeries.data extends Array<infer T> ? T & { checklist?: Array<{ id: number; label: string; completedAt?: string | null }>; instructions?: Array<{ id: number; instruction: string; approvedAt?: string | null }> } : never) | undefined;
+  if (admissions.isLoading || surgeries.isLoading) return <div className="p-8"><LoadingSpinner size="lg" /></div>;
+  if (admissions.error || surgeries.error) return <div className="p-8 text-destructive">Não foi possível carregar os registros assistenciais.</div>;
+  return <div className="space-y-6">
+    <div><h1 className="text-2xl font-bold">Internação e cirurgia</h1><p className="text-muted-foreground">Registros operacionais persistentes; prescrições e orientações dependem da veterinária.</p></div>
+    <Card><CardHeader><CardTitle>Nova admissão ou planejamento</CardTitle></CardHeader><CardContent className="grid gap-3 md:grid-cols-4">
+      <Input aria-label="ID do pet" type="number" placeholder="ID do pet" value={petId} onChange={e => setPetId(e.target.value)} />
+      <Input aria-label="ID do responsável" type="number" placeholder="ID do responsável" value={userId} onChange={e => setUserId(e.target.value)} />
+      <Input aria-label="Observação" placeholder="Observação" value={notes} onChange={e => setNotes(e.target.value)} />
+      <div className="flex gap-2"><Button onClick={submitAdmission} disabled={admit.isPending}>Admitir</Button><Button variant="outline" onClick={submitSurgery} disabled={createSurgery.isPending}>Planejar cirurgia</Button></div>
+      <Input aria-label="Notas da cirurgia" className="md:col-span-4" placeholder="Notas informadas pela veterinária (opcional)" value={surgeryNotes} onChange={e => setSurgeryNotes(e.target.value)} />
+      {message && <p role="status" className="md:col-span-4 text-sm">{message}</p>}
+    </CardContent></Card>
+    <div className="grid gap-6 lg:grid-cols-2"><Card><CardHeader><CardTitle>Internações</CardTitle></CardHeader><CardContent>{admissions.data?.length ? admissions.data.map(item => <button type="button" key={item.id} onClick={() => setAdmissionId(String(item.id))} className={`block w-full border-b py-2 text-left ${admissionId === String(item.id) ? 'bg-muted' : ''}`}>#{item.id} · pet {item.pet?.name ?? item.petId} · {item.status}</button>) : <p className="text-muted-foreground">Nenhuma admissão.</p>}</CardContent></Card><Card><CardHeader><CardTitle>Cirurgias planejadas</CardTitle></CardHeader><CardContent>{surgeries.data?.length ? surgeries.data.map(item => <button type="button" key={item.id} onClick={() => setSurgeryId(String(item.id))} className={`block w-full border-b py-2 text-left ${surgeryId === String(item.id) ? 'bg-muted' : ''}`}>#{item.id} · pet {item.pet?.name ?? item.petId} · {item.status} · {item.budgets.length} orçamento(s)</button>) : <p className="text-muted-foreground">Nenhuma cirurgia.</p>}</CardContent></Card></div>
+    {admissionId && <Card><CardHeader><CardTitle>Operações da internação #{admissionId}</CardTitle></CardHeader><CardContent className="grid gap-3 md:grid-cols-4"><Input aria-label="Título da tarefa" placeholder="Título da tarefa" value={taskTitle} onChange={e => setTaskTitle(e.target.value)} /><Input aria-label="Observação da tarefa" placeholder="Observação" value={taskNotes} onChange={e => setTaskNotes(e.target.value)} /><Button onClick={() => run(() => careApi.addTask(Number(admissionId), { title: taskTitle, notes: taskNotes }), 'Tarefa registrada.')}>Registrar tarefa</Button><Button variant="outline" onClick={() => run(() => careApi.discharge(Number(admissionId), { notes: dischargeNotes }), 'Alta registrada para revisão.')}>Alta com justificativa</Button><Input aria-label="ID do próximo responsável" type="number" placeholder="ID próximo responsável" value={handoffUserId} onChange={e => setHandoffUserId(e.target.value)} /><Input aria-label="Observação da passagem" placeholder="Observação da passagem" value={handoffNotes} onChange={e => setHandoffNotes(e.target.value)} /><Button onClick={() => run(() => careApi.handoff(Number(admissionId), { toUserId: Number(handoffUserId), notes: handoffNotes }), 'Passagem registrada.')}>Passar responsabilidade</Button><Input aria-label="Medicamento prescrito" placeholder="Medicamento informado pela veterinária" value={medication} onChange={e => setMedication(e.target.value)} /><Input aria-label="Instruções da prescrição" placeholder="Instruções" value={instructions} onChange={e => setInstructions(e.target.value)} /><Button onClick={() => run(() => careApi.addPrescription(Number(admissionId), { medication, instructions, createdById: Number(userId) }), 'Prescrição registrada.')}>Registrar prescrição</Button><Input aria-label="Justificativa de alta" className="md:col-span-2" placeholder="Justificativa de alta" value={dischargeNotes} onChange={e => setDischargeNotes(e.target.value)} />{selectedAdmission?.tasks?.map(task => <div key={task.id} className="md:col-span-4 flex items-center justify-between border-b py-1"><span>{task.title} · {task.status}</span>{task.status !== 'EXECUTED' && <Button size="sm" variant="outline" onClick={() => run(() => careApi.executeTask(task.id, { notes: taskNotes }), 'Tarefa marcada como executada.')}>Registrar execução real</Button>}</div>)}{selectedAdmission?.prescriptions?.map(prescription => <div key={prescription.id} className="md:col-span-4 rounded border p-2 text-sm"><div className="font-medium">Prescrição #{prescription.id} · {prescription.medication}</div><div className="text-muted-foreground">{prescription.instructions}</div></div>)}</CardContent></Card>}
+    {surgeryId && <Card><CardHeader><CardTitle>Operações da cirurgia #{surgeryId}</CardTitle></CardHeader><CardContent className="grid gap-3 md:grid-cols-4"><Input aria-label="Descrição do orçamento" placeholder="Descrição do orçamento" value={budgetDescription} onChange={e => setBudgetDescription(e.target.value)} /><Input aria-label="Valor do orçamento" type="number" min="0" step="0.01" placeholder="Valor Decimal" value={budgetAmount} onChange={e => setBudgetAmount(e.target.value)} /><Button onClick={() => run(() => careApi.addBudget(Number(surgeryId), { description: budgetDescription, amount: budgetAmount }), 'Nova versão de orçamento registrada.')}>Nova versão</Button><Input aria-label="ID da versão do orçamento" type="number" placeholder="ID versão para consentimento" value={budgetVersionId} onChange={e => setBudgetVersionId(e.target.value)} /><Input aria-label="Observação do consentimento" placeholder="Observação do consentimento" value={consentNotes} onChange={e => setConsentNotes(e.target.value)} /><Button onClick={() => run(() => careApi.addConsent(Number(surgeryId), { budgetVersionId: Number(budgetVersionId), notes: consentNotes }), 'Consentimento registrado.')}>Registrar consentimento</Button><Input aria-label="Item do checklist" placeholder="Item do checklist" value={checklistLabel} onChange={e => setChecklistLabel(e.target.value)} /><Button onClick={() => run(() => careApi.addChecklist(Number(surgeryId), { label: checklistLabel }), 'Item de checklist registrado.')}>Adicionar checklist</Button><Input aria-label="Orientação cirúrgica" className="md:col-span-2" placeholder="Orientação informada pela veterinária" value={instructionText} onChange={e => setInstructionText(e.target.value)} /><Button onClick={() => run(() => careApi.addInstruction(Number(surgeryId), { instruction: instructionText }), 'Orientação registrada para aprovação.')}>Registrar orientação</Button>{selectedSurgery?.checklist?.map(item => <div key={item.id} className="md:col-span-4 flex items-center justify-between border-b py-1"><span>{item.label}</span>{!item.completedAt && <Button size="sm" variant="outline" onClick={() => run(() => careApi.completeChecklist(item.id, {}), 'Checklist preenchido.')}>Preencher checklist</Button>}</div>)}{selectedSurgery?.instructions?.map(item => <div key={item.id} className="md:col-span-4 flex items-center justify-between border-b py-1"><span>{item.instruction}</span>{!item.approvedAt && <Button size="sm" variant="outline" onClick={() => run(() => careApi.approveInstruction(item.id), 'Orientação aprovada.')}>Aprovar orientação</Button>}</div>)}</CardContent></Card>}
+  </div>;
+}

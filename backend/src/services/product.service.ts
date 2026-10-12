@@ -1,4 +1,5 @@
 import { prisma } from '../lib/prisma';
+import { Prisma } from '@prisma/client';
 import { Product, CreateProductData, UpdateProductData } from '../models/product.model';
 
 type ProductMetadata = {
@@ -43,7 +44,7 @@ function mapPrismaProductToLegacy(product: {
   id: number;
   name: string;
   quantity: number;
-  price: number;
+  price: Prisma.Decimal | number;
   description: string | null;
 }): Product {
   const metadata = parseMetadata(product.description);
@@ -53,7 +54,7 @@ function mapPrismaProductToLegacy(product: {
     name: product.name,
     supplier: metadata.supplier || 'Não informado',
     quantity: product.quantity,
-    costPrice: product.price,
+    costPrice: Number(product.price),
     expirationDate: metadata.expirationDate || '2099-12-31',
   };
 }

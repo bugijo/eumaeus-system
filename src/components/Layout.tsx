@@ -19,7 +19,8 @@ import {
   X,
   Archive,
   Dog,
-  Stethoscope
+  Stethoscope,
+  Workflow
 } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 import { authApi } from '../api/authApi';
@@ -70,6 +71,9 @@ const Layout = ({ children }: LayoutProps) => {
     { icon: Stethoscope, label: 'Prontuários', path: '/prontuario' },
     { icon: Archive, label: 'Estoque', path: '/estoque' },
     { icon: DollarSign, label: 'Financeiro', path: '/financeiro' },
+    { icon: Workflow, label: 'Operação', path: '/operacao' },
+    { icon: UserCheck, label: 'Especialistas', path: '/especialistas' },
+    { icon: Workflow, label: 'Internação e cirurgia', path: '/assistencia' },
     { icon: Settings, label: 'Configurações', path: '/configuracoes' },
   ];
 
