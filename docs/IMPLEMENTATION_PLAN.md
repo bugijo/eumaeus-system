@@ -495,6 +495,7 @@ Confirmações pendentes preparadas: registrar despesa/recebimento/estorno finan
 - [x] Serviço e controller agora preservam campos omitidos; `null` explícito continua permitindo limpar pausa. Regressão de comunicação: `6/6` aprovados; build backend aprovado.
 - [ ] A validação visual e o histórico pós-reload continuam pendentes; o adapter segue exclusivamente simulado e não há envio externo.
 - [x] Retry do worker agora agenda `availableAt` com backoff exponencial limitado a 60s; falha exaurida permanece `FAILED` sem re-enfileirar. O teste de comunicação `6/6` continua aprovado.
+- [x] O client da tela assistencial deixou de transmitir `createdById` ao registrar prescrição; a API filtra o campo e envia somente conteúdo clínico, mantendo autoria exclusivamente no servidor.
 
 ### Diagnóstico visual e frontend — 2026-10-11
 
