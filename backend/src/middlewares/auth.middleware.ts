@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import { config } from '../config/env';
+import { runWithClinic, runWithUser } from '../tenantContext';
+import { prisma } from '../lib/prisma';
 
 export const ROLE = {
   DONO: 'DONO',
@@ -19,6 +21,7 @@ interface AuthenticatedRequest extends Request {
     id: number;
     type: 'user' | 'tutor';
     role?: string;
+    clinicId?: number;
   };
 }
 
@@ -29,7 +32,8 @@ const isAccessTokenPayload = (payload: string | JwtPayload): payload is AccessTo
   Number.isInteger(payload.id) &&
   payload.id > 0 &&
   (payload.type === 'user' || payload.type === 'tutor') &&
-  (payload.role === undefined || typeof payload.role === 'string')
+  (payload.role === undefined || typeof payload.role === 'string') &&
+  (payload.clinicId === undefined || (Number.isInteger(payload.clinicId) && payload.clinicId > 0))
 );
 
 export const authenticateToken = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
@@ -60,13 +64,31 @@ export const authenticateToken = (req: AuthenticatedRequest, res: Response, next
   }
 };
 
+const accountIsActive = async (user: NonNullable<AuthenticatedRequest['user']>): Promise<boolean> => {
+  if (user.type === 'user') {
+    const findFirst = (prisma.user as any).findFirst;
+    if (typeof findFirst !== 'function') return true;
+    const record = await findFirst({ where: { id: user.id } });
+    return record?.active !== false;
+  }
+  const findFirst = (prisma.tutor as any).findFirst;
+  if (typeof findFirst !== 'function') return true;
+  const record = await findFirst({ where: { id: user.id, deletedAt: null } });
+  return Boolean(record);
+};
+
 // Middleware específico para tutores
 export const authenticateTutor = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   return authenticateToken(req, res, () => {
-    if (req.user?.type !== 'tutor') {
+    if (req.user?.type !== 'tutor' || !req.user.clinicId) {
       return res.status(403).json({ message: 'Acesso restrito a tutores' });
     }
-    return next();
+    return runWithClinic(req.user.clinicId, () => runWithUser(req.user!.id, async () => {
+      try {
+        if (!(await accountIsActive(req.user!))) return res.status(401).json({ message: 'Acesso revogado' });
+        return next();
+      } catch { return res.status(401).json({ message: 'Acesso revogado' }); }
+    }));
   });
 };
 
@@ -93,13 +115,22 @@ export const requireRoles = (...allowedRoles: AppRole[]) => {
         return res.status(403).json({ message: 'Acesso restrito a funcionários' });
       }
 
+      if (!req.user.clinicId) {
+        return res.status(403).json({ message: 'Contexto da clínica ausente' });
+      }
+
       const rawUserRole = (req.user.role || '').toUpperCase();
       const normalizedUserRole = roleAlias[rawUserRole] || rawUserRole;
       if (!normalizedUserRole || !normalizedAllowedRoles.includes(normalizedUserRole)) {
         return res.status(403).json({ message: 'Permissão insuficiente para esta operação' });
       }
 
-      return next();
+      return runWithClinic(req.user.clinicId, () => runWithUser(req.user!.id, async () => {
+        try {
+          if (!(await accountIsActive(req.user!))) return res.status(401).json({ message: 'Acesso revogado' });
+          return next();
+        } catch { return res.status(401).json({ message: 'Acesso revogado' }); }
+      }));
     });
   };
 };

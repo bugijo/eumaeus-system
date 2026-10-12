@@ -4,6 +4,9 @@ import { requireRoles, ROLE } from '../middlewares/auth.middleware';
 
 const router = Router();
 
+router.post('/', requireRoles(ROLE.DONO, ROLE.VETERINARIO), ServiceController.createService);
+router.put('/:id', requireRoles(ROLE.DONO, ROLE.VETERINARIO), ServiceController.updateService);
+
 /**
  * @route GET /api/services
  * @desc Busca todos os serviços disponíveis

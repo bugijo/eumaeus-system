@@ -34,7 +34,7 @@ export const dashboardController = {
         petCount,
         appointmentCount,
         productCount,
-        monthlyRevenue: monthlyRevenue._sum?.totalAmount || 0,
+        monthlyRevenue: Number(monthlyRevenue._sum?.totalAmount || 0),
       };
 
       statsCache = stats;

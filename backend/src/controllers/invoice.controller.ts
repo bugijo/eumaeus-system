@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { InvoiceService } from '../services/invoice.service';
 import { nfeService, NFSeData } from '../services/nfe.service';
 import { InvoiceWithRelations } from '../types';
+import { AuthenticatedRequest } from '../middlewares/auth.middleware';
 
 export class InvoiceController {
   private invoiceService: InvoiceService;
@@ -131,6 +132,22 @@ export class InvoiceController {
     }
   };
 
+  applyDiscount = async (req: Request, res: Response): Promise<Response | void> => {
+    const invoiceId = parseInt(req.params.id);
+    const amount = Number(req.body.amount);
+    const reason = String(req.body.reason ?? '');
+    const authorizedByUserId = (req as AuthenticatedRequest).user?.id;
+    if (isNaN(invoiceId) || !authorizedByUserId) return res.status(400).json({ error: 'Dados do desconto inválidos' });
+    try {
+      const invoice = await this.invoiceService.applyDiscount(invoiceId, amount, reason, authorizedByUserId);
+      return res.status(201).json({ message: 'Desconto registrado com justificativa', data: invoice });
+    } catch (error: any) {
+      const message = error instanceof Error ? error.message : 'Desconto recusado';
+      const status = message.includes('não encontrada') ? 404 : 400;
+      return res.status(status).json({ error: message });
+    }
+  };
+
   // GET /api/invoices
   getAll = async (req: Request, res: Response): Promise<Response | void> => {
     try {
@@ -216,7 +233,7 @@ export class InvoiceController {
         },
         servico: {
           discriminacao: this.buildServiceDescription(invoice),
-          valorServicos: invoice.totalAmount,
+          valorServicos: Number(invoice.totalAmount),
           aliquota: 5.0, // 5% de ISS
           issRetido: false,
           itemListaServico: '17.05', // Código para serviços veterinários

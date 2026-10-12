@@ -23,7 +23,7 @@ describe('POST /api/auth/logout', () => {
 
   it('revokes the refresh token through the authenticated route', async () => {
     const accessToken = jwt.sign(
-      { id: 20, type: 'user', role: 'DONO' },
+      { id: 20, type: 'user', role: 'DONO', clinicId: 1 },
       process.env.JWT_SECRET as string,
       { algorithm: 'HS256', expiresIn: '1h' },
     );

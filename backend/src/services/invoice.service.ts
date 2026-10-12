@@ -1,5 +1,6 @@
 import { InvoiceWithRelations } from '../types';
 import { prisma } from '../lib/prisma';
+import { Prisma } from '@prisma/client';
 
 export class InvoiceService {
   // Criar fatura a partir de um agendamento
@@ -11,6 +12,7 @@ export class InvoiceService {
         where: { id: appointmentId },
         include: {
           services: true,
+          packageSessions: { where: { reversedAt: null }, include: { service: true } },
           medicalRecord: {
             include: {
               products: {
@@ -51,22 +53,28 @@ export class InvoiceService {
       });
 
       const invoiceItems = [];
-      let totalAmount = 0;
+      let totalAmount = new Prisma.Decimal(0);
 
       // 3. Adicionar serviços como itens da fatura
       for (const service of appointment.services) {
+        const packageSession = appointment.packageSessions.find((session: any) => session.serviceId === service.id);
+        const ambiguousSession = appointment.packageSessions.find((session: any) => session.serviceId === null);
+        if (ambiguousSession) throw new Error('Sessão de pacote sem serviço vinculado; faturamento bloqueado até resolução autorizada');
         const item = await tx.invoiceItem.create({
           data: {
             invoiceId: invoice.id,
             description: service.name,
             quantity: 1,
-            unitPrice: service.price,
-            totalPrice: service.price
+            unitPrice: packageSession ? new Prisma.Decimal(0) : service.price,
+            totalPrice: packageSession ? new Prisma.Decimal(0) : new Prisma.Decimal(service.price),
+            serviceId: service.id,
+            packageSessionId: packageSession?.id,
+            coveredByPackage: Boolean(packageSession),
           }
         });
         
         invoiceItems.push(item);
-        totalAmount += service.price;
+        totalAmount = totalAmount.plus(item.totalPrice);
       }
 
       // 4. Adicionar produtos utilizados como itens da fatura
@@ -78,29 +86,18 @@ export class InvoiceService {
               description: productRecord.product.name,
               quantity: productRecord.quantityUsed,
               unitPrice: productRecord.product.price,
-              totalPrice: productRecord.product.price * productRecord.quantityUsed
+              totalPrice: new Prisma.Decimal(productRecord.product.price).mul(productRecord.quantityUsed)
             }
           });
           
           invoiceItems.push(item);
-          totalAmount += item.totalPrice;
+          totalAmount = totalAmount.plus(item.totalPrice);
         }
       }
 
       // 5. Se não há serviços nem produtos, criar um item padrão
       if (invoiceItems.length === 0) {
-        const defaultItem = await tx.invoiceItem.create({
-          data: {
-            invoiceId: invoice.id,
-            description: 'Consulta Veterinária',
-            quantity: 1,
-            unitPrice: 50.00, // Valor padrão
-            totalPrice: 50.00
-          }
-        });
-        
-        invoiceItems.push(defaultItem);
-        totalAmount = 50.00;
+        throw new Error('Não é possível faturar um atendimento sem serviço ou produto contratado');
       }
 
       // 6. Atualizar o total da fatura
@@ -109,6 +106,7 @@ export class InvoiceService {
         data: { totalAmount },
         include: {
           items: true,
+          discounts: true,
           appointment: {
             include: {
               pet: {
@@ -131,6 +129,8 @@ export class InvoiceService {
       where: { id: invoiceId },
       include: {
         items: true,
+        discounts: true,
+        payments: true,
         appointment: {
           include: {
             pet: {
@@ -150,6 +150,8 @@ export class InvoiceService {
       where: { appointmentId },
       include: {
         items: true,
+        discounts: true,
+        payments: true,
         appointment: {
           include: {
             pet: {
@@ -178,6 +180,8 @@ export class InvoiceService {
       data: { status },
       include: {
         items: true,
+        discounts: true,
+        payments: true,
         appointment: {
           include: {
             pet: {
@@ -191,11 +195,29 @@ export class InvoiceService {
     });
   }
 
+  async applyDiscount(invoiceId: number, amount: number, reason: string, authorizedByUserId: number): Promise<InvoiceWithRelations> {
+    if (!Number.isFinite(amount) || amount <= 0 || !reason?.trim()) throw new Error('Valor e justificativa do desconto são obrigatórios');
+    return prisma.$transaction(async (tx) => {
+      const invoice = await tx.invoice.findUnique({ where: { id: invoiceId }, include: { items: true, discounts: true } });
+      if (!invoice) throw new Error('Fatura não encontrada');
+      if (invoice.status !== 'PENDING') throw new Error('Só é possível aplicar desconto em fatura pendente');
+      const subtotal = invoice.items.reduce((sum, item) => sum.plus(item.totalPrice), new Prisma.Decimal(0));
+      const existing = invoice.discounts.reduce((sum, discount) => sum.plus(discount.amount), new Prisma.Decimal(0));
+      const discount = new Prisma.Decimal(amount);
+      if (existing.plus(discount).greaterThan(subtotal)) throw new Error('Desconto maior que o total da fatura');
+      await tx.invoiceDiscount.create({ data: { invoiceId, clinicId: invoice.clinicId, amount: discount, reason: reason.trim(), authorizedByUserId } });
+      const totalAmount = subtotal.minus(existing).minus(discount);
+      return tx.invoice.update({ where: { id: invoiceId }, data: { totalAmount }, include: { items: true, discounts: true, payments: true, appointment: { include: { pet: { include: { tutor: true } } } } } });
+    });
+  }
+
   // Listar todas as faturas
   async getAll(): Promise<InvoiceWithRelations[]> {
     return await prisma.invoice.findMany({
       include: {
         items: true,
+        discounts: true,
+        payments: true,
         appointment: {
           include: {
             pet: {
@@ -227,6 +249,8 @@ export class InvoiceService {
       data: { nfeId },
       include: {
         items: true,
+        discounts: true,
+        payments: true,
         appointment: {
           include: {
             pet: {
@@ -278,15 +302,15 @@ export class InvoiceService {
     return {
       pending: {
         count: totalPending._count,
-        amount: totalPending._sum.totalAmount || 0
+        amount: Number(totalPending._sum.totalAmount || 0)
       },
       paid: {
         count: totalPaid._count,
-        amount: totalPaid._sum.totalAmount || 0
+        amount: Number(totalPaid._sum.totalAmount || 0)
       },
       cancelled: {
         count: totalCancelled._count,
-        amount: totalCancelled._sum.totalAmount || 0
+        amount: Number(totalCancelled._sum.totalAmount || 0)
       },
       recentInvoices
     };

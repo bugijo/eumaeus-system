@@ -250,7 +250,7 @@ class HttpClient {
   }
 
   private resolveBody(config: FinalRequestConfig): BodyInit | undefined {
-    if (config.method === 'GET' || config.method === 'DELETE') {
+    if (config.method === 'GET') {
       return undefined;
     }
 

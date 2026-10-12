@@ -1,0 +1,11 @@
+ALTER TABLE "ServicePackage" ADD COLUMN "coveredCatalogServiceId" INTEGER;
+ALTER TABLE "PackageSession" ADD COLUMN "serviceId" INTEGER;
+ALTER TABLE "InvoiceItem" ADD COLUMN "serviceId" INTEGER;
+ALTER TABLE "InvoiceItem" ADD COLUMN "packageSessionId" INTEGER;
+ALTER TABLE "InvoiceItem" ADD COLUMN "coveredByPackage" BOOLEAN NOT NULL DEFAULT false;
+CREATE UNIQUE INDEX "InvoiceItem_packageSessionId_key" ON "InvoiceItem"("packageSessionId");
+CREATE INDEX "ServicePackage_coveredCatalogServiceId_idx" ON "ServicePackage"("coveredCatalogServiceId");
+ALTER TABLE "ServicePackage" ADD CONSTRAINT "ServicePackage_coveredCatalogServiceId_fkey" FOREIGN KEY ("coveredCatalogServiceId") REFERENCES "CatalogService"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "PackageSession" ADD CONSTRAINT "PackageSession_serviceId_fkey" FOREIGN KEY ("serviceId") REFERENCES "Service"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "InvoiceItem" ADD CONSTRAINT "InvoiceItem_serviceId_fkey" FOREIGN KEY ("serviceId") REFERENCES "Service"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "InvoiceItem" ADD CONSTRAINT "InvoiceItem_packageSessionId_fkey" FOREIGN KEY ("packageSessionId") REFERENCES "PackageSession"("id") ON DELETE SET NULL ON UPDATE CASCADE;

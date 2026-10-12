@@ -8,6 +8,8 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useToast } from '@/components/ui/use-toast';
 import { useCreateAppointment, useUpdateAppointment, useDeleteAppointment } from '@/api/appointmentApi';
 import { usePets } from '@/api/petApi';
+import { useQuery } from '@tanstack/react-query';
+import { serviceApi } from '@/api/serviceApi';
 
 // Schema de validação para agendamento
 const appointmentSchema = z.object({
@@ -35,6 +37,10 @@ export function AppointmentForm({ appointment, onSuccess, onCancel }: Appointmen
   const updateAppointmentMutation = useUpdateAppointment();
   const deleteAppointmentMutation = useDeleteAppointment();
   const { data: petsData, isLoading: petsLoading } = usePets();
+  const { data: catalogServices = [], isLoading: servicesLoading } = useQuery({
+    queryKey: ['services', 'active'],
+    queryFn: () => serviceApi.getAllServices(),
+  });
 
   const {
     register,
@@ -127,16 +133,10 @@ export function AppointmentForm({ appointment, onSuccess, onCancel }: Appointmen
   };
 
   // Opções para os selects
-  const serviceOptions = [
-    { value: 'Consulta Geral', label: 'Consulta Geral' },
-    { value: 'Vacinação', label: 'Vacinação' },
-    { value: 'Cirurgia', label: 'Cirurgia' },
-    { value: 'Dermatologia', label: 'Dermatologia' },
-    { value: 'Exame Sangue', label: 'Exame de Sangue' },
-    { value: 'Limpeza Dental', label: 'Limpeza Dental' },
-    { value: 'Castração', label: 'Castração' },
-    { value: 'Emergência', label: 'Emergência' }
-  ];
+  const serviceOptions = catalogServices.filter(service => service.isActive ?? (service as ServiceType & { active?: boolean }).active !== false).map(service => ({
+    value: service.name,
+    label: `${service.name} — ${service.category} — ${service.duration} min — R$ ${Number(service.price).toFixed(2).replace('.', ',')}`,
+  }));
 
   const statusOptions = [
     { value: 'Agendado', label: 'Agendado' },
@@ -173,7 +173,7 @@ export function AppointmentForm({ appointment, onSuccess, onCancel }: Appointmen
           required
           options={petOptions}
           placeholder="Selecione o pet"
-          disabled={petsLoading}
+          disabled={petsLoading || servicesLoading}
         />
 
         <SelectField

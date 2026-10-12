@@ -21,6 +21,13 @@ export interface PrescriptionResponse {
   updatedAt: Date;
   medicalRecordId: number;
   items: PrescriptionItemResponse[];
+  status?: string;
+  currentVersion?: number;
+  clinicNameSnapshot?: string;
+  veterinarianNameSnapshot?: string;
+  tutorNameSnapshot?: string;
+  petNameSnapshot?: string;
+  signatureMode?: string;
   medicalRecord?: {
     id: number;
     appointment: {
@@ -41,9 +48,11 @@ export interface PrescriptionResponse {
 
 export interface PrescriptionItemResponse {
   id: number;
+  version?: number;
+  prescriptionId?: number;
   medication: string;
   dosage: string;
   frequency: string;
   duration: string;
-  instructions?: string;
+  instructions?: string | null;
 }

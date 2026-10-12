@@ -10,6 +10,8 @@ export interface InvoiceItem {
   totalPrice: number;
   invoiceId: number;
 }
+export interface InvoiceDiscount { id: number; amount: number; reason: string; createdAt: string; authorizedByUserId: number; }
+export interface InvoicePayment { id: number; amount: number | string; method: string; status: 'POSTED' | 'REVERSED'; receivedAt: string; reversalReason?: string | null; }
 
 export interface Invoice {
   id: number;
@@ -33,6 +35,8 @@ export interface Invoice {
     };
   };
   items: InvoiceItem[];
+  discounts: InvoiceDiscount[];
+  payments: InvoicePayment[];
 }
 
 // Interfaces para NFS-e
@@ -111,6 +115,10 @@ const invoiceApi = {
   // Atualizar status da fatura
   updateStatus: async (invoiceId: number, status: 'PENDING' | 'PAID' | 'CANCELLED'): Promise<Invoice> => {
     const response = await apiClient.patch(`/invoices/${invoiceId}/status`, { status });
+    return response.data.data;
+  },
+  applyDiscount: async (invoiceId: number, amount: number, reason: string): Promise<Invoice> => {
+    const response = await apiClient.post(`/invoices/${invoiceId}/discounts`, { amount, reason });
     return response.data.data;
   },
 
@@ -206,6 +214,17 @@ export const useUpdateInvoiceStatus = () => {
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
       queryClient.invalidateQueries({ queryKey: ['invoice', data.id] });
       queryClient.invalidateQueries({ queryKey: ['invoice', 'appointment', data.appointmentId] });
+    }
+  });
+};
+
+export const useApplyInvoiceDiscount = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ invoiceId, amount, reason }: { invoiceId: number; amount: number; reason: string }) => invoiceApi.applyDiscount(invoiceId, amount, reason),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      queryClient.invalidateQueries({ queryKey: ['invoice', data.id] });
     }
   });
 };

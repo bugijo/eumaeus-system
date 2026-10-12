@@ -1,0 +1,12 @@
+import { Router } from 'express';
+import { requireRoles, ROLE } from '../middlewares/auth.middleware';
+import { specialistController } from '../controllers/specialist.controller';
+const router = Router();
+const read = requireRoles(ROLE.DONO, ROLE.VETERINARIO, ROLE.RECEPCAO, ROLE.AUXILIAR);
+const write = requireRoles(ROLE.DONO, ROLE.VETERINARIO);
+router.get('/', read, specialistController.list);
+router.post('/', write, specialistController.create);
+router.post('/:id/availability', write, specialistController.availability);
+router.post('/assignments', write, specialistController.assign);
+router.patch('/assignments/:id/confirm', write, specialistController.confirm);
+export default router;

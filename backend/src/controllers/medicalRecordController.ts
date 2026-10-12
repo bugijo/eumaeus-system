@@ -247,7 +247,7 @@ export const createDirectMedicalRecord = async (req: Request, res: Response): Pr
       const appointment = await tx.appointment.create({
         data: {
           appointmentDate: new Date(),
-          date: new Date().toISOString().split('T')[0],
+          date: new Date(),
           time: new Date().toTimeString().split(' ')[0].substring(0, 5),
           status: 'COMPLETED',
           notes: 'Agendamento criado automaticamente para prontuário direto',

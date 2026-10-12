@@ -15,8 +15,10 @@ import {
   Check,
   Loader2
 } from 'lucide-react';
-import { useFinancialStats, useInvoices } from '../api/invoiceApi';
+import { useApplyInvoiceDiscount, useFinancialStats, useInvoices } from '../api/invoiceApi';
 import { ACCOUNTS_PAYABLE_DATA_SOURCE } from '../constants';
+import { useCreateExpense, useExpenses, useReceivePayment, useResultCenters, useReversePayment } from '@/api/financialApi';
+import { useAuthStore } from '@/stores/authStore';
 
 export default function Financeiro() {
   const [selectedPeriod, setSelectedPeriod] = useState('Este Mês');
@@ -24,6 +26,17 @@ export default function Financeiro() {
   // Buscar dados da API
   const { data: financialStats, isLoading: statsLoading, error: statsError } = useFinancialStats();
   const { data: invoices, isLoading: invoicesLoading, error: invoicesError } = useInvoices();
+  const discountMutation = useApplyInvoiceDiscount();
+  const paymentMutation = useReceivePayment();
+  const reverseMutation = useReversePayment();
+  const { data: resultCenters = [] } = useResultCenters();
+  const { data: expenses = [] } = useExpenses();
+  const expenseMutation = useCreateExpense();
+  const [expense, setExpense] = useState({ description: '', amount: '', reason: '', resultCenterId: '' });
+  const [paymentDraft, setPaymentDraft] = useState({ invoiceId: '', amount: '', method: 'PIX' });
+  const [reversalDraft, setReversalDraft] = useState({ paymentId: '', amount: '', reason: '' });
+  const role = useAuthStore(state => state.user?.role);
+  const canWriteFinancial = role === 'DONO' || role === 'FINANCEIRO';
   
   // Transformar faturas em contas a receber
   const contasReceber = invoices?.map(invoice => ({
@@ -194,6 +207,18 @@ export default function Financeiro() {
       </div>
 
       {/* Detailed View - Tabs */}
+      <Card><CardHeader><CardTitle>Centros de resultado</CardTitle></CardHeader><CardContent><div className="flex flex-wrap gap-2">{resultCenters.length ? resultCenters.map(center => <Badge key={center.id} variant="outline">{center.code} · {center.name}</Badge>) : <span className="text-sm text-muted-foreground">Nenhum centro classificado; registros antigos permanecem sem atribuição.</span>}</div></CardContent></Card>
+      <Card><CardHeader><CardTitle>Despesas classificadas</CardTitle></CardHeader><CardContent className="space-y-4">
+        {canWriteFinancial ? <form className="grid gap-2 md:grid-cols-5" onSubmit={(event) => { event.preventDefault(); if (!expense.description || !expense.amount || !expense.reason) return; expenseMutation.mutate({ description: expense.description, amount: Number(expense.amount.replace(',', '.')), reason: expense.reason, resultCenterId: expense.resultCenterId ? Number(expense.resultCenterId) : undefined }, { onSuccess: () => setExpense({ description: '', amount: '', reason: '', resultCenterId: '' }) }); }}>
+          <input aria-label="Descrição da despesa" className="rounded-md border px-3 py-2 text-sm" placeholder="Descrição" value={expense.description} onChange={event => setExpense({ ...expense, description: event.target.value })} />
+          <input aria-label="Valor da despesa" className="rounded-md border px-3 py-2 text-sm" placeholder="Valor" inputMode="decimal" value={expense.amount} onChange={event => setExpense({ ...expense, amount: event.target.value })} />
+          <select aria-label="Centro da despesa" className="rounded-md border px-3 py-2 text-sm" value={expense.resultCenterId} onChange={event => setExpense({ ...expense, resultCenterId: event.target.value })}><option value="">Sem centro</option>{resultCenters.map(center => <option key={center.id} value={center.id}>{center.code} · {center.name}</option>)}</select>
+          <input aria-label="Justificativa da despesa" className="rounded-md border px-3 py-2 text-sm" placeholder="Justificativa" value={expense.reason} onChange={event => setExpense({ ...expense, reason: event.target.value })} />
+          <Button type="submit" disabled={expenseMutation.isPending}>Registrar despesa</Button>
+        </form> : <p className="text-sm text-muted-foreground" role="status">Perfil somente leitura: despesas podem ser consultadas, mas apenas DONO ou FINANCEIRO podem registrá-las.</p>}
+        {expenseMutation.isError && <p className="text-sm text-red-600">{(expenseMutation.error as Error).message}</p>}
+        {expenses.length ? <Table><TableHeader><TableRow><TableHead>Descrição</TableHead><TableHead>Centro</TableHead><TableHead>Valor</TableHead><TableHead>Justificativa</TableHead></TableRow></TableHeader><TableBody>{expenses.map(item => <TableRow key={item.id}><TableCell>{item.description}</TableCell><TableCell>{item.resultCenter ? `${item.resultCenter.code} · ${item.resultCenter.name}` : 'Sem centro'}</TableCell><TableCell>{formatCurrency(Number(item.amount))}</TableCell><TableCell>{item.reason}</TableCell></TableRow>)}</TableBody></Table> : <p className="text-sm text-muted-foreground">Nenhuma despesa registrada.</p>}
+      </CardContent></Card>
       <Card>
         <CardContent className="p-0">
           <Tabs defaultValue="receber" className="w-full">
@@ -224,6 +249,7 @@ export default function Financeiro() {
                     <TableHead>Data de Vencimento</TableHead>
                     <TableHead>Valor</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>Recebimentos</TableHead>
                     <TableHead>Ações</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -234,22 +260,67 @@ export default function Financeiro() {
                       <TableCell>{formatDate(conta.dataVencimento)}</TableCell>
                       <TableCell className="font-semibold">{formatCurrency(conta.valor)}</TableCell>
                       <TableCell>{getStatusBadge(conta.status)}</TableCell>
+                      <TableCell>{(invoices?.find(invoice => invoice.id === conta.id)?.payments ?? []).map(payment => `${formatCurrency(Number(payment.amount))} · ${payment.status}`).join(' | ') || 'Nenhum'}</TableCell>
                       <TableCell>
                         <div className="flex space-x-2">
                           {conta.status !== 'Pago' && (
-                            <Button size="sm" variant="outline">
+                            <Button size="sm" variant="outline" aria-label={`Registrar recebimento da fatura ${conta.id}`} onClick={() => setPaymentDraft({ invoiceId: String(conta.id), amount: '', method: 'PIX' })}>
                               <Check className="w-4 h-4" />
                             </Button>
+                          )}
+                          {conta.status === 'Pendente' && (
+                            <Button size="sm" variant="outline" onClick={() => {
+                              const amount = window.prompt('Valor do desconto (R$):');
+                              const reason = window.prompt('Justificativa obrigatória:');
+                              if (amount && reason) discountMutation.mutate({ invoiceId: conta.id, amount: Number(amount.replace(',', '.')), reason });
+                            }}>Desconto</Button>
                           )}
                           <Button size="sm" variant="outline">
                             <Eye className="w-4 h-4" />
                           </Button>
+                          {conta.status === 'Pago' && (invoices?.find(invoice => invoice.id === conta.id)?.payments ?? []).filter(payment => payment.status === 'POSTED').map(payment => (
+                            <Button key={payment.id} size="sm" variant="outline" onClick={() => setReversalDraft({ paymentId: String(payment.id), amount: String(payment.amount), reason: '' })}>Estornar recebimento</Button>
+                          ))}
                         </div>
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
+              {paymentDraft.invoiceId && (
+                <div className="mt-4 rounded-md border p-4" aria-label="Formulário de recebimento">
+                  <h3 className="font-medium">Registrar recebimento — fatura #{paymentDraft.invoiceId}</h3>
+                  <div className="mt-3 grid gap-3 md:grid-cols-3">
+                    <label className="grid gap-1 text-sm">Valor recebido (R$)
+                      <input aria-label="Valor recebido" className="h-9 rounded-md border bg-background px-2" value={paymentDraft.amount} onChange={e => setPaymentDraft(current => ({ ...current, amount: e.target.value }))} placeholder="5,00" />
+                    </label>
+                    <label className="grid gap-1 text-sm">Forma de pagamento
+                      <select aria-label="Forma de pagamento" className="h-9 rounded-md border bg-background px-2" value={paymentDraft.method} onChange={e => setPaymentDraft(current => ({ ...current, method: e.target.value }))}>
+                        <option value="PIX">PIX</option><option value="cartão">Cartão</option><option value="dinheiro">Dinheiro</option>
+                      </select>
+                    </label>
+                    <div className="flex items-end gap-2">
+                      <Button disabled={!paymentDraft.amount || paymentMutation.isPending} onClick={() => { paymentMutation.mutate({ invoiceId: Number(paymentDraft.invoiceId), amount: Number(paymentDraft.amount.replace(',', '.')), method: paymentDraft.method }, { onSuccess: () => setPaymentDraft({ invoiceId: '', amount: '', method: 'PIX' }) }); }}>Registrar recebimento</Button>
+                      <Button type="button" variant="outline" onClick={() => setPaymentDraft({ invoiceId: '', amount: '', method: 'PIX' })}>Cancelar</Button>
+                    </div>
+                  </div>
+                  {paymentMutation.error && <p role="alert" className="mt-2 text-sm text-red-600">{paymentMutation.error instanceof Error ? paymentMutation.error.message : 'Não foi possível registrar o recebimento.'}</p>}
+                </div>
+              )}
+              {reversalDraft.paymentId && (
+                <div className="mt-4 rounded-md border p-4" aria-label="Formulário de estorno">
+                  <h3 className="font-medium">Estornar recebimento #{reversalDraft.paymentId}</h3>
+                  <p className="text-sm text-muted-foreground">Valor original: R$ {reversalDraft.amount}</p>
+                  <label className="mt-3 grid gap-1 text-sm">Justificativa do estorno
+                    <input aria-label="Justificativa do estorno" className="h-9 rounded-md border bg-background px-2" value={reversalDraft.reason} onChange={e => setReversalDraft(current => ({ ...current, reason: e.target.value }))} placeholder="Justificativa sintética obrigatória" />
+                  </label>
+                  <div className="mt-3 flex gap-2">
+                    <Button disabled={!reversalDraft.reason.trim() || reverseMutation.isPending} onClick={() => reverseMutation.mutate({ paymentId: Number(reversalDraft.paymentId), reason: reversalDraft.reason.trim() }, { onSuccess: () => setReversalDraft({ paymentId: '', amount: '', reason: '' }) })}>Registrar estorno</Button>
+                    <Button type="button" variant="outline" onClick={() => setReversalDraft({ paymentId: '', amount: '', reason: '' })}>Cancelar</Button>
+                  </div>
+                  {reverseMutation.error && <p role="alert" className="mt-2 text-sm text-red-600">{reverseMutation.error instanceof Error ? reverseMutation.error.message : 'Não foi possível registrar o estorno.'}</p>}
+                </div>
+              )}
             </TabsContent>
 
           </Tabs>

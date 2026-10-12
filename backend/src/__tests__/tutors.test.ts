@@ -4,7 +4,7 @@ import { app } from '../server';
 import { prisma } from '../lib/prisma';
 
 const accessToken = jwt.sign(
-  { id: 1, type: 'user', role: 'DONO' },
+  { id: 1, type: 'user', role: 'DONO', clinicId: 1 },
   process.env.JWT_SECRET as string,
   { algorithm: 'HS256', expiresIn: '5m' },
 );

@@ -5,6 +5,7 @@ import { requireRoles, ROLE } from '../middlewares/auth.middleware';
 const router = Router();
 const invoiceController = new InvoiceController();
 const canAccessFinancial = requireRoles(ROLE.DONO, ROLE.VETERINARIO, ROLE.FINANCEIRO);
+const canApplyDiscount = requireRoles(ROLE.DONO, ROLE.FINANCEIRO);
 
 // POST /api/invoices/from-appointment/:appointmentId - Criar fatura a partir de agendamento
 router.post('/from-appointment/:appointmentId', canAccessFinancial, invoiceController.createFromAppointment);
@@ -24,6 +25,7 @@ router.get('/:id', canAccessFinancial, invoiceController.getById);
 
 // PATCH /api/invoices/:id/status - Atualizar status da fatura
 router.patch('/:id/status', canAccessFinancial, invoiceController.updateStatus);
+router.post('/:id/discounts', canApplyDiscount, invoiceController.applyDiscount);
 
 // === ROTAS NFS-E ===
 // POST /api/invoices/:id/issue-nfe - Emitir NFS-e para uma fatura

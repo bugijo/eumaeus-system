@@ -187,7 +187,7 @@ export default {
       }
 
       // Verificar se o serviço existe
-      const service = ServiceService.getServiceById(serviceId);
+      const service = await ServiceService.getServiceById(serviceId);
       if (!service) {
         return res.status(404).json({
           success: false,
@@ -233,6 +233,9 @@ export default {
         data: {
           name: service.name,
           price: service.price,
+          durationMinutes: service.duration,
+          category: service.category,
+          catalogServiceId: service.id,
           appointmentId: appointment.id
         }
       });

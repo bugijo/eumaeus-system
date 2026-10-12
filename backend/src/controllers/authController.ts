@@ -64,12 +64,15 @@ export default {
       let userPayload;
 
       if (authProfile.user) {
+        if (authProfile.user.active === false) {
+          return res.status(403).json({ message: 'Acesso revogado' });
+        }
         const userRole = authProfile.user.role?.name || 'FUNCIONARIO';
-        tokenPayload = { id: authProfile.user.id, type: 'user', role: userRole };
-        userPayload = { id: authProfile.user.id, name: authProfile.user.name, email: authProfile.email, role: userRole, type: 'user' };
+        tokenPayload = { id: authProfile.user.id, type: 'user', role: userRole, clinicId: authProfile.user.clinicId };
+        userPayload = { id: authProfile.user.id, name: authProfile.user.name, email: authProfile.email, role: userRole, type: 'user', clinicId: authProfile.user.clinicId };
       } else if (authProfile.tutor) {
-        tokenPayload = { id: authProfile.tutor.id, type: 'tutor', role: 'ADMIN' };
-        userPayload = { id: authProfile.tutor.id, name: authProfile.tutor.name, email: authProfile.email, role: 'ADMIN', type: 'tutor' };
+        tokenPayload = { id: authProfile.tutor.id, type: 'tutor', role: 'ADMIN', clinicId: authProfile.tutor.clinicId };
+        userPayload = { id: authProfile.tutor.id, name: authProfile.tutor.name, email: authProfile.email, role: 'ADMIN', type: 'tutor', clinicId: authProfile.tutor.clinicId };
       } else {
         return res.status(403).json({ message: 'Acesso negado. Perfil não associado a uma conta ativa.' });
       }
@@ -140,9 +143,13 @@ export default {
         return res.status(403).json({ message: 'Acesso negado. Apenas funcionários podem fazer login.' });
       }
 
+      if (authProfile.user.active === false) {
+        return res.status(403).json({ message: 'Acesso revogado' });
+      }
+
       // 4. Gerar payload para funcionário
-      const tokenPayload = { id: authProfile.user.id, type: 'user', role: authProfile.user.role.name };
-      const userPayload = { id: authProfile.user.id, name: authProfile.user.name, email: authProfile.email, role: authProfile.user.role.name, type: 'user' };
+      const tokenPayload = { id: authProfile.user.id, type: 'user', role: authProfile.user.role.name, clinicId: authProfile.user.clinicId };
+      const userPayload = { id: authProfile.user.id, name: authProfile.user.name, email: authProfile.email, role: authProfile.user.role.name, type: 'user', clinicId: authProfile.user.clinicId };
 
       // 5. Gerar novos tokens
       const newAccessToken = jwt.sign(tokenPayload, config.jwt.secret, {

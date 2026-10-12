@@ -13,10 +13,18 @@ import dashboardRoutes from './routes/dashboard.routes';
 import invoiceRoutes from './routes/invoice.routes';
 import availabilityRoutes from './routes/availability.routes';
 import serviceRoutes from './routes/service.routes';
+import communicationRoutes from './routes/communication.routes';
+import packageRoutes from './routes/package.routes';
+import inventoryRoutes from './routes/inventory.routes';
+import vaccinationRoutes from './routes/vaccination.routes';
 import prescriptionRoutes from './routes/prescription.routes';
+import financialRoutes from './routes/financial.routes';
+import specialistRoutes from './routes/specialist.routes';
 import clinicSettingsRoutes from './routes/clinicSettings.routes';
+import careRoutes from './routes/care.routes';
 import { reminderService } from './services/reminderService';
 import { disconnectPrisma, prisma } from './lib/prisma';
+import { runWithClinic } from './tenantContext';
 
 const isTestEnv = config.app.env === 'test';
 const HOST = '0.0.0.0';
@@ -24,6 +32,16 @@ export const DATABASE_READINESS_ERROR = 'Banco de dados indisponível ou schema 
 
 export const app = express();
 app.set('trust proxy', true);
+// Prisma Decimal serializa como string por padrão. O frontend existente espera
+// números para formatar preços com toFixed; como os campos já têm escala fixa
+// de centavos, esta conversão mantém o contrato sem reintroduzir Float no banco.
+app.set('json replacer', function (this: Record<string, unknown>, key: string, value: unknown) {
+  const original = this[key] as { constructor?: { name?: string }; toString?: () => string } | undefined;
+  if (original?.constructor?.name === 'Decimal' && typeof original.toString === 'function') {
+    return Number(original.toString());
+  }
+  return value;
+});
 app.use(compression());
 
 app.use((req, res, next) => {
@@ -100,6 +118,8 @@ app.use((req, res, next) => {
 
 const allowedOrigins = [
   'http://localhost:3000',
+  'http://localhost:4173',
+  'http://127.0.0.1:4173',
   'https://eumaeus-system.vercel.app',
   'https://eumaeus-system-git-main-giovanni-pereiras-projects.vercel.app',
   'https://eumaeus.com.br',
@@ -186,22 +206,36 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/availability', availabilityRoutes);
 app.use('/api/services', serviceRoutes);
+app.use('/api', communicationRoutes);
+app.use('/api/packages', packageRoutes);
+app.use('/api/inventory', inventoryRoutes);
+app.use('/api/vaccinations', vaccinationRoutes);
 app.use('/api', prescriptionRoutes);
+app.use('/api/financial', financialRoutes);
+app.use('/api/specialists', specialistRoutes);
 app.use('/api/settings', clinicSettingsRoutes);
+app.use('/api/care', careRoutes);
 
 let server: http.Server | undefined;
 let scheduledTasks: Array<ReturnType<typeof cron.schedule>> = [];
 
 const scheduleReminderJobs = () => {
+  const runForEachClinic = async <T>(job: () => Promise<T>): Promise<T[]> => {
+    const clinics = await prisma.$queryRaw<Array<{ clinicId: number }>>`
+      SELECT DISTINCT "clinicId" FROM "User" WHERE "clinicId" IS NOT NULL ORDER BY "clinicId"
+    `;
+    return Promise.all(clinics.map(({ clinicId }) => runWithClinic(clinicId, job)));
+  };
+
   const heartbeat = cron.schedule('* * * * *', () => {
     console.log('[Eumaeus] Sistema de automação ativo.', new Date().toISOString());
   });
 
   const reminderDispatch = cron.schedule('0 8 * * *', async () => {
     try {
-      const results = await reminderService.sendAllReminders();
-      const sent = results.appointments.sent + results.vaccines.sent;
-      const failed = results.appointments.failed + results.vaccines.failed;
+      const results = await runForEachClinic(() => reminderService.sendAllReminders());
+      const sent = results.reduce((total, result) => total + result.appointments.sent + result.vaccines.sent, 0);
+      const failed = results.reduce((total, result) => total + result.appointments.failed + result.vaccines.failed, 0);
       console.log(`[Eumaeus] Lembretes concluídos: enviados=${sent}, falhas=${failed}.`);
     } catch {
       console.error('[Eumaeus] Falha no envio agendado de lembretes.');
@@ -212,7 +246,7 @@ const scheduleReminderJobs = () => {
 
   const reminderCheck = cron.schedule('55 7 * * *', async () => {
     try {
-      await reminderService.testReminderSystem();
+      await runForEachClinic(() => reminderService.testReminderSystem());
     } catch {
       console.error('[Eumaeus] Falha no teste agendado do sistema de lembretes.');
     }
