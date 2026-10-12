@@ -33,11 +33,11 @@ import {
   useProducts,
   useStockStats,
   useDeleteProduct,
+  useRegisterStockReceipt,
   Product,
 } from '@/api/productApi';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useToast } from '@/components/ui/use-toast';
-import apiClient from '@/api/apiClient';
 import {
   Package,
   DollarSign,
@@ -68,6 +68,7 @@ export default function StockPage() {
   const [lotExpiry, setLotExpiry] = useState('');
   const [movementReason, setMovementReason] = useState('');
   const [movementMessage, setMovementMessage] = useState('');
+  const receiptMutation = useRegisterStockReceipt();
 
   const { data: products = [], isLoading: productsLoading, error: productsError } = useProducts();
   const { data: stats, isLoading: statsLoading } = useStockStats();
@@ -157,9 +158,16 @@ export default function StockPage() {
   };
 
   const registerReceipt = async () => {
+    const quantity = Number(lotQuantity);
+    if (!movementProductId || !lotCode.trim() || !Number.isInteger(quantity) || quantity < 1 || !movementReason.trim()) {
+      setMovementMessage('Informe produto, lote, quantidade inteira positiva e justificativa.');
+      return;
+    }
+    const idempotencyKey = globalThis.crypto?.randomUUID?.() ?? `receipt-${Date.now()}-${Math.random().toString(36).slice(2)}`;
     try {
-      await apiClient.post('/inventory/receipts', { productId: Number(movementProductId), lotCode, quantity: Number(lotQuantity), expiresAt: lotExpiry || undefined, reason: movementReason, idempotencyKey: `ui-receipt-${movementProductId}-${lotCode}-${lotQuantity}-${lotExpiry}` });
-      setMovementMessage('Entrada registrada com lote e chave idempotente.');
+      await receiptMutation.mutateAsync({ productId: Number(movementProductId), lotCode: lotCode.trim(), quantity, expiresAt: lotExpiry || undefined, reason: movementReason.trim(), idempotencyKey });
+      setMovementMessage('Entrada registrada com lote.');
+      setLotCode(''); setLotQuantity(''); setLotExpiry(''); setMovementReason('');
     } catch (error: any) { setMovementMessage(error.response?.data?.error ?? 'Entrada recusada.'); }
   };
 
@@ -234,8 +242,8 @@ export default function StockPage() {
           <Input aria-label="Quantidade" type="number" min="1" placeholder="Quantidade" value={lotQuantity} onChange={event => setLotQuantity(event.target.value)} />
           <Input aria-label="Validade" type="date" value={lotExpiry} onChange={event => setLotExpiry(event.target.value)} />
           <Input aria-label="Motivo" placeholder="Motivo" value={movementReason} onChange={event => setMovementReason(event.target.value)} />
-          <Button onClick={registerReceipt}>Registrar entrada</Button>
-          {movementMessage && <p className="text-sm md:col-span-6" role="status">{movementMessage}</p>}
+          <Button onClick={registerReceipt} disabled={receiptMutation.isPending}>{receiptMutation.isPending ? 'Registrando...' : 'Registrar entrada'}</Button>
+          {movementMessage && <p className="text-sm md:col-span-6" role={receiptMutation.isError ? 'alert' : 'status'}>{movementMessage}</p>}
         </CardContent>
       </Card>
 

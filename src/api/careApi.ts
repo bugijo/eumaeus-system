@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import apiClient from './apiClient';
 
-export interface Hospitalization { id: number; petId: number; responsibleUserId: number; status: string; admittedAt: string; observations?: string | null; pet?: { name: string }; tasks?: Array<{ id: number; title: string; status: string; notes?: string | null }>; prescriptions?: Array<{ id: number; medication: string; instructions: string; createdById?: number | null; createdAt?: string }> }
+export interface Hospitalization { id: number; petId: number; responsibleUserId: number; status: string; admittedAt: string; observations?: string | null; pet?: { name: string }; tasks?: Array<{ id: number; title: string; status: string; notes?: string | null }>; prescriptions?: Array<{ id: number; medication: string; instructions: string; createdAt?: string }> }
 export interface SurgeryCase { id: number; petId: number; veterinarianId: number; status: string; scheduledAt?: string | null; notes?: string | null; pet?: { name: string }; budgets: Array<{ id: number; version: number; amount: string; description: string }> }
 
 export const careApi = {
@@ -11,7 +11,7 @@ export const careApi = {
   createSurgery: async (data: { petId: number; veterinarianId: number; notes?: string }) => (await apiClient.post<SurgeryCase>('/care/surgeries', data)).data,
   addTask: async (id: number, data: { title: string; scheduledAt?: string; notes?: string }) => (await apiClient.post(`/care/hospitalizations/${id}/tasks`, data)).data,
   executeTask: async (id: number, data: { notes?: string }) => (await apiClient.patch(`/care/hospitalization-tasks/${id}/execute`, data)).data,
-  addPrescription: async (id: number, data: { medication: string; instructions: string; createdById?: number }) => {
+  addPrescription: async (id: number, data: { medication: string; instructions: string }) => {
     const { medication, instructions } = data;
     return (await apiClient.post(`/care/hospitalizations/${id}/prescriptions`, { medication, instructions })).data;
   },
