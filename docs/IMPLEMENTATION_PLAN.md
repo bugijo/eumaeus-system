@@ -508,7 +508,7 @@ Confirmações pendentes preparadas: registrar despesa/recebimento/estorno finan
 - [ ] Ainda pendente: ligar o adapter simulado à outbox persistente sem envio externo, criar endpoint autenticado de webhook no bootstrap e testar estados em PostgreSQL; não expor endpoint público sem autenticação/verificação.
 - [ ] Ainda pendente: validação por cliques no navegador, jornada integrada tutor→pet→agenda→atendimento→pacote/cobrança e validação visual pós-reload. Build/teste não substituem interface.
 - [ ] Ainda pendente: concorrência real de pagamentos, consumo de pacote e estoque em cenários isolados completos; a prova atual cobre isolamento, idempotência e rollback de auditoria, não todas as corridas de negócio.
-- [ ] Suíte frontend completa tentou execução serial com um worker, mas excedeu o limite operacional sem relatório final; fica inconclusiva. Não é contada como aprovação. Builds e testes focais continuam separados dessa tentativa.
+- [x] A suíte frontend foi diagnosticada e fechada: `npm test` sem `--run` entrava em watch; a execução não interativa com `--run`, um worker e relatório persistido aprovou `10` arquivos / `81` testes em `44,41s`, sem processos residuais. Os `18` testes reportados anteriormente não foram somados como evidência independente.
 
 ### Integração e concorrência — retomada a partir de `d011ee1` — 2026-10-12
 
