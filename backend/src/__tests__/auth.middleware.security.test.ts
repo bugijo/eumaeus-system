@@ -6,6 +6,7 @@ import {
   requireRoles,
   ROLE,
 } from '../middlewares/auth.middleware';
+import { prisma } from '../lib/prisma';
 
 const createResponse = (): Response => {
   const response = {
@@ -122,6 +123,19 @@ describe('authentication middleware security', () => {
 
     expect(response.status).toHaveBeenCalledWith(401);
     expect(response.json).toHaveBeenCalledWith({ message: 'Acesso revogado' });
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it('rejects a token whose role was revoked after issuance', async () => {
+    (prisma.user.findFirst as jest.Mock).mockResolvedValue({ active: true, roleName: ROLE.RECEPCAO });
+    const token = signAccessToken({ id: 10, type: 'user', role: ROLE.DONO, clinicId: 1 });
+    const middleware = requireRoles(ROLE.DONO);
+
+    middleware(createRequest(`Bearer ${token}`), response, next);
+    await new Promise(resolve => setImmediate(resolve));
+
+    expect(response.status).toHaveBeenCalledWith(403);
+    expect(response.json).toHaveBeenCalledWith({ message: 'Permissão insuficiente para esta operação' });
     expect(next).not.toHaveBeenCalled();
   });
 });
