@@ -68,6 +68,16 @@ const rejectNestedRelationWrites = (value: unknown): void => {
   }
 };
 
+const rejectCrossTenantIds = (value: unknown, clinicId: number): void => {
+  if (!value || typeof value !== 'object') return;
+  for (const [key, nested] of Object.entries(value as Record<string, unknown>)) {
+    if (key === 'clinicId' && nested !== undefined && Number(nested) !== clinicId) {
+      throw new Error('clinicId do cliente não pode substituir o contexto autenticado');
+    }
+    rejectCrossTenantIds(nested, clinicId);
+  }
+};
+
 const scopeRelationReads = (model: string, input: any, clinicId: number): any => {
   if (!input || typeof input !== 'object') return input;
   const output = Array.isArray(input) ? input.map((item) => scopeRelationReads(model, item, clinicId)) : { ...input };
@@ -117,7 +127,7 @@ const assertSafeRawQuery = (query: unknown): void => {
   }
 };
 
-const createTenantModelProxy = (model: string, delegate: any, clinicId: number | undefined) =>
+export const createTenantModelProxy = (model: string, delegate: any, clinicId: number | undefined) =>
   new Proxy(delegate, {
     get(target, property, receiver) {
       const original = Reflect.get(target, property, receiver);
@@ -131,6 +141,7 @@ const createTenantModelProxy = (model: string, delegate: any, clinicId: number |
 
         if (property === 'create' || property === 'createMany' || property === 'update' || property === 'updateMany' || property === 'upsert') {
           rejectNestedRelationWrites(input.data || input.create || input.update);
+          if (effectiveClinicId) rejectCrossTenantIds(input.data || input.create || input.update, effectiveClinicId);
         }
 
         if (TENANT_ACTIONS.has(String(property))) {
@@ -149,6 +160,10 @@ const createTenantModelProxy = (model: string, delegate: any, clinicId: number |
             const rows = Array.isArray(input.data) ? input.data : [input.data];
             scoped.data = rows.map((row: Record<string, unknown>) => ({ ...row, clinicId: effectiveClinicId }));
           }
+        }
+
+        if (effectiveClinicId && (property === 'update' || property === 'updateMany')) {
+          scoped.data = { ...(input.data || {}), clinicId: effectiveClinicId };
         }
 
         if (property === 'upsert') {
