@@ -507,4 +507,5 @@ Confirmações pendentes preparadas: registrar despesa/recebimento/estorno finan
 - [x] Migration local preparada para substituir unicidade global de `StockMovement.idempotencyKey` e `CommunicationOutbox.dedupeKey` por unicidade composta por clínica; `prisma validate` aprovado. Ainda não aplicada: executar somente em PostgreSQL local isolado.
 - [ ] Pendente: validar a migration em PostgreSQL Docker local, incluindo dados sintéticos, rollback/backup e concorrência entre clínicas.
 - [ ] Pendente: endurecer verificação de papel revogado em tokens já emitidos; a hipótese de papel stale foi confirmada por inspeção e ainda não tem regressão executada.
+- [x] Verificação de papel revogado concluída: `requireRoles` consulta `active`, `roleName` e `clinicId` atuais do usuário antes de liberar a rota. Regressão adicionada para token DONO emitido antes da troca para RECEPCAO: `9/9` testes de autenticação aprovados; build backend aprovado.
 - [ ] Pendente: corrigir validações explícitas de relações em operações aninhadas (`connect`, `disconnect`, `upsert`, `updateMany`) e cobrir leitura/escrita HTTP cruzada.

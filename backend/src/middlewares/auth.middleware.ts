@@ -64,17 +64,23 @@ export const authenticateToken = (req: AuthenticatedRequest, res: Response, next
   }
 };
 
-const accountIsActive = async (user: NonNullable<AuthenticatedRequest['user']>): Promise<boolean> => {
+const accountRecord = async (user: NonNullable<AuthenticatedRequest['user']>) => {
   if (user.type === 'user') {
     const findFirst = (prisma.user as any).findFirst;
-    if (typeof findFirst !== 'function') return true;
-    const record = await findFirst({ where: { id: user.id } });
-    return Boolean(record) && record.active !== false;
+    if (typeof findFirst !== 'function') return null;
+    return findFirst({
+      where: { id: user.id, ...(user.clinicId ? { clinicId: user.clinicId } : {}) },
+      select: { active: true, roleName: true },
+    });
   }
   const findFirst = (prisma.tutor as any).findFirst;
-  if (typeof findFirst !== 'function') return true;
-  const record = await findFirst({ where: { id: user.id, deletedAt: null } });
-  return Boolean(record);
+  if (typeof findFirst !== 'function') return null;
+  return findFirst({ where: { id: user.id, deletedAt: null, ...(user.clinicId ? { clinicId: user.clinicId } : {}) } });
+};
+
+const accountIsActive = async (user: NonNullable<AuthenticatedRequest['user']>): Promise<boolean> => {
+  const record = await accountRecord(user);
+  return Boolean(record) && record.active !== false;
 };
 
 // Middleware específico para tutores
@@ -127,7 +133,12 @@ export const requireRoles = (...allowedRoles: AppRole[]) => {
 
       return runWithClinic(req.user.clinicId, () => runWithUser(req.user!.id, async () => {
         try {
-          if (!(await accountIsActive(req.user!))) return res.status(401).json({ message: 'Acesso revogado' });
+          const record = await accountRecord(req.user!);
+          if (!record || record.active === false) return res.status(401).json({ message: 'Acesso revogado' });
+          const currentRole = roleAlias[String(record.roleName || '').toUpperCase()] || String(record.roleName || '').toUpperCase();
+          if (!normalizedAllowedRoles.includes(currentRole)) {
+            return res.status(403).json({ message: 'Permissão insuficiente para esta operação' });
+          }
           return next();
         } catch { return res.status(401).json({ message: 'Acesso revogado' }); }
       }));
