@@ -6,6 +6,19 @@ describe('communication outbox invariants', () => {
   const db = prisma as any;
   const baseMessage = { id: 30, tutorId: 11, category: 'BASIC', attempts: 0, maxAttempts: 3, status: 'QUEUED', availableAt: new Date() };
 
+  it('preserves omitted preference fields instead of reactivating consent', async () => {
+    const pausedUntil = new Date('2030-01-01T00:00:00.000Z');
+    db.tutorCommunicationPreference.findFirst.mockResolvedValue({ id: 40, enabled: false, stopAll: true, pausedUntil });
+    db.tutorCommunicationPreference.update.mockResolvedValue({ id: 40, enabled: false, stopAll: true, pausedUntil });
+
+    await runWithClinic(1, () => CommunicationService.upsertPreference(11, { sender: 'SYSTEM', category: 'BASIC' }));
+
+    expect(db.tutorCommunicationPreference.update).toHaveBeenCalledWith({
+      where: { id: 40 },
+      data: { enabled: false, stopAll: true, pausedUntil },
+    });
+  });
+
   beforeEach(() => {
     db.communicationOutbox.findFirst.mockResolvedValue(null);
     db.communicationOutbox.create.mockResolvedValue({ id: 30, clinicId: 1, dedupeKey: 'appointment:8:created' });
