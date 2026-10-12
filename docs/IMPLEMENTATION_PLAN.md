@@ -489,6 +489,12 @@ Confirmações pendentes preparadas: registrar despesa/recebimento/estorno finan
 - [x] Build backend aprovado. A primeira falha da suíte foi apenas um mock ausente de `tutorCommunicationPreference`; após completar o setup, `5/5` passaram.
 - [ ] Ainda falta validação visual da configuração/histórico e uma prova de persistência pós-reload; não será simulada por API como se fosse interface.
 
+### Preferências de comunicação — correção de atualização parcial — 2026-10-12
+
+- [x] Hipótese confirmada: `upsertPreference` reativava uma preferência desabilitada e removia pausa/parada total quando o cliente enviava somente um campo.
+- [x] Serviço e controller agora preservam campos omitidos; `null` explícito continua permitindo limpar pausa. Regressão de comunicação: `6/6` aprovados; build backend aprovado.
+- [ ] A validação visual e o histórico pós-reload continuam pendentes; o adapter segue exclusivamente simulado e não há envio externo.
+
 ### Diagnóstico visual e frontend — 2026-10-11
 
 - [x] Nova aba suportada carregou `http://127.0.0.1:4173/login` com resposta HTTP local e árvore acessível completa (`Email`, `Senha`, `Entrar`). O bloqueio anterior foi do controle/sessão do navegador, não indisponibilidade da aplicação.

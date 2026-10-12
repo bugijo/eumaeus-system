@@ -9,7 +9,9 @@ export const communicationController = {
       if (!Number.isInteger(tutorId) || !req.body?.sender || !req.body?.category) return res.status(400).json({ error: 'Preferência inválida' });
       const preference = await CommunicationService.upsertPreference(tutorId, {
         sender: String(req.body.sender), category: String(req.body.category), enabled: req.body.enabled, stopAll: req.body.stopAll,
-        pausedUntil: req.body.pausedUntil ? new Date(req.body.pausedUntil) : null,
+        pausedUntil: Object.prototype.hasOwnProperty.call(req.body, 'pausedUntil')
+          ? (req.body.pausedUntil ? new Date(req.body.pausedUntil) : null)
+          : undefined,
       });
       return res.json({ success: true, data: preference });
     } catch (error) {

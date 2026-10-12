@@ -20,7 +20,11 @@ export class CommunicationService {
   static async upsertPreference(tutorId: number, input: CommunicationPreferenceInput) {
     const current = await prisma.tutorCommunicationPreference.findFirst({ where: { tutorId, sender: input.sender, category: input.category } });
     if (current) {
-      return prisma.tutorCommunicationPreference.update({ where: { id: current.id }, data: { enabled: input.enabled ?? true, pausedUntil: input.pausedUntil ?? null, stopAll: input.stopAll ?? false } });
+      return prisma.tutorCommunicationPreference.update({ where: { id: current.id }, data: {
+        enabled: input.enabled ?? current.enabled,
+        pausedUntil: input.pausedUntil !== undefined ? input.pausedUntil : current.pausedUntil,
+        stopAll: input.stopAll ?? current.stopAll,
+      } });
     }
     if (!getCurrentClinicId()) throw new Error('Contexto da clínica ausente');
     return prisma.tutorCommunicationPreference.create({ data: { clinicId: getCurrentClinicId() as number, tutorId, sender: input.sender, category: input.category, enabled: input.enabled ?? true, pausedUntil: input.pausedUntil ?? null, stopAll: input.stopAll ?? false } });
