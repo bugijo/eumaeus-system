@@ -1,7 +1,8 @@
 import { prisma } from '../lib/prisma';
-import { getCurrentClinicId } from '../tenantContext';
+import { getCurrentClinicId, getCurrentUserId } from '../tenantContext';
 
 const clinic = () => getCurrentClinicId() ?? (() => { throw new Error('Contexto da clínica ausente'); })();
+const actor = () => getCurrentUserId() ?? (() => { throw new Error('Autoria autenticada obrigatória'); })();
 
 export class CareService {
   static listAdmissions() { return prisma.hospitalizationAdmission.findMany({ include: { pet: true, tasks: true, prescriptions: true, handoffs: true }, orderBy: { admittedAt: 'desc' } }); }
@@ -17,9 +18,9 @@ export class CareService {
     return prisma.hospitalizationTask.create({ data: { clinicId: clinic(), admissionId, title: input.title.trim(), scheduledAt: input.scheduledAt ? new Date(input.scheduledAt) : null, notes: input.notes?.trim() || null } });
   }
   static recordTask(id: number, input: { notes?: string; executedById: number }) { return prisma.hospitalizationTask.update({ where: { id }, data: { status: 'EXECUTED', executedAt: new Date(), executedById: input.executedById, notes: input.notes?.trim() || undefined } }); }
-  static addPrescription(admissionId: number, input: { medication: string; instructions: string; createdById: number }) {
+  static addPrescription(admissionId: number, input: { medication: string; instructions: string }) {
     if (!input.medication?.trim() || !input.instructions?.trim()) throw new Error('Medicamento e instruções são obrigatórios');
-    return prisma.hospitalizationPrescription.create({ data: { clinicId: clinic(), admissionId, medication: input.medication.trim(), instructions: input.instructions.trim(), createdById: input.createdById } });
+    return prisma.hospitalizationPrescription.create({ data: { clinicId: clinic(), admissionId, medication: input.medication.trim(), instructions: input.instructions.trim(), createdById: actor() } });
   }
   static discharge(id: number, input: { notes: string; reviewerId: number }) {
     if (!input.notes?.trim()) throw new Error('Justificativa de alta obrigatória');
@@ -33,9 +34,9 @@ export class CareService {
   static createSurgery(input: { petId: number; veterinarianId: number; appointmentId?: number; scheduledAt?: string; notes?: string }) {
     return prisma.surgeryCase.create({ data: { clinicId: clinic(), petId: input.petId, veterinarianId: input.veterinarianId, appointmentId: input.appointmentId, scheduledAt: input.scheduledAt ? new Date(input.scheduledAt) : null, notes: input.notes?.trim() || null } });
   }
-  static addBudget(surgeryId: number, input: { description: string; amount: string; createdById: number }) {
+  static addBudget(surgeryId: number, input: { description: string; amount: string }) {
     if (!input.description?.trim() || !input.amount || Number(input.amount) < 0) throw new Error('Orçamento inválido');
-    return prisma.$transaction(async tx => { const last = await tx.surgeryBudgetVersion.findFirst({ where: { surgeryId }, orderBy: { version: 'desc' } }); return tx.surgeryBudgetVersion.create({ data: { clinicId: clinic(), surgeryId, version: (last?.version ?? 0) + 1, description: input.description.trim(), amount: input.amount, createdById: input.createdById } }); });
+    return prisma.$transaction(async tx => { const last = await tx.surgeryBudgetVersion.findFirst({ where: { surgeryId }, orderBy: { version: 'desc' } }); return tx.surgeryBudgetVersion.create({ data: { clinicId: clinic(), surgeryId, version: (last?.version ?? 0) + 1, description: input.description.trim(), amount: input.amount, createdById: actor() } }); });
   }
   static addConsent(surgeryId: number, input: { budgetVersionId: number; recordedById: number; notes?: string }) { return prisma.surgeryConsent.create({ data: { clinicId: clinic(), surgeryId, budgetVersionId: input.budgetVersionId, recordedById: input.recordedById, notes: input.notes?.trim() || null } }); }
   static addChecklist(surgeryId: number, input: { label: string; notes?: string }) { if (!input.label?.trim()) throw new Error('Item obrigatório'); return prisma.surgeryChecklistItem.create({ data: { clinicId: clinic(), surgeryId, label: input.label.trim(), notes: input.notes?.trim() || null } }); }
