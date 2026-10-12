@@ -54,11 +54,15 @@ describe('communication outbox invariants', () => {
   });
 
   it('records a failed attempt and requeues below the retry limit', async () => {
+    const before = Date.now();
     db.communicationOutbox.findMany.mockResolvedValue([{ ...baseMessage, attempts: 1 }]);
     const result = await runWithClinic(1, () => CommunicationService.dispatchPending(50, async () => { throw new Error('falha simulada'); }));
     expect(result).toEqual({ simulated: 0, cancelled: 0, failed: 1 });
     expect(db.communicationAttempt.create).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ attemptNo: 2, status: 'FAILED' }) }));
-    expect(db.communicationOutbox.update).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ status: 'QUEUED', attempts: 2 }) }));
+    const update = (db.communicationOutbox.update as jest.Mock).mock.calls[0][0];
+    expect(update).toEqual(expect.objectContaining({ data: expect.objectContaining({ status: 'QUEUED', attempts: 2 }) }));
+    expect(update.data.availableAt).toBeInstanceOf(Date);
+    expect(update.data.availableAt.getTime()).toBeGreaterThan(before);
   });
 
   it('simulates delivery only after revalidating an enabled preference', async () => {

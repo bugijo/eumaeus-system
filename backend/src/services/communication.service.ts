@@ -77,7 +77,13 @@ export class CommunicationService {
       } catch (error) {
         const exhausted = attemptNo >= message.maxAttempts;
         await prisma.communicationAttempt.create({ data: { outboxId: message.id, attemptNo, status: 'FAILED', error: error instanceof Error ? error.message : 'Falha simulada' } });
-        await prisma.communicationOutbox.update({ where: { id: message.id }, data: { status: exhausted ? 'FAILED' : 'QUEUED', attempts: attemptNo, lastError: error instanceof Error ? error.message : 'Falha simulada' } });
+        const backoffMs = Math.min(60_000, 1_000 * (2 ** Math.max(0, attemptNo - 1)));
+        await prisma.communicationOutbox.update({ where: { id: message.id }, data: {
+          status: exhausted ? 'FAILED' : 'QUEUED',
+          attempts: attemptNo,
+          lastError: error instanceof Error ? error.message : 'Falha simulada',
+          ...(exhausted ? {} : { availableAt: new Date(Date.now() + backoffMs) }),
+        } });
         results.failed += 1;
       }
     }
