@@ -43,6 +43,15 @@ export interface ProductUsageResponse {
   usages?: any[];
 }
 
+export interface StockReceiptRequest {
+  productId: number;
+  lotCode: string;
+  quantity: number;
+  expiresAt?: string;
+  reason: string;
+  idempotencyKey: string;
+}
+
 // Funções da API
 const productApi = {
   getAll: async (): Promise<Product[]> => {
@@ -76,6 +85,11 @@ const productApi = {
 
   registerUsage: async (appointmentId: number, products: ProductUsageRequest[]): Promise<ProductUsageResponse> => {
     const response = await apiClient.post(`/appointments/${appointmentId}/products`, products);
+    return response.data;
+  },
+
+  registerReceipt: async (data: StockReceiptRequest) => {
+    const response = await apiClient.post('/inventory/receipts', data);
     return response.data;
   },
 };
@@ -146,6 +160,17 @@ export const useRegisterProductUsage = () => {
   return useMutation({
     mutationFn: ({ appointmentId, products }: { appointmentId: number; products: ProductUsageRequest[] }) => 
       productApi.registerUsage(appointmentId, products),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['stock-stats'] });
+    },
+  });
+};
+
+export const useRegisterStockReceipt = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: productApi.registerReceipt,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['stock-stats'] });
