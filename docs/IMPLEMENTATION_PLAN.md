@@ -498,6 +498,18 @@ Confirmações pendentes preparadas: registrar despesa/recebimento/estorno finan
 - [x] O client da tela assistencial deixou de transmitir `createdById` ao registrar prescrição; a API filtra o campo e envia somente conteúdo clínico, mantendo autoria exclusivamente no servidor.
 - [x] Regressão integrada desta rodada: pacotes `5/5`, especialistas `4/4` e comunicação `6/6` aprovados no backend; nenhum teste alterou produção ou banco remoto.
 
+### Escritório Dev — evidências integradas e WhatsApp local — 2026-10-12
+
+- [x] Três subagentes realmente executaram frentes disjuntas: PostgreSQL real (`1e70316`), WhatsApp local (`b64d104`) e frontend administrativo (`1eaf9c4`). O coordenador revisou os commits e executou as verificações finais.
+- [x] Prova PostgreSQL real repetida com sucesso: duas clínicas sintéticas `9101/9102`, leitura cruzada bloqueada, chaves iguais independentes por clínica e rollback real de auditoria. Execução protegida para aceitar somente o container `eumaeus-postgres-local`.
+- [x] WhatsApp avançou de “pendente” para “implementação local simulada”: adapter, configuração sem segredos, HMAC `X-Hub-Signature-256`, deduplicação e estados `accepted/delivered/failed`. O contrato não abre conexão externa.
+- [x] Teste WhatsApp focal: `4/4`; build backend aprovado. A implementação segue alinhada ao fluxo oficial de webhook Meta: handshake com verify token e validação HMAC antes de aceitar POST. Referência consultada: documentação do SDK oficial arquivado em `whatsapp.github.io/WhatsApp-Nodejs-SDK/api-reference/webhooks/start/`.
+- [x] Frontend administrativo recebeu validação de campos, loading/error/empty, chaves idempotentes de estoque, remoção de autoria do payload clínico e bloqueio de ações incompletas. Build frontend aprovado; o agente reportou `18` testes focais aprovados e lint sem erros além de warnings preexistentes.
+- [ ] Ainda pendente: ligar o adapter simulado à outbox persistente sem envio externo, criar endpoint autenticado de webhook no bootstrap e testar estados em PostgreSQL; não expor endpoint público sem autenticação/verificação.
+- [ ] Ainda pendente: validação por cliques no navegador, jornada integrada tutor→pet→agenda→atendimento→pacote/cobrança e validação visual pós-reload. Build/teste não substituem interface.
+- [ ] Ainda pendente: concorrência real de pagamentos, consumo de pacote e estoque em cenários isolados completos; a prova atual cobre isolamento, idempotência e rollback de auditoria, não todas as corridas de negócio.
+- [ ] Suíte frontend completa tentou execução serial com um worker, mas excedeu o limite operacional sem relatório final; fica inconclusiva. Não é contada como aprovação. Builds e testes focais continuam separados dessa tentativa.
+
 ### Diagnóstico visual e frontend — 2026-10-11
 
 - [x] Nova aba suportada carregou `http://127.0.0.1:4173/login` com resposta HTTP local e árvore acessível completa (`Email`, `Senha`, `Entrar`). O bloqueio anterior foi do controle/sessão do navegador, não indisponibilidade da aplicação.
