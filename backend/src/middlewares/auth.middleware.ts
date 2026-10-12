@@ -69,7 +69,7 @@ const accountIsActive = async (user: NonNullable<AuthenticatedRequest['user']>):
     const findFirst = (prisma.user as any).findFirst;
     if (typeof findFirst !== 'function') return true;
     const record = await findFirst({ where: { id: user.id } });
-    return record?.active !== false;
+    return Boolean(record) && record.active !== false;
   }
   const findFirst = (prisma.tutor as any).findFirst;
   if (typeof findFirst !== 'function') return true;

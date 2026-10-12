@@ -10,6 +10,17 @@ generator client {
   provider = "prisma-client-js"
 }
 
+model TenantDataReview {
+  id          Int       @id @default(autoincrement())
+  tableName   String
+  recordCount Int
+  reason      String
+  createdAt   DateTime  @default(now())
+  resolvedAt  DateTime?
+
+  @@index([tableName, resolvedAt])
+}
+
 // Para controlar o status do agendamento de forma padronizada
 // enum AppointmentStatus {
 //   SCHEDULED
@@ -187,7 +198,7 @@ model StockMovement {
   type               String
   quantity           Int
   reason             String
-  idempotencyKey     String     @unique
+  idempotencyKey     String
   appointmentId      Int?
   authorizedByUserId Int?
   product            Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
@@ -195,6 +206,7 @@ model StockMovement {
 
   @@index([clinicId, productId, createdAt])
   @@index([clinicId, appointmentId])
+  @@unique([clinicId, idempotencyKey])
 }
 
 // 5. Modelo para Serviços e Produtos (para faturamento)
@@ -536,7 +548,7 @@ model CommunicationOutbox {
   appointmentId Int?
   eventType     String
   category      String
-  dedupeKey     String                 @unique
+  dedupeKey     String
   payload       Json
   status        String                 @default("QUEUED")
   attempts      Int                    @default(0)
@@ -550,6 +562,7 @@ model CommunicationOutbox {
 
   @@index([clinicId, status, availableAt])
   @@index([clinicId, tutorId, appointmentId])
+  @@unique([clinicId, dedupeKey])
 }
 
 model CommunicationAttempt {

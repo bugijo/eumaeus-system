@@ -494,3 +494,17 @@ Confirmações pendentes preparadas: registrar despesa/recebimento/estorno finan
 - [x] Nova aba suportada carregou `http://127.0.0.1:4173/login` com resposta HTTP local e árvore acessível completa (`Email`, `Senha`, `Entrar`). O bloqueio anterior foi do controle/sessão do navegador, não indisponibilidade da aplicação.
 - [ ] Login e mutações visuais não foram executados neste checkpoint: não há credencial sintética aberta para inventar e não foram usadas APIs para substituir cliques.
 - [ ] O teste frontend de `Financeiro` iniciou mas não produziu resultado dentro de dois limites curtos; processos órfãos específicos foram encerrados. O build frontend chegou a `2673 modules transformed` e `rendering chunks`, mas não concluiu sob carga. Ambos permanecem inconclusivos, não aprovados.
+
+### Continuidade no Escritório Dev local — 2026-10-12
+
+- [x] Nova worktree `/media/giovanni/HD/Projetos/Eumaeus-dev` criada a partir da `origin/main` publicada (`661d574bf8460573c4f8c6ce543938b57b3d05b3`); a worktree original e seus commits permanecem intactos.
+- [x] `docs/DEV_OFFICE.md` registra escopos, limites, critérios de aceite e a ausência da skill `eumaeus-dev`. Seis frentes fizeram auditoria somente leitura; navegador, migrations, integração e commits ficaram com o coordenador.
+- [x] Hipótese confirmada: chave de idempotência de pagamento reutilizada em outra fatura/valor agora é rejeitada; a UI gera uma chave por tentativa e preserva a mesma chave somente em retry da mesma tentativa. Regressão financeira: 8/8 aprovados no lote focal; build backend aprovado.
+- [x] Hipótese confirmada: marcar fatura como paga sem recebimentos POSTED foi removido da UI e rejeitado no serviço; estorno recalcula o estado pela soma Decimal dos pagamentos restantes.
+- [x] Hipótese confirmada: token assinado para usuário inexistente agora é recusado (`401 Acesso revogado`).
+- [x] Autoria de prescrições/orçamentos assistenciais agora deriva do usuário autenticado; campos de autoria enviados pelo cliente são ignorados. Lote focal combinado: 23/23 testes aprovados; build backend aprovado.
+- [x] Proxy tenant passou a incluir os nove modelos de internação/cirurgia e suas relações conhecidas. A proteção de relações cruzadas em criação aninhada ainda requer testes PostgreSQL e validações de serviço; não classificar como concluída apenas por essa inclusão.
+- [x] Migration local preparada para substituir unicidade global de `StockMovement.idempotencyKey` e `CommunicationOutbox.dedupeKey` por unicidade composta por clínica; `prisma validate` aprovado. Ainda não aplicada: executar somente em PostgreSQL local isolado.
+- [ ] Pendente: validar a migration em PostgreSQL Docker local, incluindo dados sintéticos, rollback/backup e concorrência entre clínicas.
+- [ ] Pendente: endurecer verificação de papel revogado em tokens já emitidos; a hipótese de papel stale foi confirmada por inspeção e ainda não tem regressão executada.
+- [ ] Pendente: corrigir validações explícitas de relações em operações aninhadas (`connect`, `disconnect`, `upsert`, `updateMany`) e cobrir leitura/escrita HTTP cruzada.

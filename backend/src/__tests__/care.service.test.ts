@@ -1,4 +1,4 @@
-import { runWithClinic } from '../tenantContext';
+import { runWithClinic, runWithUser } from '../tenantContext';
 
 const prismaMock = {
   pet: { findFirst: jest.fn() },
@@ -36,13 +36,19 @@ describe('care records', () => {
     prismaMock.surgeryBudgetVersion.create.mockResolvedValue({ id: 8, version: 3, amount: '125.50' });
     prismaMock.$transaction.mockImplementation(async (callback: (tx: typeof prismaMock) => unknown) => callback(prismaMock));
 
-    await expect(runWithClinic(7, () => CareService.addBudget(9, { description: 'Valor informado pela veterinária', amount: '125.50', createdById: 3 }))).resolves.toEqual({ id: 8, version: 3, amount: '125.50' });
-    expect(prismaMock.surgeryBudgetVersion.create).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ clinicId: 7, surgeryId: 9, version: 3, amount: '125.50' }) }));
+    await expect(runWithClinic(7, () => runWithUser(3, () => CareService.addBudget(9, { description: 'Valor informado pela veterinária', amount: '125.50' })))).resolves.toEqual({ id: 8, version: 3, amount: '125.50' });
+    expect(prismaMock.surgeryBudgetVersion.create).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ clinicId: 7, surgeryId: 9, version: 3, amount: '125.50', createdById: 3 }) }));
+  });
+
+  it('derives prescription authorship from authenticated context, ignoring client fields', async () => {
+    prismaMock.hospitalizationPrescription.create.mockResolvedValue({ id: 12, createdById: 3 });
+    await expect(runWithClinic(7, () => runWithUser(3, () => CareService.addPrescription(1, { medication: 'SINTETICO', instructions: 'Somente teste local' })))).resolves.toEqual({ id: 12, createdById: 3 });
+    expect(prismaMock.hospitalizationPrescription.create).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ createdById: 3 }) }));
   });
 
   it.each([
     ['task', () => CareService.addTask(1, { title: '' })],
-    ['prescription', () => CareService.addPrescription(1, { medication: '', instructions: '', createdById: 3 })],
+    ['prescription', () => CareService.addPrescription(1, { medication: '', instructions: '' })],
     ['handoff', () => CareService.handoff(1, { fromUserId: 3, toUserId: 4, notes: '' })],
     ['discharge', () => CareService.discharge(1, { notes: '', reviewerId: 3 })],
   ] as Array<[string, () => Promise<unknown>]> )('rejects incomplete %s records before persistence', async (_name, operation) => {

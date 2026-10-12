@@ -112,4 +112,16 @@ describe('authentication middleware security', () => {
     expect(response.status).toHaveBeenCalledWith(403);
     expect(next).not.toHaveBeenCalled();
   });
+
+  it('rejects a signed token when the user no longer exists', async () => {
+    const token = signAccessToken({ id: 999, type: 'user', role: ROLE.DONO, clinicId: 1 });
+    const middleware = requireRoles(ROLE.DONO);
+
+    middleware(createRequest(`Bearer ${token}`), response, next);
+    await new Promise(resolve => setImmediate(resolve));
+
+    expect(response.status).toHaveBeenCalledWith(401);
+    expect(response.json).toHaveBeenCalledWith({ message: 'Acesso revogado' });
+    expect(next).not.toHaveBeenCalled();
+  });
 });

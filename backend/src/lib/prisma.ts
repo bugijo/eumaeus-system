@@ -11,6 +11,8 @@ const TENANT_MODELS = new Set([
   'servicePackage', 'packageContract', 'packageSession', 'productLot', 'stockMovement',
   'vaccinationRecord', 'resultCenter', 'payment', 'expense', 'specialistProfile', 'specialistAvailability', 'specialistAssignment',
   'prescription', 'prescriptionItem', 'financialAuditEvent',
+  'hospitalizationAdmission', 'hospitalizationTask', 'hospitalizationPrescription', 'hospitalizationHandoff',
+  'surgeryCase', 'surgeryBudgetVersion', 'surgeryConsent', 'surgeryChecklistItem', 'surgeryInstruction',
 ]);
 const TENANT_ACTIONS = new Set([
   'findUnique', 'findUniqueOrThrow', 'findFirst', 'findFirstOrThrow', 'findMany',
@@ -45,6 +47,15 @@ const TENANT_RELATIONS: Record<string, Record<string, { target: string; many: bo
   specialistProfile: { user: { target: 'user', many: false }, availabilities: { target: 'specialistAvailability', many: true }, assignments: { target: 'specialistAssignment', many: true } },
   specialistAvailability: { specialist: { target: 'specialistProfile', many: false } },
   specialistAssignment: { appointment: { target: 'appointment', many: false }, specialist: { target: 'specialistProfile', many: false } },
+  hospitalizationAdmission: { pet: { target: 'pet', many: false }, responsibleUser: { target: 'user', many: false }, dischargeReviewer: { target: 'user', many: false }, tasks: { target: 'hospitalizationTask', many: true }, prescriptions: { target: 'hospitalizationPrescription', many: true }, handoffs: { target: 'hospitalizationHandoff', many: true } },
+  hospitalizationTask: { admission: { target: 'hospitalizationAdmission', many: false }, executedBy: { target: 'user', many: false } },
+  hospitalizationPrescription: { admission: { target: 'hospitalizationAdmission', many: false }, createdBy: { target: 'user', many: false } },
+  hospitalizationHandoff: { admission: { target: 'hospitalizationAdmission', many: false }, fromUser: { target: 'user', many: false }, toUser: { target: 'user', many: false } },
+  surgeryCase: { pet: { target: 'pet', many: false }, veterinarian: { target: 'user', many: false }, budgets: { target: 'surgeryBudgetVersion', many: true }, consents: { target: 'surgeryConsent', many: true }, checklist: { target: 'surgeryChecklistItem', many: true }, instructions: { target: 'surgeryInstruction', many: true } },
+  surgeryBudgetVersion: { surgery: { target: 'surgeryCase', many: false }, createdBy: { target: 'user', many: false }, consents: { target: 'surgeryConsent', many: true } },
+  surgeryConsent: { surgery: { target: 'surgeryCase', many: false }, budgetVersion: { target: 'surgeryBudgetVersion', many: false }, recordedBy: { target: 'user', many: false } },
+  surgeryChecklistItem: { surgery: { target: 'surgeryCase', many: false }, completedBy: { target: 'user', many: false } },
+  surgeryInstruction: { surgery: { target: 'surgeryCase', many: false }, approvedBy: { target: 'user', many: false } },
 };
 
 const rejectNestedRelationWrites = (value: unknown): void => {
