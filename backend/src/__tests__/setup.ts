@@ -82,7 +82,7 @@ jest.mock('@prisma/client', () => {
       delete: jest.fn(),
       count: jest.fn(),
     },
-    payment: { findFirst: jest.fn(), create: jest.fn() },
+    payment: { findFirst: jest.fn(), findMany: jest.fn(), create: jest.fn(), update: jest.fn() },
     communicationOutbox: {
       findFirst: jest.fn(),
       create: jest.fn(),

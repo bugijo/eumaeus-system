@@ -14,7 +14,7 @@ export const financialApi = {
 };
 
 export const useResultCenters = () => useQuery({ queryKey: ['financial', 'centers'], queryFn: financialApi.centers });
-export const useReceivePayment = () => { const client = useQueryClient(); return useMutation({ mutationFn: ({ invoiceId, amount, method }: { invoiceId: number; amount: number; method: string }) => financialApi.receive(invoiceId, amount, method, `ui-payment-${invoiceId}-${amount}-${method}`), onSuccess: () => { client.invalidateQueries({ queryKey: ['invoices'] }); client.invalidateQueries({ queryKey: ['financial-stats'] }); } }); };
+export const useReceivePayment = () => { const client = useQueryClient(); return useMutation({ mutationFn: ({ invoiceId, amount, method, idempotencyKey }: { invoiceId: number; amount: number; method: string; idempotencyKey: string }) => financialApi.receive(invoiceId, amount, method, idempotencyKey), onSuccess: () => { client.invalidateQueries({ queryKey: ['invoices'] }); client.invalidateQueries({ queryKey: ['financial-stats'] }); } }); };
 export const useReversePayment = () => { const client = useQueryClient(); return useMutation({ mutationFn: ({ paymentId, reason }: { paymentId: number; reason: string }) => financialApi.reverse(paymentId, reason), onSuccess: () => { client.invalidateQueries({ queryKey: ['invoices'] }); client.invalidateQueries({ queryKey: ['financial-stats'] }); } }); };
 export const useExpenses = () => useQuery({ queryKey: ['financial', 'expenses'], queryFn: financialApi.expenses });
 export const useCreateExpense = () => { const client = useQueryClient(); return useMutation({ mutationFn: financialApi.createExpense, onSuccess: () => client.invalidateQueries({ queryKey: ['financial', 'expenses'] }) }); };

@@ -125,6 +125,10 @@ export class InvoiceController {
       if (error.message.includes('não encontrada')) {
         return res.status(404).json({ error: error.message });
       }
+
+      if (error.message.includes('só pode') || error.message.includes('não pode ser cancelada')) {
+        return res.status(409).json({ error: error.message });
+      }
       
       return res.status(500).json({ 
         error: 'Erro interno do servidor ao atualizar fatura' 

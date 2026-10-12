@@ -35,10 +35,14 @@ export class FinancialService {
       const invoice = await tx.invoice.findFirst({ where: { id: invoiceId }, include: { items: true, discounts: true, payments: true } });
       if (!invoice) throw new Error('Fatura não encontrada');
       if (invoice.status === 'CANCELLED') throw new Error('Fatura cancelada não recebe pagamento');
-      const duplicate = await tx.payment.findFirst({ where: { idempotencyKey: idempotencyKey.trim() } });
-      if (duplicate) return duplicate;
-      const received = invoice.payments.filter((payment: any) => payment.status === 'POSTED').reduce((sum: Prisma.Decimal, payment: any) => sum.plus(payment.amount), new Prisma.Decimal(0));
       const paymentAmount = new Prisma.Decimal(amount);
+      const duplicate = await tx.payment.findFirst({ where: { idempotencyKey: idempotencyKey.trim() } });
+      if (duplicate) {
+        const sameOperation = duplicate.invoiceId === invoiceId && duplicate.method === method.trim() && duplicate.amount.equals(paymentAmount);
+        if (!sameOperation) throw new Error('Chave de idempotência já usada em outra operação');
+        return duplicate;
+      }
+      const received = invoice.payments.filter((payment: any) => payment.status === 'POSTED').reduce((sum: Prisma.Decimal, payment: any) => sum.plus(payment.amount), new Prisma.Decimal(0));
       if (received.plus(paymentAmount).greaterThan(invoice.totalAmount)) throw new Error('Recebimento maior que o saldo da fatura');
       const payment = await tx.payment.create({ data: { invoiceId, amount: paymentAmount, method: method.trim(), idempotencyKey: idempotencyKey.trim(), clinicId: invoice.clinicId, receivedByUserId: actorUserId } });
       await tx.financialAuditEvent.create({ data: { clinicId: invoice.clinicId, eventType: 'PAYMENT_RECEIVED', paymentId: payment.id, actorUserId, metadata: { amount: payment.amount.toString(), method: payment.method } } });
@@ -58,7 +62,9 @@ export class FinancialService {
       if (payment.status === 'REVERSED') return payment;
       const reversed = await tx.payment.update({ where: { id: paymentId }, data: { status: 'REVERSED', reversedAt: new Date(), reversalReason: reason.trim() } });
       await tx.financialAuditEvent.create({ data: { clinicId: payment.clinicId, eventType: 'PAYMENT_REVERSED', paymentId, actorUserId, metadata: { reason: reason.trim() } } });
-      await tx.invoice.update({ where: { id: payment.invoiceId }, data: { status: 'PENDING' } });
+      const invoice = await tx.invoice.findFirst({ where: { id: payment.invoiceId }, include: { payments: true } });
+      const postedTotal = (invoice?.payments || []).filter((item: any) => item.status === 'POSTED').reduce((sum: Prisma.Decimal, item: any) => sum.plus(item.amount), new Prisma.Decimal(0));
+      await tx.invoice.update({ where: { id: payment.invoiceId }, data: { status: invoice && postedTotal.equals(invoice.totalAmount) ? 'PAID' : 'PENDING' } });
       return reversed;
     });
   }

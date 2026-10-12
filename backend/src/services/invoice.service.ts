@@ -168,11 +168,18 @@ export class InvoiceService {
   // Atualizar status da fatura
   async updateStatus(invoiceId: number, status: 'PENDING' | 'PAID' | 'CANCELLED'): Promise<InvoiceWithRelations> {
     const invoice = await prisma.invoice.findUnique({
-      where: { id: invoiceId }
+      where: { id: invoiceId },
+      include: { payments: true }
     });
 
     if (!invoice) {
       throw new Error('Fatura não encontrada');
+    }
+    if (status === 'PAID') {
+      throw new Error('Fatura só pode ser marcada como paga por recebimentos POSTED');
+    }
+    if (status === 'CANCELLED' && invoice.payments.some((payment: any) => payment.status === 'POSTED')) {
+      throw new Error('Fatura com recebimentos POSTED não pode ser cancelada');
     }
 
     return await prisma.invoice.update({
