@@ -51,7 +51,7 @@ describe('WhatsApp local webhook contract', () => {
     const app = build(store);
     const body = Buffer.from('{"id":"evt-3","type":"status.delivered","payload":{"from":"5511999999999","status":"delivered"}}');
     await request(app).post('/webhooks/whatsapp/phone-local-1').set('Content-Type', 'application/json').set('X-Hub-Signature-256', sign(body)).send(body.toString('utf8')).expect(200).expect(({ body: response }) => {
-      expect(response).toMatchObject({ duplicate: true, outboxId: 777 });
+      expect(response).toMatchObject({ duplicate: true, inboundEventId: 777 });
     });
     expect(store.persistInboundEvent).not.toHaveBeenCalled();
   });

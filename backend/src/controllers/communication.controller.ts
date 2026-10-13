@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import { AuthenticatedRequest } from '../middlewares/auth.middleware';
 import { CommunicationService } from '../services/communication.service';
+import { processWhatsAppInbound } from '../integrations/whatsapp/inbound.service';
 
 export const communicationController = {
   async setPreference(req: AuthenticatedRequest, res: Response) {
@@ -19,8 +20,9 @@ export const communicationController = {
     }
   },
   async dispatchSimulation(_req: AuthenticatedRequest, res: Response) {
+    const inbound = await processWhatsAppInbound();
     const result = await CommunicationService.dispatchPending();
-    return res.json({ success: true, mode: 'simulation', data: result });
+    return res.json({ success: true, mode: 'simulation', data: { ...result, inbound } });
   },
   async listPreferences(req: AuthenticatedRequest, res: Response) {
     return res.json({ success: true, data: await CommunicationService.listPreferences(Number(req.params.tutorId)) });

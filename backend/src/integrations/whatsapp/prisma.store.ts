@@ -15,20 +15,29 @@ export const whatsappPrismaStore: WhatsAppWebhookStore = {
   },
 
   async findExistingEvent(clinicId, dedupeKey) {
-    return runWithClinic(clinicId, () => prisma.communicationOutbox.findFirst({ where: { dedupeKey }, select: { id: true } }));
+    return runWithClinic(clinicId, () => prisma.whatsAppInboundEvent.findFirst({ where: { correlationKey: dedupeKey }, select: { id: true } }));
   },
 
   async persistInboundEvent(input) {
-    return runWithClinic(input.clinicId, () => prisma.communicationOutbox.create({
+    const payload = input.payload as Prisma.InputJsonObject;
+    const source = payload.source && typeof payload.source === 'object' && !Array.isArray(payload.source)
+      ? payload.source as Record<string, unknown> : {};
+    return runWithClinic(input.clinicId, () => prisma.whatsAppInboundEvent.create({
       data: {
         clinicId: input.clinicId,
         tutorId: input.tutorId,
+        provider: 'WHATSAPP',
+        channelId: String(payload.channelId || 'unknown'),
+        externalEventId: String(payload.eventId || input.dedupeKey),
         eventType: input.eventType,
-        category: 'WHATSAPP_INBOUND',
-        dedupeKey: input.dedupeKey,
-        payload: input.payload as Prisma.InputJsonObject,
+        contactPhone: typeof source.from === 'string' ? source.from : null,
+        payload,
+        correlationKey: input.dedupeKey,
+        correlationId: typeof payload.correlationId === 'string' ? payload.correlationId : null,
+        aggregateKey: typeof payload.aggregateKey === 'string' ? payload.aggregateKey : `tutor:${input.tutorId}`,
+        sequence: typeof payload.sequence === 'number' ? payload.sequence : null,
+        occurredAt: typeof payload.occurredAt === 'string' ? new Date(payload.occurredAt) : null,
         status: 'RECEIVED',
-        maxAttempts: 0,
       },
       select: { id: true },
     }));

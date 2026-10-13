@@ -92,13 +92,13 @@ export const createWhatsAppWebhookController = ({ channels, store }: WhatsAppWeb
     try {
       const dedupeKey = `whatsapp:inbound:${req.params.channelId}:${event.id}`;
       const existing = await store.findExistingEvent(channel.clinicId, dedupeKey);
-      if (existing) return res.status(200).json({ accepted: true, duplicate: true, eventId: event.id, outboxId: existing.id });
+      if (existing) return res.status(200).json({ accepted: true, duplicate: true, eventId: event.id, inboundEventId: existing.id });
       if (!event.phone) return res.status(422).json({ error: 'Evento sem identificador de contato' });
       const tutor = await store.findTutorByPhone(channel.clinicId, event.phone);
       if (!tutor) return res.status(422).json({ error: 'Contato não associado ao canal configurado' });
 
       const persisted = await store.persistInboundEvent({ clinicId: channel.clinicId, tutorId: tutor.id, dedupeKey, eventType: `WHATSAPP_INBOUND_${event.type}`, payload: { channelId: req.params.channelId, eventId: event.id, type: event.type, source: event.payload, statePolicy: 'append-only-no-regression' } });
-      return res.status(200).json({ accepted: true, duplicate: false, eventId: event.id, outboxId: persisted.id, mode: 'simulation' });
+      return res.status(200).json({ accepted: true, duplicate: false, eventId: event.id, inboundEventId: persisted.id, mode: 'simulation' });
     } catch {
       return res.status(503).json({ error: 'Persistência do webhook indisponível' });
     }

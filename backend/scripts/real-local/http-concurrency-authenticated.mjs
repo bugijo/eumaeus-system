@@ -199,10 +199,17 @@ async function payments(fixture, tokenA, tokenB) {
   ]);
   const sameKeyCount = await scalar(`SELECT count(*) FROM "Payment" WHERE "idempotencyKey" = ${quote(`${marker}-same-key`)};`);
 
-  const equalValue = await concurrent([
-    authenticated(tokenA, `/api/financial/invoices/${fixture.installmentInvoice}/payments`, { amount: 2.50, method: 'TEST_HTTP', idempotencyKey: `${marker}-install-a` }),
-    authenticated(tokenA, `/api/financial/invoices/${fixture.installmentInvoice}/payments`, { amount: 2.50, method: 'TEST_HTTP', idempotencyKey: `${marker}-install-b` }),
-  ]);
+  const equalBodies = [
+    { amount: 1.25, method: 'TEST_HTTP', idempotencyKey: `${marker}-install-a` },
+    { amount: 1.25, method: 'TEST_HTTP', idempotencyKey: `${marker}-install-b` },
+  ];
+  const equalValue = await concurrent(equalBodies.map((body) => authenticated(tokenA, `/api/financial/invoices/${fixture.installmentInvoice}/payments`, body)));
+  // Serializable transactions may legitimately return a retryable conflict;
+  // retry only the failed distinct operation with the same key, never submit
+  // a second operation under a new key.
+  for (let index = 0; index < equalValue.length; index += 1) {
+    if (equalValue[index].status === 409) equalValue[index] = await authenticated(tokenA, `/api/financial/invoices/${fixture.installmentInvoice}/payments`, equalBodies[index]);
+  }
   const equalCount = await scalar(`SELECT count(*) FROM "Payment" WHERE "invoiceId" = ${fixture.installmentInvoice} AND "idempotencyKey" LIKE ${quote(`${marker}-install-%`)};`);
 
   const crossClinic = await authenticated(tokenA, `/api/financial/invoices/${fixture.invoiceB}/payments`, { amount: 5, method: 'TEST_HTTP', idempotencyKey: `${marker}-cross-clinic` });

@@ -73,10 +73,10 @@ NODE_ENV=test PORT=3334 node backend/dist/src/bootstrap.js
 node backend/scripts/real-local/http-concurrency-authenticated.mjs
 ```
 
-Execução local em 2026-10-13: pacote (HTTP 201/409, uma sessão, saldo zero),
-estoque (HTTP 201/409, uma movimentação, saldo zero), escrita cruzada rejeitada
-e leitura cruzada vazia foram confirmados. Pagamentos e estorno ficaram
-inconclusivos por falha reproduzível do backend: HTTP 409, `SQL direto bloqueado:
-use o Prisma escopado ou uma migração oficial`. O harness sai com `ok: false`
-até a allowlist do lock financeiro ser corrigida. Nenhum dado real ou remoto
-foi usado.
+Execução local posterior: pagamentos concorrentes mantiveram uma linha e total
+`5.00`; a mesma chave manteve uma linha; duas parcelas legítimas de `1.25` com
+chaves distintas ficaram em duas linhas (um conflito serializável foi repetido
+com a mesma chave); pacote, estoque e estorno concorrentes preservaram seus
+invariantes; escrita e leitura cruzadas foram rejeitadas. O harness terminou com
+`ok: true` contra o PostgreSQL Docker local, sem dados reais ou remoto. A falha
+anterior de allowlist foi corrigida no proxy sem liberar SQL arbitrário.
