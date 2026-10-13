@@ -20,6 +20,7 @@ import { ACCOUNTS_PAYABLE_DATA_SOURCE } from '../constants';
 import { financialApi, useCreateExpense, useCreateResultCenter, useExpenses, useReceivePayment, useResultCenters, useReversePayment } from '@/api/financialApi';
 import { useAuthStore } from '@/stores/authStore';
 import { decimalToNumber, formatBRL, normalizeDecimalInput } from '@/lib/decimal';
+import { buildCsv } from '@/lib/csv';
 
 const newPaymentIdempotencyKey = () => `ui-payment-${globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`}`;
 
@@ -122,9 +123,9 @@ export default function Financeiro() {
       ...accountingReport.invoices.map((invoice: any) => ['venda', invoice.id, invoice.createdAt, 'Fatura', invoice.totalAmount, invoice.status, '', invoice.fiscalDocument ? `documento ${invoice.fiscalDocument.id}` : 'documento fiscal ausente']),
       ...accountingReport.expenses.map((expense: any) => ['despesa', expense.id, expense.incurredAt, expense.description, expense.amount, '', expense.resultCenter ? `${expense.resultCenter.code} · ${expense.resultCenter.name}` : 'sem classificação', expense.reason || '']),
     ];
-    const csv = rows.map(row => row.map(value => `"${String(value ?? '').replaceAll('"', '""')}"`).join(';')).join('\n');
+    const csv = buildCsv(rows);
     const link = document.createElement('a');
-    link.href = URL.createObjectURL(new Blob([`\ufeff${csv}`], { type: 'text/csv;charset=utf-8' }));
+    link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
     link.download = `eumaeus-contabil-${accountingReport.period.from}-${accountingReport.period.to}.csv`;
     link.click();
     URL.revokeObjectURL(link.href);
