@@ -24,6 +24,8 @@ export interface RecentActivity {
   date: string;
   type: string;
 }
+export interface AssistantAlert { id: string; source: string; kind: string; title: string; reason: string; dueAt?: string; href: string; }
+export interface AssistantSummary { generatedAt: string; clinicId: number; alerts: AssistantAlert[]; }
 
 export const getDashboardStats = async (): Promise<DashboardStats> => {
   const { data } = await apiClient.get('/dashboard/stats');
@@ -37,5 +39,9 @@ export const getUpcomingAppointments = async (): Promise<UpcomingAppointment[]> 
 
 export const getRecentActivities = async (): Promise<RecentActivity[]> => {
   const { data } = await apiClient.get('/dashboard/recent-activities');
+  return data;
+};
+export const getAssistantSummary = async (): Promise<AssistantSummary> => {
+  const { data } = await apiClient.get('/dashboard/assistant');
   return data;
 };

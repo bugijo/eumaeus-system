@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { prisma } from '../lib/prisma';
+import { AssistantService } from '../services/assistant.service';
 
 // Cache simples para estatisticas (5 minutos)
 let statsCache: any = null;
@@ -7,6 +8,10 @@ let statsCacheTime = 0;
 const CACHE_DURATION = 5 * 60 * 1000;
 
 export const dashboardController = {
+  async getAssistantSummary(_req: Request, res: Response): Promise<Response | void> {
+    try { return res.json(await AssistantService.summary()); }
+    catch (error) { return res.status(400).json({ error: error instanceof Error ? error.message : 'Assistente indisponível' }); }
+  },
   async getStats(_req: Request, res: Response): Promise<Response | void> {
     try {
       const now = Date.now();

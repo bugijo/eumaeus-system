@@ -72,6 +72,7 @@ jest.mock('@prisma/client', () => {
       count: jest.fn(),
       createMany: jest.fn(),
     },
+    productLot: { findMany: jest.fn() },
     service: { findFirst: jest.fn() },
     invoice: {
       findMany: jest.fn(),
@@ -82,6 +83,7 @@ jest.mock('@prisma/client', () => {
       delete: jest.fn(),
       count: jest.fn(),
     },
+    hospitalizationTask: { findMany: jest.fn() },
     payment: { findFirst: jest.fn(), findMany: jest.fn(), create: jest.fn(), update: jest.fn(), updateMany: jest.fn() },
     communicationOutbox: {
       findFirst: jest.fn(),
@@ -114,6 +116,7 @@ jest.mock('@prisma/client', () => {
     },
     packageContract: {
       findFirst: jest.fn(),
+      findMany: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
       updateMany: jest.fn(),
