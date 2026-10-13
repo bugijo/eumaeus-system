@@ -17,6 +17,10 @@ export interface Prescription {
   status?: string;
   currentVersion?: number;
   signatureMode?: string;
+  clinicNameSnapshot?: string | null;
+  veterinarianNameSnapshot?: string | null;
+  tutorNameSnapshot?: string | null;
+  petNameSnapshot?: string | null;
   cancelReason?: string | null;
   cancelledAt?: string | null;
   items: PrescriptionItem[];
