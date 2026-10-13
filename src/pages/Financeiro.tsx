@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { useApplyInvoiceDiscount, useFinancialStats, useInvoices } from '../api/invoiceApi';
 import { ACCOUNTS_PAYABLE_DATA_SOURCE } from '../constants';
-import { useCreateExpense, useExpenses, useReceivePayment, useResultCenters, useReversePayment } from '@/api/financialApi';
+import { useCreateExpense, useCreateResultCenter, useExpenses, useReceivePayment, useResultCenters, useReversePayment } from '@/api/financialApi';
 import { useAuthStore } from '@/stores/authStore';
 import { decimalToNumber, formatBRL, normalizeDecimalInput } from '@/lib/decimal';
 
@@ -35,7 +35,9 @@ export default function Financeiro() {
   const { data: resultCenters = [] } = useResultCenters();
   const { data: expenses = [] } = useExpenses();
   const expenseMutation = useCreateExpense();
+  const centerMutation = useCreateResultCenter();
   const [expense, setExpense] = useState({ description: '', amount: '', reason: '', resultCenterId: '' });
+  const [centerDraft, setCenterDraft] = useState({ code: '', name: '' });
   const [paymentDraft, setPaymentDraft] = useState({ invoiceId: '', amount: '', method: 'PIX', idempotencyKey: newPaymentIdempotencyKey() });
   const [reversalDraft, setReversalDraft] = useState({ paymentId: '', amount: '', reason: '' });
   const role = useAuthStore(state => state.user?.role);
@@ -198,7 +200,7 @@ export default function Financeiro() {
       </div>
 
       {/* Detailed View - Tabs */}
-      <Card><CardHeader><CardTitle>Centros de resultado</CardTitle></CardHeader><CardContent><div className="flex flex-wrap gap-2">{resultCenters.length ? resultCenters.map(center => <Badge key={center.id} variant="outline">{center.code} · {center.name}</Badge>) : <span className="text-sm text-muted-foreground">Nenhum centro classificado; registros antigos permanecem sem atribuição.</span>}</div></CardContent></Card>
+      <Card><CardHeader><CardTitle>Centros de resultado</CardTitle></CardHeader><CardContent className="space-y-3"><div className="flex flex-wrap gap-2">{resultCenters.length ? resultCenters.map(center => <Badge key={center.id} variant="outline">{center.code} · {center.name}</Badge>) : <span className="text-sm text-muted-foreground">Nenhum centro classificado; registros antigos permanecem sem atribuição.</span>}</div>{canWriteFinancial && <form className="grid gap-2 md:grid-cols-3" onSubmit={event => { event.preventDefault(); if (!centerDraft.code.trim() || !centerDraft.name.trim()) return; centerMutation.mutate(centerDraft, { onSuccess: () => setCenterDraft({ code: '', name: '' }) }); }}><input aria-label="Código do centro" className="rounded-md border px-3 py-2 text-sm" placeholder="Código (ex.: BANHO_TOSA)" value={centerDraft.code} onChange={event => setCenterDraft({ ...centerDraft, code: event.target.value })} /><input aria-label="Nome do centro" className="rounded-md border px-3 py-2 text-sm" placeholder="Nome do centro" value={centerDraft.name} onChange={event => setCenterDraft({ ...centerDraft, name: event.target.value })} /><Button type="submit" disabled={centerMutation.isPending}>Criar centro</Button></form>}{centerMutation.isError && <p role="alert" className="text-sm text-red-600">{(centerMutation.error as Error).message}</p>}</CardContent></Card>
       <Card><CardHeader><CardTitle>Despesas classificadas</CardTitle></CardHeader><CardContent className="space-y-4">
         {canWriteFinancial ? <form className="grid gap-2 md:grid-cols-5" onSubmit={(event) => { event.preventDefault(); const amount = normalizeDecimalInput(expense.amount); if (!expense.description.trim() || !amount || !expense.reason.trim()) return; expenseMutation.mutate({ description: expense.description.trim(), amount, reason: expense.reason.trim(), resultCenterId: expense.resultCenterId ? Number(expense.resultCenterId) : undefined }, { onSuccess: () => setExpense({ description: '', amount: '', reason: '', resultCenterId: '' }) }); }}>
           <input aria-label="Descrição da despesa" className="rounded-md border px-3 py-2 text-sm" placeholder="Descrição" value={expense.description} onChange={event => setExpense({ ...expense, description: event.target.value })} />
