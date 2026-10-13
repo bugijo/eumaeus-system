@@ -546,6 +546,14 @@ Confirmações pendentes preparadas: registrar despesa/recebimento/estorno finan
 - [ ] Ainda parcial: não há conexão real com Meta nem entrega externa; o transporte permanece simulação/local. O histórico inbound está persistido e processável, mas correlação semântica com cada mensagem outbound depende do identificador fornecido pelo provedor.
 - [ ] Validação visual por cliques das jornadas permanece separada dos testes HTTP/DB; não foi contada como concluída por estes scripts.
 
+### Validação visual da build atual — checkpoint 2026-10-12
+
+- [x] Build frontend atual (`VITE_API_URL` apontando somente para o backend local `3334`) carregou em `http://127.0.0.1:4174`; login da conta sintética `UI TESTE SINTETICO`/DONO funcionou e o dashboard mostrou clínica vazia sem fallback demonstrativo.
+- [x] Por cliques, foram abertas e verificadas as telas Financeiro, Especialistas e Estoque. As telas exibiram formulários, estados vazios, permissões e mensagens de orientação; nenhuma mutação financeira/estoque/especialista foi executada sem confirmação específica.
+- [x] O diagnóstico visual inicial em `4173`/`3333` foi separado: essas portas estavam servindo a worktree antiga. A build atual foi repetida em `4174`/`3334`; a inclusão explícita dessas origens locais no CORS foi corrigida e o login passou.
+- [x] Frente frontend `7ab8d23`: build com `2674` módulos; suíte atual reportada pelo agente `11` arquivos / `84` testes aprovados, incluindo 2 testes focais de Financeiro e helpers Decimal. Essa contagem não soma os 81 testes históricos.
+- [ ] Jornada visual completa de criação, atendimento, recebimento, pacote, comunicação, prontuário e assistência ainda requer fixtures e confirmações imediatamente antes das mutações; não foi classificada como ponta a ponta.
+
 ### Auditoria isolada da suíte frontend — 2026-10-12
 
 - [x] Causa da execução anterior inconclusiva identificada: `package.json` define `test` como `vitest` sem `run`, portanto `npm test` sem argumentos entra em modo watch/interativo e não produz conclusão apropriada para automação.
