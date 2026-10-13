@@ -30,10 +30,13 @@ export class AssistantReminderService {
   }
 
   static async list(now = new Date()) {
-    const { clinicId } = context();
-    await (prisma as any).assistantReminder.updateMany({
-      where: { clinicId, status: 'SNOOZED', snoozedUntil: { lte: now } },
-      data: { status: 'ACTIVE', snoozedUntil: null, snoozedReason: null },
+    const { clinicId, userId } = context();
+    const expired = await (prisma as any).assistantReminder.findMany({ where: { clinicId, status: 'SNOOZED', snoozedUntil: { lte: now } }, select: { id: true, status: true } });
+    if (expired.length) await (prisma as any).$transaction(async (tx: any) => {
+      for (const reminder of expired) {
+        await tx.assistantReminder.update({ where: { id: reminder.id }, data: { status: 'ACTIVE', snoozedUntil: null, snoozedReason: null } });
+        await tx.assistantReminderAction.create({ data: { clinicId, reminderId: reminder.id, actorUserId: userId, action: 'REACTIVATED', fromStatus: reminder.status, toStatus: 'ACTIVE', reason: 'Prazo de adiamento expirado' } });
+      }
     });
     return (prisma as any).assistantReminder.findMany({
       where: { clinicId, status: { in: ['ACTIVE', 'SNOOZED', 'DISMISSED', 'RESOLVED'] } },
