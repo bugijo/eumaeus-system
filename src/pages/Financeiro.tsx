@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { useApplyInvoiceDiscount, useFinancialStats, useInvoices } from '../api/invoiceApi';
 import { ACCOUNTS_PAYABLE_DATA_SOURCE } from '../constants';
-import { useCreateExpense, useCreateResultCenter, useExpenses, useReceivePayment, useResultCenters, useReversePayment } from '@/api/financialApi';
+import { financialApi, useCreateExpense, useCreateResultCenter, useExpenses, useReceivePayment, useResultCenters, useReversePayment } from '@/api/financialApi';
 import { useAuthStore } from '@/stores/authStore';
 import { decimalToNumber, formatBRL, normalizeDecimalInput } from '@/lib/decimal';
 
@@ -40,6 +40,10 @@ export default function Financeiro() {
   const [centerDraft, setCenterDraft] = useState({ code: '', name: '' });
   const [paymentDraft, setPaymentDraft] = useState({ invoiceId: '', amount: '', method: 'PIX', idempotencyKey: newPaymentIdempotencyKey() });
   const [reversalDraft, setReversalDraft] = useState({ paymentId: '', amount: '', reason: '' });
+  const today = new Date().toISOString().slice(0, 10);
+  const [accountingDraft, setAccountingDraft] = useState({ from: `${today.slice(0, 7)}-01`, to: today, centerIds: [] as string[] });
+  const [accountingReport, setAccountingReport] = useState<Awaited<ReturnType<typeof financialApi.prepareAccountingExport>> | null>(null);
+  const [accountingError, setAccountingError] = useState('');
   const role = useAuthStore(state => state.user?.role);
   const canWriteFinancial = role === 'DONO' || role === 'FINANCEIRO';
   const canApplyDiscount = role === 'DONO' || role === 'FINANCEIRO';
@@ -101,6 +105,31 @@ export default function Financeiro() {
   // Períodos disponíveis para o filtro
   const periodos = ['Este Mês', 'Últimos 30 dias', 'Este Ano', 'Personalizado'];
 
+  const prepareAccounting = async () => {
+    setAccountingError('');
+    try {
+      const report = await financialApi.prepareAccountingExport({ from: accountingDraft.from, to: accountingDraft.to, resultCenterIds: accountingDraft.centerIds.map(Number) });
+      setAccountingReport(report);
+    } catch (error) {
+      setAccountingError(error instanceof Error ? error.message : 'Não foi possível preparar a exportação.');
+    }
+  };
+
+  const downloadAccountingCsv = () => {
+    if (!accountingReport) return;
+    const rows = [
+      ['tipo', 'id', 'data', 'descricao', 'valor', 'status', 'centro', 'observacao'],
+      ...accountingReport.invoices.map((invoice: any) => ['venda', invoice.id, invoice.createdAt, 'Fatura', invoice.totalAmount, invoice.status, '', invoice.fiscalDocument ? `documento ${invoice.fiscalDocument.id}` : 'documento fiscal ausente']),
+      ...accountingReport.expenses.map((expense: any) => ['despesa', expense.id, expense.incurredAt, expense.description, expense.amount, '', expense.resultCenter ? `${expense.resultCenter.code} · ${expense.resultCenter.name}` : 'sem classificação', expense.reason || '']),
+    ];
+    const csv = rows.map(row => row.map(value => `"${String(value ?? '').replaceAll('"', '""')}"`).join(';')).join('\n');
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(new Blob([`\ufeff${csv}`], { type: 'text/csv;charset=utf-8' }));
+    link.download = `eumaeus-contabil-${accountingReport.period.from}-${accountingReport.period.to}.csv`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+  };
+
   return (
     <div className="!bg-background p-6 space-y-6">
       {/* Header Section */}
@@ -135,6 +164,21 @@ export default function Financeiro() {
           </div>
         </div>
       </div>
+
+      {canWriteFinancial && <Card>
+        <CardHeader><CardTitle>Preparar para o contador</CardTitle></CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-sm text-muted-foreground">Gera uma prévia conciliável da clínica atual. Não emite documento fiscal nem envia dados.</p>
+          <div className="grid gap-2 md:grid-cols-4">
+            <label className="text-sm">De<input aria-label="Início do período contábil" type="date" className="mt-1 w-full rounded-md border px-3 py-2" value={accountingDraft.from} onChange={event => setAccountingDraft({ ...accountingDraft, from: event.target.value })} /></label>
+            <label className="text-sm">Até<input aria-label="Fim do período contábil" type="date" className="mt-1 w-full rounded-md border px-3 py-2" value={accountingDraft.to} onChange={event => setAccountingDraft({ ...accountingDraft, to: event.target.value })} /></label>
+            <label className="text-sm md:col-span-2">Centros de resultado<select aria-label="Centros do relatório contábil" multiple className="mt-1 min-h-10 w-full rounded-md border px-3 py-2" value={accountingDraft.centerIds} onChange={event => setAccountingDraft({ ...accountingDraft, centerIds: Array.from(event.target.selectedOptions, option => option.value) })}>{resultCenters.map(center => <option key={center.id} value={center.id}>{center.code} · {center.name}</option>)}</select></label>
+          </div>
+          <div className="flex flex-wrap gap-2"><Button type="button" onClick={prepareAccounting}>Preparar para o contador</Button>{accountingReport && <><Button type="button" variant="outline" onClick={downloadAccountingCsv}>Baixar CSV</Button><Button type="button" variant="outline" onClick={() => window.print()}>Imprimir resumo</Button></>}</div>
+          {accountingError && <p role="alert" className="text-sm text-red-600">{accountingError}</p>}
+          {accountingReport && <div className="rounded-md border bg-muted/20 p-3 text-sm" aria-label="Prévia contábil"><p>Gerado em {new Date(accountingReport.generatedAt).toLocaleString('pt-BR')} · clínica {accountingReport.clinicId}</p><p>Vendas {formatBRL(accountingReport.totals.billed)} · Recebimentos {formatBRL(accountingReport.totals.received)} · Pendentes {formatBRL(accountingReport.totals.pending)} · Descontos {formatBRL(accountingReport.totals.discounts)} · Despesas {formatBRL(accountingReport.totals.expenses)}</p><p>Pendências: {accountingReport.pendencies.unclassifiedExpenses} despesas sem centro, {accountingReport.pendencies.missingFiscalDocuments} faturas sem documento fiscal.</p></div>}
+        </CardContent>
+      </Card>}
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

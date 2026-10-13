@@ -10,6 +10,69 @@ export class FinancialService {
     return (prisma.resultCenter as any).create({ data: { code: input.code.trim().toUpperCase(), name: input.name.trim() } });
   }
 
+  static async prepareAccountingExport(input: { from: string; to: string; resultCenterIds?: number[] }) {
+    const clinicId = getCurrentClinicId();
+    const actorUserId = getCurrentUserId();
+    if (!clinicId || !actorUserId) throw new Error('Autoria autenticada obrigatória');
+    const from = new Date(`${input.from}T00:00:00.000Z`);
+    const to = new Date(`${input.to}T23:59:59.999Z`);
+    if (!input.from || !input.to || Number.isNaN(from.getTime()) || Number.isNaN(to.getTime()) || from > to) {
+      throw new Error('Período inválido');
+    }
+    const centerIds = (input.resultCenterIds || []).filter(Number.isInteger);
+    const centerFilter = centerIds.length ? { in: centerIds } : undefined;
+    return prisma.$transaction(async (tx: any) => {
+      const [invoices, expenses, centers] = await Promise.all([
+        tx.invoice.findMany({
+          where: { clinicId, createdAt: { gte: from, lte: to }, ...(centerFilter ? { resultCenterId: centerFilter } : {}) },
+          include: { payments: true, discounts: true, items: true, resultCenter: true },
+          orderBy: { createdAt: 'asc' },
+        }),
+        tx.expense.findMany({
+          where: { clinicId, incurredAt: { gte: from, lte: to }, ...(centerFilter ? { resultCenterId: centerFilter } : {}) },
+          include: { resultCenter: true },
+          orderBy: { incurredAt: 'asc' },
+        }),
+        tx.resultCenter.findMany({ where: { clinicId, ...(centerIds.length ? { id: { in: centerIds } } : {}) }, orderBy: { code: 'asc' } }),
+      ]);
+      const zero = new Prisma.Decimal(0);
+      const sum = (values: Array<Prisma.Decimal | null | undefined>): Prisma.Decimal => {
+        let total = zero;
+        for (const value of values) total = total.plus(value || zero) as Prisma.Decimal;
+        return total;
+      };
+      const billed = sum(invoices.map((invoice: any) => invoice.totalAmount));
+      const discounts = sum(invoices.flatMap((invoice: any) => invoice.discounts.map((discount: any) => discount.amount)));
+      const received = sum(invoices.flatMap((invoice: any) => invoice.payments.filter((payment: any) => payment.status === 'POSTED').map((payment: any) => payment.amount)));
+      const reversed = sum(invoices.flatMap((invoice: any) => invoice.payments.filter((payment: any) => payment.status === 'REVERSED').map((payment: any) => payment.amount)));
+      const expensesTotal = sum(expenses.map((expense: any) => expense.amount));
+      const pending = sum(invoices.filter((invoice: any) => invoice.status === 'PENDING').map((invoice: any) => invoice.totalAmount));
+      const unclassifiedExpenses = expenses.filter((expense: any) => !expense.resultCenterId).length;
+      const missingFiscalDocuments = invoices.filter((invoice: any) => !invoice.nfeId).length;
+      const report = {
+        generatedAt: new Date().toISOString(),
+        period: { from: input.from, to: input.to },
+        clinicId,
+        resultCenters: centers.map((center: any) => ({ id: center.id, code: center.code, name: center.name })),
+        totals: {
+          billed: billed.toFixed(2), received: received.toFixed(2), reversed: reversed.toFixed(2),
+          pending: pending.toFixed(2), discounts: discounts.toFixed(2), expenses: expensesTotal.toFixed(2),
+        },
+        counts: { invoices: invoices.length, payments: invoices.flatMap((invoice: any) => invoice.payments).length, expenses: expenses.length },
+        pendencies: { unclassifiedExpenses, missingFiscalDocuments },
+        invoices: invoices.map((invoice: any) => ({
+          id: invoice.id, createdAt: invoice.createdAt, status: invoice.status, totalAmount: invoice.totalAmount.toFixed(2),
+          discount: sum(invoice.discounts.map((discount: any) => discount.amount)).toFixed(2),
+          received: sum(invoice.payments.filter((payment: any) => payment.status === 'POSTED').map((payment: any) => payment.amount)).toFixed(2),
+          fiscalDocument: invoice.nfeId ? { id: invoice.nfeId, status: 'REGISTERED' } : null,
+        })),
+        expenses: expenses.map((expense: any) => ({ id: expense.id, incurredAt: expense.incurredAt, description: expense.description, amount: expense.amount.toFixed(2), reason: expense.reason, resultCenter: expense.resultCenter ? { code: expense.resultCenter.code, name: expense.resultCenter.name } : null })),
+      };
+      await tx.financialAuditEvent.create({ data: { clinicId, eventType: 'ACCOUNTING_EXPORT_GENERATED', actorUserId, metadata: { from: input.from, to: input.to, resultCenterIds: centerIds, invoiceCount: invoices.length, expenseCount: expenses.length } } });
+      return report;
+    });
+  }
+
   static async createExpense(input: { description: string; amount: number; resultCenterId?: number; reason?: string }) {
     const reason = input.reason?.trim();
     if (!input.description?.trim() || !Number.isFinite(input.amount) || input.amount <= 0 || !reason) throw new Error('Descrição, valor positivo e justificativa são obrigatórios');
