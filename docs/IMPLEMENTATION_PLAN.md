@@ -218,6 +218,13 @@ Registro: a skill `eumaeus-dev` não foi encontrada nas skills locais nem nas in
 - [x] Migration `20261013130000_document_shares` aplicada somente no PostgreSQL Docker local; suíte nova `documentShare.service.test.ts` 2/2, `pdf.service.test.ts` 1/1 e regressões do assistente 3/3 passaram; frontend build local terminou em 1m49s sob carga.
 - [ ] Transporte externo/entrega permanecem desativados; compartilhamento visual ainda precisa ser exercitado no navegador nesta sessão. A skill PDF referenciou `mark_artifact_operation_started.mjs`, ausente neste host; geração/inspeção foi feita pelo fallback verificável documentado.
 
+## Evidência adicional — concorrência HTTP local 2026-10-13
+
+- [x] `scripts/real-local/http-concurrency-authenticated.mjs` executado contra `http://127.0.0.1:3334` e banco `eumaeus_local`, com duas clínicas sintéticas e conexões HTTP independentes; resultado persistido em `/tmp/eumaeus-http-concurrency-final.json` (não é artefato do repositório).
+- [x] Recebimentos concorrentes: chaves distintas legítimas mantiveram duas operações quando havia saldo; mesma chave manteve uma linha; escrita cruzada retornou 409 sem linha; autoria autenticada persistiu.
+- [x] Última sessão de pacote e saída de estoque concorrentes produziram uma operação, sem saldo negativo; estornos concorrentes produziram um estorno e uma auditoria; leitura cruzada retornou 404/coleção vazia conforme o endpoint.
+- [ ] Compartilhamento e lembretes ainda não tiveram clique visual nesta sessão porque a aplicação exigiu autenticação e a senha da conta sintética disponível não foi aceita; não alterei contas nem criei credencial adicional para contornar essa proteção. A interface carregou e o bloqueio é de fixture/sessão, não de conectividade.
+
 ## Checkpoint 2026-10-09 — vínculo pacote, fatura, estoque e vacinação
 
 - [x] Pacote agora exige `coveredCatalogServiceId`; consumo exige o `Service` concreto do atendimento e valida o catálogo coberto.
