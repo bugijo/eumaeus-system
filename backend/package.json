@@ -10,6 +10,7 @@
     "db:migrate": "prisma migrate deploy",
     "db:status": "prisma migrate status",
     "owner:provision": "node dist/src/commands/provisionFirstOwner.js",
+    "qa:user": "node scripts/provision-qa-user.mjs",
     "production:verify": "node dist/src/commands/verifyProductionReadiness.js",
     "seed": "ts-node prisma/seed.ts",
     "simulate:30d": "ts-node prisma/simulate-30-days.ts",
