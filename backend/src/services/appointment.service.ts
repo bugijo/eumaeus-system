@@ -46,6 +46,7 @@ export class AppointmentService {
         date: appointment.appointmentDate,
         time: appointment.appointmentDate.toTimeString().slice(0, 5),
         status: this.mapStatusForResponse(appointment.status),
+        serviceType: appointment.services?.[0]?.name ?? null,
         createdAt: appointment.createdAt,
         updatedAt: appointment.updatedAt
       }));
@@ -70,14 +71,16 @@ export class AppointmentService {
         throw new Error('Pet e tutor devem pertencer à mesma clínica e relação');
       }
       
+      let createdServiceType: string | null = null;
       const createdAppointment = await prisma.$transaction(async (tx: any) => {
         const created = await tx.appointment.create({
           data: { petId: newAppointmentData.petId, tutorId: newAppointmentData.tutorId, appointmentDate: appointmentDateTime, date: appointmentDateTime, time: newAppointmentData.time, status: 'SCHEDULED', notes: newAppointmentData.notes || null },
-          include: { pet: { select: { id: true, name: true } }, tutor: { select: { id: true, name: true } } },
+          include: { pet: { select: { id: true, name: true } }, tutor: { select: { id: true, name: true } }, services: { select: { name: true, price: true } } },
         });
         if (newAppointmentData.serviceType) {
           const catalogService = await ServiceService.getServiceByName(newAppointmentData.serviceType);
           if (!catalogService) throw new Error('Serviço não encontrado no catálogo da clínica');
+          createdServiceType = catalogService.name;
           await tx.service.create({ data: { name: catalogService.name, price: catalogService.price, durationMinutes: catalogService.duration, category: catalogService.category, catalogServiceId: catalogService.id, appointmentId: created.id } });
         }
         await CommunicationService.enqueue(tx, { tutorId: created.tutorId, appointmentId: created.id, eventType: 'APPOINTMENT_CREATED', category: 'BASIC', payload: { appointmentId: created.id, appointmentDate: created.appointmentDate.toISOString() }, dedupeKey: `appointment:${created.id}:created` });
@@ -95,6 +98,7 @@ export class AppointmentService {
         date: createdAppointment.appointmentDate,
         time: createdAppointment.appointmentDate.toTimeString().slice(0, 5),
         status: this.mapStatusForResponse(createdAppointment.status),
+        serviceType: createdServiceType ?? createdAppointment.services?.[0]?.name ?? null,
         createdAt: createdAppointment.createdAt,
         updatedAt: createdAppointment.updatedAt
       };
@@ -144,6 +148,7 @@ export class AppointmentService {
         date: appointment.appointmentDate,
         time: appointment.appointmentDate.toTimeString().slice(0, 5),
         status: this.mapStatusForResponse(appointment.status),
+        serviceType: appointment.services?.[0]?.name ?? null,
         createdAt: appointment.createdAt,
         updatedAt: appointment.updatedAt
       };
@@ -182,6 +187,7 @@ export class AppointmentService {
         date: updatedAppointment.appointmentDate,
         time: updatedAppointment.appointmentDate.toTimeString().slice(0, 5),
         status: this.mapStatusForResponse(updatedAppointment.status),
+        serviceType: updatedAppointment.services?.[0]?.name ?? null,
         createdAt: updatedAppointment.createdAt,
         updatedAt: updatedAppointment.updatedAt
       };
@@ -246,6 +252,7 @@ export class AppointmentService {
         date: updatedAppointment.appointmentDate,
         time: updatedAppointment.appointmentDate.toTimeString().slice(0, 5),
         status: this.mapStatusForResponse(updatedAppointment.status),
+        serviceType: updatedAppointment.services?.[0]?.name ?? null,
         createdAt: updatedAppointment.createdAt,
         updatedAt: updatedAppointment.updatedAt
       };

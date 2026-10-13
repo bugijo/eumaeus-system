@@ -44,6 +44,9 @@ export default function Agendamentos() {
       const statusMap = {
         'SCHEDULED': 'scheduled',
         'CONFIRMED': 'confirmed', 
+        'ARRIVED': 'arrived',
+        'IN_PROGRESS': 'in-progress',
+        'READY': 'ready',
         'COMPLETED': 'completed',
         'CANCELLED': 'cancelled',
         'Agendado': 'scheduled',
@@ -175,6 +178,9 @@ export default function Agendamentos() {
           <div className="status-color confirmed"></div>
           <span>Confirmado</span>
         </div>
+        <div className="status-item"><div className="status-color arrived"></div><span>Chegou</span></div>
+        <div className="status-item"><div className="status-color in-progress"></div><span>Em atendimento</span></div>
+        <div className="status-item"><div className="status-color ready"></div><span>Pet pronto</span></div>
         <div className="status-item">
           <div className="status-color completed"></div>
           <span>Finalizado</span>
@@ -263,21 +269,17 @@ export default function Agendamentos() {
                   </div>
                   {(assignSpecialist.isError || confirmSpecialist.isError) && <p className="text-xs text-red-600">{((assignSpecialist.error || confirmSpecialist.error) as Error).message}</p>}
                 </div>
-                <Button 
-                  onClick={() => handleStatusUpdate('CONFIRMED')}
-                  className="bg-blue-500 hover:bg-blue-600"
-                  disabled={updateStatus.isPending}
-                >
-                  Confirmar Agendamento
-                </Button>
-                
-                <Button 
-                  onClick={() => handleStatusUpdate('COMPLETED')}
-                  className="bg-green-500 hover:bg-green-600"
-                  disabled={updateStatus.isPending}
-                >
-                  Finalizar Atendimento
-                </Button>
+                {[
+                  ['CONFIRMED', 'Confirmar agendamento', 'bg-blue-500 hover:bg-blue-600'],
+                  ['ARRIVED', 'Registrar chegada', 'bg-sky-600 hover:bg-sky-700'],
+                  ['IN_PROGRESS', 'Iniciar atendimento', 'bg-indigo-600 hover:bg-indigo-700'],
+                  ['READY', 'Marcar pet pronto', 'bg-amber-600 hover:bg-amber-700'],
+                  ['COMPLETED', 'Registrar entrega/finalização', 'bg-green-500 hover:bg-green-600'],
+                ].map(([status, label, className]) => (
+                  <Button key={status} onClick={() => handleStatusUpdate(status as any)} className={className} disabled={updateStatus.isPending}>
+                    {label}
+                  </Button>
+                ))}
                 
                 <Button 
                   onClick={() => handleStatusUpdate('CANCELLED')}

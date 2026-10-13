@@ -6,6 +6,7 @@ export interface Appointment {
   date: Date; // Campo adicional para compatibilidade
   time: string; // formato "HH:mm"
   status: string; // ex: "SCHEDULED", "CONFIRMED", "CANCELLED", "COMPLETED"
+  serviceType?: string | null;
   notes?: string; // Notas opcionais
   createdAt: Date;
   updatedAt: Date;

@@ -82,7 +82,7 @@ export const medicalRecordApi = {
 
 // API para status de agendamentos
 export const appointmentStatusApi = {
-  updateStatus: async (appointmentId: number, status: 'SCHEDULED' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED'): Promise<any> => {
+  updateStatus: async (appointmentId: number, status: 'SCHEDULED' | 'CONFIRMED' | 'ARRIVED' | 'IN_PROGRESS' | 'READY' | 'COMPLETED' | 'CANCELLED'): Promise<any> => {
     const response = await apiClient.patch(`/appointments/${appointmentId}/status`, { status });
     return response.data;
   }
@@ -126,7 +126,7 @@ export function useUpdateAppointmentStatus(onSuccessCallback?: () => void) {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: ({ appointmentId, status }: { appointmentId: number; status: 'SCHEDULED' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED' }) =>
+    mutationFn: ({ appointmentId, status }: { appointmentId: number; status: 'SCHEDULED' | 'CONFIRMED' | 'ARRIVED' | 'IN_PROGRESS' | 'READY' | 'COMPLETED' | 'CANCELLED' }) =>
       appointmentStatusApi.updateStatus(appointmentId, status),
     onSuccess: (data, variables) => {
       // Invalida os agendamentos usando as query keys corretas do appointmentApi
