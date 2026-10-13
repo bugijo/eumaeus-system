@@ -23,4 +23,11 @@ describe('DocumentShareService', () => {
     (prisma as any).documentShare.findFirst.mockResolvedValue(null);
     await expect(runWithClinic(7, () => runWithUser(99, () => DocumentShareService.get(8)))).resolves.toBeNull();
   });
+
+  it('prepara resumo contábil com prévia delimitada pela clínica e período', async () => {
+    (prisma as any).documentShare.findUnique.mockResolvedValue(null);
+    (prisma as any).documentShare.create.mockResolvedValue({ id: 12, clinicId: 4, status: 'PREPARED', recipient: 'contador@example.invalid' });
+    const prepared = await runWithClinic(4, () => runWithUser(99, () => DocumentShareService.prepareAccounting({ period: { from: '2026-10-01', to: '2026-10-31' }, resultCenters: [{ id: 2 }], totals: { billed: '0.00' }, counts: {}, pendencies: {} }, 'contador@example.invalid')));
+    expect(prepared).toEqual(expect.objectContaining({ status: 'PREPARED' }));
+  });
 });

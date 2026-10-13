@@ -9,6 +9,20 @@ const context = () => {
 };
 
 export class DocumentShareService {
+  static async prepareAccounting(report: any, recipient: string) {
+    const { clinicId, userId } = context();
+    if (!recipient.trim()) throw new Error('Destinatário obrigatório');
+    const key = `${report.period.from}:${report.period.to}:${(report.resultCenters || []).map((center: any) => center.id).join(',')}`;
+    const documentVersion = [...key].reduce((sum, char) => (sum * 31 + char.charCodeAt(0)) % 2147483647, 7);
+    const existing = await (prisma as any).documentShare.findUnique({ where: { clinicId_documentType_documentId_documentVersion_recipient: { clinicId, documentType: 'ACCOUNTING_REPORT', documentId: 0, documentVersion, recipient: recipient.trim() } } });
+    if (existing) return existing;
+    return (prisma as any).$transaction(async (tx: any) => {
+      const share = await tx.documentShare.create({ data: { clinicId, documentType: 'ACCOUNTING_REPORT', documentId: 0, documentVersion, recipient: recipient.trim(), preview: JSON.stringify({ clinicId, period: report.period, totals: report.totals, counts: report.counts, pendencies: report.pendencies }), status: 'PREPARED', createdById: userId } });
+      await tx.documentShareEvent.create({ data: { clinicId, shareId: share.id, actorUserId: userId, fromStatus: 'DRAFT', toStatus: 'PREPARED', note: 'Resumo contábil revisado localmente' } });
+      return share;
+    });
+  }
+
   static async preparePrescription(prescriptionId: number, recipient: string) {
     const { clinicId, userId } = context();
     if (!recipient.trim()) throw new Error('Destinatário obrigatório');

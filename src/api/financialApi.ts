@@ -15,6 +15,8 @@ export const financialApi = {
   createExpense: async (data: { description: string; amount: string; resultCenterId?: number; reason: string }): Promise<Expense> => (await apiClient.post('/financial/expenses', data)).data,
   prepareAccountingExport: async (data: { from: string; to: string; resultCenterIds: number[] }): Promise<AccountingExport> => (await apiClient.post('/financial/accounting/prepare', data)).data,
   downloadAccountingPdf: async (data: { from: string; to: string; resultCenterIds: number[] }) => (await apiClient.post('/financial/accounting/pdf', data, { responseType: 'blob' })).data as Blob,
+  prepareAccountingShare: async (data: { from: string; to: string; resultCenterIds: number[]; recipient: string }) => (await apiClient.post('/financial/accounting/share', data)).data,
+  queueAccountingShare: async (shareId: number) => (await apiClient.post(`/financial/accounting/share/${shareId}/queue`)).data,
 };
 
 export const useResultCenters = () => useQuery({ queryKey: ['financial', 'centers'], queryFn: financialApi.centers });
