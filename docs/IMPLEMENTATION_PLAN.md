@@ -209,6 +209,15 @@ Registro: a skill `eumaeus-dev` não foi encontrada nas skills locais nem nas in
 - [x] Evidência automatizada nova: `assistant.reminder.service.test.ts` 2/2 e regressão `assistant.service.test.ts` 1/1; backend build aprovado, frontend build aprovado com `VITE_API_URL=http://127.0.0.1:3334`.
 - [ ] Falta validação visual desta nova UI e sincronização explícita de “origem resolvida” a partir de cada módulo de origem; a API já mantém a distinção e não executa a ação de origem.
 
+## Checkpoint 2026-10-13 — PDFs privados e compartilhamento revisável
+
+- [x] PDF contábil e PDF de receita aprovada passaram a ser gerados por rotas autenticadas (`/api/financial/accounting/pdf` e `/api/prescriptions/:id/pdf`), sem URL pública; receita pendente/cancelada é recusada e a versão atual é conferida no backend.
+- [x] Dependência avaliada: não havia gerador PDF declarado nem runtime Python PDF disponível; foi adicionada apenas `pdfkit` (com tipos), sem dependência de diálogo de impressão. A fonte embutida usa caminho configurável e fallback local; o aviso separa assinatura visual de verificável.
+- [x] Evidência de arquivo real: `pdfinfo` confirmou 1 página, não criptografado e metadados; `pdftotext` confirmou acentuação, totais `R$ 12,34`, período, clínica, versão e conteúdo; `pdftoppm` + inspeção visual confirmou layout sem cortes para resumo contábil e receita.
+- [x] `DocumentShare`/`DocumentShareEvent` persistem preparação, prévia, destinatário, fila local simulada e histórico; fila revalida clínica, status aprovado e versão antes de enfileirar. UI clínica ganhou PDF e compartilhamento simulado com revisão/confirmacão local.
+- [x] Migration `20261013130000_document_shares` aplicada somente no PostgreSQL Docker local; suíte nova `documentShare.service.test.ts` 2/2, `pdf.service.test.ts` 1/1 e regressões do assistente 3/3 passaram; frontend build local terminou em 1m49s sob carga.
+- [ ] Transporte externo/entrega permanecem desativados; compartilhamento visual ainda precisa ser exercitado no navegador nesta sessão. A skill PDF referenciou `mark_artifact_operation_started.mjs`, ausente neste host; geração/inspeção foi feita pelo fallback verificável documentado.
+
 ## Checkpoint 2026-10-09 — vínculo pacote, fatura, estoque e vacinação
 
 - [x] Pacote agora exige `coveredCatalogServiceId`; consumo exige o `Service` concreto do atendimento e valida o catálogo coberto.

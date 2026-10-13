@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
 import { PrescriptionService } from '../services/prescription.service';
+import { PdfService } from '../services/pdf.service';
+import { DocumentShareService } from '../services/documentShare.service';
 import { CreatePrescriptionRequest, UpdatePrescriptionRequest } from '../models/prescription.model';
 import { AuthenticatedRequest } from '../middlewares/auth.middleware';
 
@@ -159,6 +161,30 @@ export class PrescriptionController {
       const items = (prescription.items || []).map((item: any) => `<li><strong>${escapeHtml(item.medication)}</strong> — ${escapeHtml(item.dosage)}, ${escapeHtml(item.frequency)}, ${escapeHtml(item.duration)}${item.instructions ? ` — ${escapeHtml(item.instructions)}` : ''}</li>`).join('');
       return res.type('html').send(`<!doctype html><html><head><meta charset="utf-8"><title>Receita ${escapeHtml(prescription.id)}</title><style>body{font-family:Arial;margin:40px} @media print{button{display:none}}</style></head><body><button onclick="window.print()">Imprimir / salvar como PDF</button><h1>${escapeHtml(prescription.clinicNameSnapshot)}</h1><p>Pet: ${escapeHtml(prescription.petNameSnapshot)}<br>Tutor: ${escapeHtml(prescription.tutorNameSnapshot)}<br>Veterinária: ${escapeHtml(prescription.veterinarianNameSnapshot)}</p><p>Status: ${escapeHtml(prescription.status)} · Assinatura: ${escapeHtml(prescription.signatureMode)}</p><ol>${items}</ol><p>Este documento contém assinatura visual; não é assinatura digital verificável.</p></body></html>`);
     } catch { return res.status(500).send('Não foi possível preparar a impressão'); }
+  }
+
+  static async downloadPrescriptionPdf(req: Request, res: Response): Promise<Response> {
+    try {
+      const prescription: any = await PrescriptionService.getPrescriptionById(parseInt(req.params.id));
+      if (!prescription) return res.status(404).json({ error: 'Receita não encontrada' });
+      const pdf = await PdfService.prescription(prescription);
+      return res.type('application/pdf').set('Content-Disposition', `attachment; filename="receita-${prescription.id}-v${prescription.currentVersion}.pdf"`).send(pdf);
+    } catch (error) { return res.status(409).json({ error: error instanceof Error ? error.message : 'PDF de receita recusado' }); }
+  }
+
+  static async preparePrescriptionShare(req: Request, res: Response): Promise<Response> {
+    try { return res.status(201).json(await DocumentShareService.preparePrescription(parseInt(req.params.id), String(req.body?.recipient || ''))); }
+    catch (error) { return res.status(409).json({ error: error instanceof Error ? error.message : 'Compartilhamento recusado' }); }
+  }
+
+  static async queuePrescriptionShare(req: Request, res: Response): Promise<Response> {
+    try { return res.json(await DocumentShareService.queue(parseInt(req.params.shareId))); }
+    catch (error) { return res.status(409).json({ error: error instanceof Error ? error.message : 'Envio simulado recusado' }); }
+  }
+
+  static async getPrescriptionShare(req: Request, res: Response): Promise<Response> {
+    try { const share = await DocumentShareService.get(parseInt(req.params.shareId)); return share ? res.json(share) : res.status(404).json({ error: 'Compartilhamento não encontrado' }); }
+    catch (error) { return res.status(400).json({ error: error instanceof Error ? error.message : 'Histórico indisponível' }); }
   }
 
   static async getPrescriptionVersions(req: Request, res: Response): Promise<Response> {
