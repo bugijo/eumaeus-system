@@ -72,4 +72,15 @@ describe('financial expense authorship and audit', () => {
     await runWithClinic(4, () => runWithUser(12, () => FinancialService.reversePayment(13, 'Correção sintética')));
     expect(db.invoice.update).toHaveBeenCalledWith({ where: { id: 4 }, data: { status: 'PAID' } });
   });
+
+  it('prepares a clinic-isolated accounting export with explicit fiscal and classification pendencies', async () => {
+    db.invoice.findMany.mockResolvedValue([{ id: 7, clinicId: 4, createdAt: new Date('2026-10-01T00:00:00Z'), status: 'PENDING', totalAmount: new Prisma.Decimal('20.00'), nfeId: null, payments: [{ status: 'POSTED', amount: new Prisma.Decimal('5.00') }], discounts: [{ amount: new Prisma.Decimal('1.00') }], items: [], resultCenter: null }]);
+    db.expense.findMany.mockResolvedValue([{ id: 8, clinicId: 4, incurredAt: new Date('2026-10-02T00:00:00Z'), description: 'Insumo', amount: new Prisma.Decimal('3.50'), reason: 'Teste', resultCenterId: null, resultCenter: null }]);
+    db.resultCenter.findMany.mockResolvedValue([{ id: 1, clinicId: 4, code: 'CLINICA', name: 'Clínica', active: true }]);
+    const report = await runWithClinic(4, () => runWithUser(12, () => FinancialService.prepareAccountingExport({ from: '2026-10-01', to: '2026-10-31' })));
+    expect(report.clinicId).toBe(4);
+    expect(report.totals).toMatchObject({ billed: '20.00', received: '5.00', pending: '20.00', discounts: '1.00', expenses: '3.50' });
+    expect(report.pendencies).toEqual({ unclassifiedExpenses: 1, missingFiscalDocuments: 1 });
+    expect(db.financialAuditEvent.create).toHaveBeenCalledWith({ data: expect.objectContaining({ eventType: 'ACCOUNTING_EXPORT_GENERATED', actorUserId: 12, clinicId: 4 }) });
+  });
 });

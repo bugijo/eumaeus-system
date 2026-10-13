@@ -4,6 +4,7 @@ import apiClient from './apiClient';
 export interface ResultCenter { id: number; code: string; name: string; active: boolean; }
 export interface Payment { id: number; amount: number | string; method: string; status: string; receivedAt: string; reversalReason?: string | null; }
 export interface Expense { id: number; description: string; amount: number | string; reason: string; resultCenter?: ResultCenter | null; incurredAt: string; }
+export interface AccountingExport { generatedAt: string; period: { from: string; to: string }; clinicId: number; resultCenters: ResultCenter[]; totals: Record<string, string>; counts: { invoices: number; payments: number; expenses: number }; pendencies: { unclassifiedExpenses: number; missingFiscalDocuments: number }; invoices: Array<Record<string, unknown>>; expenses: Array<Record<string, unknown>>; }
 
 export const financialApi = {
   centers: async (): Promise<ResultCenter[]> => (await apiClient.get('/financial/centers')).data,
@@ -12,6 +13,7 @@ export const financialApi = {
   reverse: async (paymentId: number, reason: string): Promise<Payment> => (await apiClient.post(`/financial/payments/${paymentId}/reverse`, { reason })).data,
   expenses: async (): Promise<Expense[]> => (await apiClient.get('/financial/expenses')).data,
   createExpense: async (data: { description: string; amount: string; resultCenterId?: number; reason: string }): Promise<Expense> => (await apiClient.post('/financial/expenses', data)).data,
+  prepareAccountingExport: async (data: { from: string; to: string; resultCenterIds: number[] }): Promise<AccountingExport> => (await apiClient.post('/financial/accounting/prepare', data)).data,
 };
 
 export const useResultCenters = () => useQuery({ queryKey: ['financial', 'centers'], queryFn: financialApi.centers });
