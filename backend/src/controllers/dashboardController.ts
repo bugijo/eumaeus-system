@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { prisma } from '../lib/prisma';
 import { AssistantService } from '../services/assistant.service';
+import { AssistantReminderService } from '../services/assistantReminder.service';
 
 // Cache simples para estatisticas (5 minutos)
 let statsCache: any = null;
@@ -11,6 +12,24 @@ export const dashboardController = {
   async getAssistantSummary(_req: Request, res: Response): Promise<Response | void> {
     try { return res.json(await AssistantService.summary()); }
     catch (error) { return res.status(400).json({ error: error instanceof Error ? error.message : 'Assistente indisponível' }); }
+  },
+  async getAssistantReminders(_req: Request, res: Response): Promise<Response | void> {
+    try { return res.json(await AssistantReminderService.list()); }
+    catch (error) { return res.status(400).json({ error: error instanceof Error ? error.message : 'Lembretes indisponíveis' }); }
+  },
+  async snoozeAssistantReminder(req: Request, res: Response): Promise<Response | void> {
+    try {
+      const until = new Date(String(req.body?.until || ''));
+      return res.json(await AssistantReminderService.snooze(Number(req.params.id), until, String(req.body?.reason || '')));
+    } catch (error) { return res.status(400).json({ error: error instanceof Error ? error.message : 'Não foi possível adiar o lembrete' }); }
+  },
+  async dismissAssistantReminder(req: Request, res: Response): Promise<Response | void> {
+    try { return res.json(await AssistantReminderService.dismiss(Number(req.params.id), String(req.body?.reason || ''))); }
+    catch (error) { return res.status(400).json({ error: error instanceof Error ? error.message : 'Não foi possível dispensar o lembrete' }); }
+  },
+  async resolveAssistantReminder(req: Request, res: Response): Promise<Response | void> {
+    try { return res.json(await AssistantReminderService.resolve(Number(req.params.id), String(req.body?.reason || ''))); }
+    catch (error) { return res.status(400).json({ error: error instanceof Error ? error.message : 'Não foi possível resolver o lembrete' }); }
   },
   async getStats(_req: Request, res: Response): Promise<Response | void> {
     try {
