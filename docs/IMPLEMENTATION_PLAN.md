@@ -224,6 +224,7 @@ Registro: a skill `eumaeus-dev` não foi encontrada nas skills locais nem nas in
 - [x] Recebimentos concorrentes: chaves distintas legítimas mantiveram duas operações quando havia saldo; mesma chave manteve uma linha; escrita cruzada retornou 409 sem linha; autoria autenticada persistiu.
 - [x] Última sessão de pacote e saída de estoque concorrentes produziram uma operação, sem saldo negativo; estornos concorrentes produziram um estorno e uma auditoria; leitura cruzada retornou 404/coleção vazia conforme o endpoint.
 - [ ] Compartilhamento e lembretes ainda não tiveram clique visual nesta sessão porque a aplicação exigiu autenticação e a senha da conta sintética disponível não foi aceita; não alterei contas nem criei credencial adicional para contornar essa proteção. A interface carregou e o bloqueio é de fixture/sessão, não de conectividade.
+- [x] O compartilhamento revisável também cobre resumo contábil: prévia limitada por período/centros, destinatário, confirmação no painel e fila simulada persistida pelo mesmo `DocumentShare`; build frontend após essa integração terminou em 1m60s sob carga e backend `tsc` passou.
 
 ## Checkpoint 2026-10-09 — vínculo pacote, fatura, estoque e vacinação
 
