@@ -7,6 +7,7 @@ export interface Expense { id: number; description: string; amount: number | str
 
 export const financialApi = {
   centers: async (): Promise<ResultCenter[]> => (await apiClient.get('/financial/centers')).data,
+  createCenter: async (data: { code: string; name: string }): Promise<ResultCenter> => (await apiClient.post('/financial/centers', data)).data,
   receive: async (invoiceId: number, amount: string, method: string, idempotencyKey: string): Promise<Payment> => (await apiClient.post(`/financial/invoices/${invoiceId}/payments`, { amount, method, idempotencyKey })).data,
   reverse: async (paymentId: number, reason: string): Promise<Payment> => (await apiClient.post(`/financial/payments/${paymentId}/reverse`, { reason })).data,
   expenses: async (): Promise<Expense[]> => (await apiClient.get('/financial/expenses')).data,
@@ -14,6 +15,7 @@ export const financialApi = {
 };
 
 export const useResultCenters = () => useQuery({ queryKey: ['financial', 'centers'], queryFn: financialApi.centers });
+export const useCreateResultCenter = () => { const client = useQueryClient(); return useMutation({ mutationFn: financialApi.createCenter, onSuccess: () => client.invalidateQueries({ queryKey: ['financial', 'centers'] }) }); };
 export const useReceivePayment = () => { const client = useQueryClient(); return useMutation({ mutationFn: ({ invoiceId, amount, method, idempotencyKey }: { invoiceId: number; amount: string; method: string; idempotencyKey: string }) => financialApi.receive(invoiceId, amount, method, idempotencyKey), onSuccess: () => { client.invalidateQueries({ queryKey: ['invoices'] }); client.invalidateQueries({ queryKey: ['financial-stats'] }); } }); };
 export const useReversePayment = () => { const client = useQueryClient(); return useMutation({ mutationFn: ({ paymentId, reason }: { paymentId: number; reason: string }) => financialApi.reverse(paymentId, reason), onSuccess: () => { client.invalidateQueries({ queryKey: ['invoices'] }); client.invalidateQueries({ queryKey: ['financial-stats'] }); } }); };
 export const useExpenses = () => useQuery({ queryKey: ['financial', 'expenses'], queryFn: financialApi.expenses });
