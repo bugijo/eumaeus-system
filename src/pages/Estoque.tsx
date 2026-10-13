@@ -38,6 +38,7 @@ import {
 } from '@/api/productApi';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useToast } from '@/components/ui/use-toast';
+import { useAuthStore } from '@/stores/authStore';
 import {
   Package,
   DollarSign,
@@ -69,6 +70,8 @@ export default function StockPage() {
   const [movementReason, setMovementReason] = useState('');
   const [movementMessage, setMovementMessage] = useState('');
   const receiptMutation = useRegisterStockReceipt();
+  const role = useAuthStore(state => state.user?.role);
+  const canWriteStock = role === 'DONO' || role === 'VETERINARIO' || role === 'AUXILIAR';
 
   const { data: products = [], isLoading: productsLoading, error: productsError } = useProducts();
   const { data: stats, isLoading: statsLoading } = useStockStats();
@@ -79,7 +82,7 @@ export default function StockPage() {
   const filteredAndSortedProducts = useMemo(() => {
     const filtered = products.filter(product => {
       const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           product.supplier.toLowerCase().includes(searchTerm.toLowerCase());
+                           (product.supplier ?? '').toLowerCase().includes(searchTerm.toLowerCase());
       
       if (statusFilter === 'all') return matchesSearch;
       if (statusFilter === 'low-stock') return matchesSearch && product.quantity < 10;
@@ -228,10 +231,10 @@ export default function StockPage() {
             <p className="text-eumaeus-gray">Visão geral e controle total do seu inventário</p>
           </div>
         </div>
-        <Button onClick={handleNewProduct} className="bg-primary text-white font-semibold rounded-lg px-4 py-2 hover:bg-secondary transition-colors duration-200 shadow-sm">
+        {canWriteStock && <Button onClick={handleNewProduct} className="bg-primary text-white font-semibold rounded-lg px-4 py-2 hover:bg-secondary transition-colors duration-200 shadow-sm">
           <Plus className="w-4 h-4 mr-2" />
           Adicionar Produto
-        </Button>
+        </Button>}
       </div>
 
       <Card className="bg-white rounded-lg shadow-md">
@@ -242,7 +245,7 @@ export default function StockPage() {
           <Input aria-label="Quantidade" type="number" min="1" placeholder="Quantidade" value={lotQuantity} onChange={event => setLotQuantity(event.target.value)} />
           <Input aria-label="Validade" type="date" value={lotExpiry} onChange={event => setLotExpiry(event.target.value)} />
           <Input aria-label="Motivo" placeholder="Motivo" value={movementReason} onChange={event => setMovementReason(event.target.value)} />
-          <Button onClick={registerReceipt} disabled={receiptMutation.isPending}>{receiptMutation.isPending ? 'Registrando...' : 'Registrar entrada'}</Button>
+          {canWriteStock ? <Button onClick={registerReceipt} disabled={receiptMutation.isPending}>{receiptMutation.isPending ? 'Registrando...' : 'Registrar entrada'}</Button> : <p className="text-sm text-muted-foreground md:col-span-6" role="status">Perfil somente leitura: entradas e alterações de estoque exigem permissão.</p>}
           {movementMessage && <p className="text-sm md:col-span-6" role={receiptMutation.isError ? 'alert' : 'status'}>{movementMessage}</p>}
         </CardContent>
       </Card>
@@ -472,22 +475,22 @@ export default function StockPage() {
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex items-center justify-end space-x-2">
-                              <Button
+                              {canWriteStock && <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={() => handleEditProduct(product)}
                                 className="hover:bg-primary/10 hover:border-primary/30"
                               >
                                 <Edit className="w-4 h-4" />
-                              </Button>
-                              <Button
+                              </Button>}
+                              {canWriteStock && <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={() => handleDeleteClick(product)}
                                 className="text-red-600 hover:text-red-700 hover:bg-red-50 hover:border-red-200"
                               >
                                 <Trash2 className="w-4 h-4" />
-                              </Button>
+                              </Button>}
                             </div>
                           </TableCell>
                         </TableRow>
@@ -563,7 +566,7 @@ export default function StockPage() {
                             </div>
 
                             <div className="flex space-x-2 pt-2">
-                              <Button
+                              {canWriteStock && <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={() => handleEditProduct(product)}
@@ -571,15 +574,15 @@ export default function StockPage() {
                               >
                                 <Edit className="w-3 h-3 mr-1" />
                                 Editar
-                              </Button>
-                              <Button
+                              </Button>}
+                              {canWriteStock && <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={() => handleDeleteClick(product)}
                                 className="text-red-600 hover:text-red-700 hover:bg-red-50 hover:border-red-200"
                               >
                                 <Trash2 className="w-3 h-3" />
-                              </Button>
+                              </Button>}
                             </div>
                           </div>
                         </CardContent>

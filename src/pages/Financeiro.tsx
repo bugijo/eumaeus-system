@@ -19,6 +19,7 @@ import { useApplyInvoiceDiscount, useFinancialStats, useInvoices } from '../api/
 import { ACCOUNTS_PAYABLE_DATA_SOURCE } from '../constants';
 import { useCreateExpense, useExpenses, useReceivePayment, useResultCenters, useReversePayment } from '@/api/financialApi';
 import { useAuthStore } from '@/stores/authStore';
+import { decimalToNumber, formatBRL, normalizeDecimalInput } from '@/lib/decimal';
 
 const newPaymentIdempotencyKey = () => `ui-payment-${globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`}`;
 
@@ -39,6 +40,7 @@ export default function Financeiro() {
   const [reversalDraft, setReversalDraft] = useState({ paymentId: '', amount: '', reason: '' });
   const role = useAuthStore(state => state.user?.role);
   const canWriteFinancial = role === 'DONO' || role === 'FINANCEIRO';
+  const canApplyDiscount = role === 'DONO' || role === 'FINANCEIRO';
   
   // Transformar faturas em contas a receber
   const contasReceber = invoices?.map(invoice => ({
@@ -73,13 +75,6 @@ export default function Financeiro() {
       </div>
     );
   }
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(value);
-  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pt-BR');
@@ -135,12 +130,6 @@ export default function Financeiro() {
               <Plus className="w-4 h-4 mr-2" />
               Nova Receita
             </Button>
-            {ACCOUNTS_PAYABLE_DATA_SOURCE.visible && (
-              <Button variant="outline">
-                <Plus className="w-4 h-4 mr-2" />
-                Nova Despesa
-              </Button>
-            )}
           </div>
         </div>
       </div>
@@ -154,7 +143,7 @@ export default function Financeiro() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              {formatCurrency(financialStats?.paid?.amount || 0)}
+              {formatBRL(financialStats?.paid?.amount)}
             </div>
             <p className="text-xs text-muted-foreground">
               {financialStats?.paid?.count || 0} faturas pagas
@@ -169,7 +158,7 @@ export default function Financeiro() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-warning-muted-foreground">
-              {formatCurrency(financialStats?.pending?.amount || 0)}
+              {formatBRL(financialStats?.pending?.amount)}
             </div>
             <p className="text-xs text-muted-foreground">
               {financialStats?.pending?.count || 0} faturas pendentes
@@ -184,7 +173,7 @@ export default function Financeiro() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-primary">
-              {formatCurrency((financialStats?.paid?.amount || 0) + (financialStats?.pending?.amount || 0))}
+              {formatBRL(decimalToNumber(financialStats?.paid?.amount) + decimalToNumber(financialStats?.pending?.amount))}
             </div>
             <p className="text-xs text-muted-foreground">
               {(financialStats?.paid?.count || 0) + (financialStats?.pending?.count || 0)} faturas no total
@@ -199,7 +188,7 @@ export default function Financeiro() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600">
-              {formatCurrency(financialStats?.cancelled?.amount || 0)}
+              {formatBRL(financialStats?.cancelled?.amount)}
             </div>
             <p className="text-xs text-muted-foreground">
               {financialStats?.cancelled?.count || 0} faturas canceladas
@@ -211,7 +200,7 @@ export default function Financeiro() {
       {/* Detailed View - Tabs */}
       <Card><CardHeader><CardTitle>Centros de resultado</CardTitle></CardHeader><CardContent><div className="flex flex-wrap gap-2">{resultCenters.length ? resultCenters.map(center => <Badge key={center.id} variant="outline">{center.code} · {center.name}</Badge>) : <span className="text-sm text-muted-foreground">Nenhum centro classificado; registros antigos permanecem sem atribuição.</span>}</div></CardContent></Card>
       <Card><CardHeader><CardTitle>Despesas classificadas</CardTitle></CardHeader><CardContent className="space-y-4">
-        {canWriteFinancial ? <form className="grid gap-2 md:grid-cols-5" onSubmit={(event) => { event.preventDefault(); if (!expense.description || !expense.amount || !expense.reason) return; expenseMutation.mutate({ description: expense.description, amount: Number(expense.amount.replace(',', '.')), reason: expense.reason, resultCenterId: expense.resultCenterId ? Number(expense.resultCenterId) : undefined }, { onSuccess: () => setExpense({ description: '', amount: '', reason: '', resultCenterId: '' }) }); }}>
+        {canWriteFinancial ? <form className="grid gap-2 md:grid-cols-5" onSubmit={(event) => { event.preventDefault(); const amount = normalizeDecimalInput(expense.amount); if (!expense.description.trim() || !amount || !expense.reason.trim()) return; expenseMutation.mutate({ description: expense.description.trim(), amount, reason: expense.reason.trim(), resultCenterId: expense.resultCenterId ? Number(expense.resultCenterId) : undefined }, { onSuccess: () => setExpense({ description: '', amount: '', reason: '', resultCenterId: '' }) }); }}>
           <input aria-label="Descrição da despesa" className="rounded-md border px-3 py-2 text-sm" placeholder="Descrição" value={expense.description} onChange={event => setExpense({ ...expense, description: event.target.value })} />
           <input aria-label="Valor da despesa" className="rounded-md border px-3 py-2 text-sm" placeholder="Valor" inputMode="decimal" value={expense.amount} onChange={event => setExpense({ ...expense, amount: event.target.value })} />
           <select aria-label="Centro da despesa" className="rounded-md border px-3 py-2 text-sm" value={expense.resultCenterId} onChange={event => setExpense({ ...expense, resultCenterId: event.target.value })}><option value="">Sem centro</option>{resultCenters.map(center => <option key={center.id} value={center.id}>{center.code} · {center.name}</option>)}</select>
@@ -219,7 +208,7 @@ export default function Financeiro() {
           <Button type="submit" disabled={expenseMutation.isPending}>Registrar despesa</Button>
         </form> : <p className="text-sm text-muted-foreground" role="status">Perfil somente leitura: despesas podem ser consultadas, mas apenas DONO ou FINANCEIRO podem registrá-las.</p>}
         {expenseMutation.isError && <p className="text-sm text-red-600">{(expenseMutation.error as Error).message}</p>}
-        {expenses.length ? <Table><TableHeader><TableRow><TableHead>Descrição</TableHead><TableHead>Centro</TableHead><TableHead>Valor</TableHead><TableHead>Justificativa</TableHead></TableRow></TableHeader><TableBody>{expenses.map(item => <TableRow key={item.id}><TableCell>{item.description}</TableCell><TableCell>{item.resultCenter ? `${item.resultCenter.code} · ${item.resultCenter.name}` : 'Sem centro'}</TableCell><TableCell>{formatCurrency(Number(item.amount))}</TableCell><TableCell>{item.reason}</TableCell></TableRow>)}</TableBody></Table> : <p className="text-sm text-muted-foreground">Nenhuma despesa registrada.</p>}
+        {expenses.length ? <Table><TableHeader><TableRow><TableHead>Descrição</TableHead><TableHead>Centro</TableHead><TableHead>Valor</TableHead><TableHead>Justificativa</TableHead></TableRow></TableHeader><TableBody>{expenses.map(item => <TableRow key={item.id}><TableCell>{item.description}</TableCell><TableCell>{item.resultCenter ? `${item.resultCenter.code} · ${item.resultCenter.name}` : 'Sem centro'}</TableCell><TableCell>{formatBRL(item.amount)}</TableCell><TableCell>{item.reason}</TableCell></TableRow>)}</TableBody></Table> : <p className="text-sm text-muted-foreground">Nenhuma despesa registrada.</p>}
       </CardContent></Card>
       <Card>
         <CardContent className="p-0">
@@ -260,24 +249,24 @@ export default function Financeiro() {
                     <TableRow key={conta.id}>
                       <TableCell className="font-medium">{conta.cliente}</TableCell>
                       <TableCell>{formatDate(conta.dataVencimento)}</TableCell>
-                      <TableCell className="font-semibold">{formatCurrency(conta.valor)}</TableCell>
+                      <TableCell className="font-semibold">{formatBRL(conta.valor)}</TableCell>
                       <TableCell>{getStatusBadge(conta.status)}</TableCell>
-                      <TableCell>{(invoices?.find(invoice => invoice.id === conta.id)?.payments ?? []).map(payment => `${formatCurrency(Number(payment.amount))} · ${payment.status}`).join(' | ') || 'Nenhum'}</TableCell>
+                      <TableCell>{(invoices?.find(invoice => invoice.id === conta.id)?.payments ?? []).map(payment => `${formatBRL(payment.amount)} · ${payment.status}`).join(' | ') || 'Nenhum'}</TableCell>
                       <TableCell>
                         <div className="flex space-x-2">
-                          {conta.status !== 'Pago' && (
+                          {conta.status === 'Pendente' && (
                             <Button size="sm" variant="outline" aria-label={`Registrar recebimento da fatura ${conta.id}`} onClick={() => setPaymentDraft({ invoiceId: String(conta.id), amount: '', method: 'PIX', idempotencyKey: newPaymentIdempotencyKey() })}>
                               <Check className="w-4 h-4" />
                             </Button>
                           )}
-                          {conta.status === 'Pendente' && (
+                          {conta.status === 'Pendente' && canApplyDiscount && (
                             <Button size="sm" variant="outline" onClick={() => {
                               const amount = window.prompt('Valor do desconto (R$):');
                               const reason = window.prompt('Justificativa obrigatória:');
                               if (amount && reason) discountMutation.mutate({ invoiceId: conta.id, amount: Number(amount.replace(',', '.')), reason });
                             }}>Desconto</Button>
                           )}
-                          <Button size="sm" variant="outline">
+                          <Button size="sm" variant="outline" aria-label={`Visualizar fatura ${conta.id}`}>
                             <Eye className="w-4 h-4" />
                           </Button>
                           {conta.status === 'Pago' && (invoices?.find(invoice => invoice.id === conta.id)?.payments ?? []).filter(payment => payment.status === 'POSTED').map(payment => (
@@ -302,7 +291,7 @@ export default function Financeiro() {
                       </select>
                     </label>
                     <div className="flex items-end gap-2">
-                      <Button disabled={!paymentDraft.amount || paymentMutation.isPending} onClick={() => { paymentMutation.mutate({ invoiceId: Number(paymentDraft.invoiceId), amount: Number(paymentDraft.amount.replace(',', '.')), method: paymentDraft.method, idempotencyKey: paymentDraft.idempotencyKey }, { onSuccess: () => setPaymentDraft({ invoiceId: '', amount: '', method: 'PIX', idempotencyKey: newPaymentIdempotencyKey() }) }); }}>Registrar recebimento</Button>
+                      <Button disabled={!normalizeDecimalInput(paymentDraft.amount) || paymentMutation.isPending} onClick={() => { const amount = normalizeDecimalInput(paymentDraft.amount); if (!amount) return; paymentMutation.mutate({ invoiceId: Number(paymentDraft.invoiceId), amount, method: paymentDraft.method, idempotencyKey: paymentDraft.idempotencyKey }, { onSuccess: () => setPaymentDraft({ invoiceId: '', amount: '', method: 'PIX', idempotencyKey: newPaymentIdempotencyKey() }) }); }}>Registrar recebimento</Button>
                       <Button type="button" variant="outline" onClick={() => setPaymentDraft({ invoiceId: '', amount: '', method: 'PIX', idempotencyKey: newPaymentIdempotencyKey() })}>Cancelar</Button>
                     </div>
                   </div>
