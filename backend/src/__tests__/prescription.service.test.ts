@@ -20,15 +20,25 @@ describe('prescriptions', () => {
   it('requires a veterinarian for review and requires a cancellation reason', async () => {
     const db = prisma as any;
     db.user.findFirst.mockResolvedValue({ id: 2, roleName: 'DONO' });
-    await expect(PrescriptionService.review(8, 2, 'APPROVED')).rejects.toThrow('Apenas usuário veterinário');
-    await expect(PrescriptionService.cancel(8, 2, '   ')).rejects.toThrow('Justificativa');
+    await expect(runWithClinic(4, () => PrescriptionService.review(8, 2, 'APPROVED'))).rejects.toThrow('Apenas usuário veterinário');
+    await expect(runWithClinic(4, () => PrescriptionService.cancel(8, 2, '   '))).rejects.toThrow('Justificativa');
   });
 
   it('cancels without deleting historical prescription rows', async () => {
     const db = prisma as any;
     db.prescription.findFirst.mockResolvedValue({ id: 8, status: 'PENDING_REVIEW' });
     db.prescription.update.mockResolvedValue({ id: 8, status: 'CANCELLED' });
-    await expect(PrescriptionService.cancel(8, 3, 'Correção clínica solicitada')).resolves.toBe(true);
+    await expect(runWithClinic(4, () => PrescriptionService.cancel(8, 3, 'Correção clínica solicitada'))).resolves.toBe(true);
     expect(db.prescription.update).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ status: 'CANCELLED', cancelReason: 'Correção clínica solicitada' }) }));
+  });
+
+  it('scopes prescription reads to the authenticated clinic', async () => {
+    const db = prisma as any;
+    db.prescription.findFirst
+      .mockResolvedValueOnce({ id: 8, clinicId: 4, currentVersion: 1 })
+      .mockResolvedValueOnce({ id: 8, clinicId: 4, items: [] });
+    await runWithClinic(4, () => PrescriptionService.getPrescriptionById(8));
+    expect(db.prescription.findFirst).toHaveBeenNthCalledWith(1, { where: { id: 8, clinicId: 4 } });
+    expect(db.prescription.findFirst).toHaveBeenNthCalledWith(2, expect.objectContaining({ where: { id: 8, clinicId: 4 } }));
   });
 });
