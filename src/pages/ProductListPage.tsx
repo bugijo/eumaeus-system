@@ -188,7 +188,7 @@ const ProductListPage: React.FC = () => {
           <select aria-label="Produto do lote" className="h-10 rounded-md border bg-background px-3" value={movementProductId} onChange={event => setMovementProductId(event.target.value)}><option value="">Produto</option>{products.map(product => <option key={product.id} value={product.id}>{product.name}</option>)}</select>
           <Input aria-label="Lote" placeholder="Lote" value={lotCode} onChange={event => setLotCode(event.target.value)} />
           <Input aria-label="Quantidade" type="number" min="1" placeholder="Quantidade" value={lotQuantity} onChange={event => setLotQuantity(event.target.value)} />
-          <Input aria-label="Validade" type="date" value={lotExpiry} onChange={event => setLotExpiry(event.target.value)} />
+          <Input aria-label="Validade" type="text" inputMode="numeric" placeholder="YYYY-MM-DD" pattern="\\d{4}-\\d{2}-\\d{2}" value={lotExpiry} onChange={event => setLotExpiry(event.target.value)} />
           <Input aria-label="Motivo" placeholder="Motivo" value={movementReason} onChange={event => setMovementReason(event.target.value)} />
           <Button onClick={registerReceipt}>Registrar entrada</Button>
           {movementMessage && <p role="status" className="text-sm md:col-span-6">{movementMessage}</p>}

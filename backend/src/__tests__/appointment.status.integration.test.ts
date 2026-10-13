@@ -27,6 +27,7 @@ const persistedAppointment = (status: string) => ({
 describe('appointment status routes', () => {
   beforeEach(() => {
     prisma.appointment.update.mockReset();
+    prisma.user.findFirst.mockResolvedValue({ active: true, roleName: 'DONO' });
   });
 
   it('preserves an uppercase canonical status', async () => {
