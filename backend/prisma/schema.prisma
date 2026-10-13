@@ -310,6 +310,8 @@ model User {
   assistantRemindersCreated          AssistantReminder[]           @relation("AssistantReminderCreatedBy")
   assistantRemindersResolved         AssistantReminder[]           @relation("AssistantReminderResolvedBy")
   assistantReminderActions           AssistantReminderAction[]     @relation("AssistantReminderActionActor")
+  documentSharesCreated              DocumentShare[]               @relation("DocumentShareCreator")
+  documentShareEvents                DocumentShareEvent[]          @relation("DocumentShareEventActor")
   receivedPayments                   Payment[]                     @relation("PaymentReceiver")
 }
 
@@ -556,6 +558,42 @@ model AssistantReminderAction {
   actor        User              @relation("AssistantReminderActionActor", fields: [actorUserId], references: [id], onDelete: Restrict)
 
   @@index([clinicId, reminderId, createdAt])
+}
+
+model DocumentShare {
+  id              Int                  @id @default(autoincrement())
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  clinicId        Int
+  documentType    String
+  documentId      Int
+  documentVersion Int?
+  recipient       String
+  preview         String
+  status          String               @default("DRAFT")
+  createdById     Int
+  lastError       String?
+  createdBy       User                 @relation("DocumentShareCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  events          DocumentShareEvent[]
+
+  @@unique([clinicId, documentType, documentId, documentVersion, recipient])
+  @@index([clinicId, documentType, documentId])
+  @@index([clinicId, status, updatedAt])
+}
+
+model DocumentShareEvent {
+  id          Int           @id @default(autoincrement())
+  createdAt   DateTime      @default(now())
+  clinicId    Int
+  shareId     Int
+  actorUserId Int
+  fromStatus  String
+  toStatus    String
+  note        String?
+  share       DocumentShare @relation(fields: [shareId], references: [id], onDelete: Cascade)
+  actor       User          @relation("DocumentShareEventActor", fields: [actorUserId], references: [id], onDelete: Restrict)
+
+  @@index([clinicId, shareId, createdAt])
 }
 
 model InvoiceDiscount {

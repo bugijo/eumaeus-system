@@ -130,6 +130,11 @@ export default function Financeiro() {
     link.click();
     URL.revokeObjectURL(link.href);
   };
+  const downloadAccountingPdf = async () => {
+    if (!accountingReport) return;
+    const blob = await financialApi.downloadAccountingPdf({ from: accountingDraft.from, to: accountingDraft.to, resultCenterIds: accountingDraft.centerIds.map(Number) });
+    const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = `eumaeus-contabil-${accountingReport.period.from}-${accountingReport.period.to}.pdf`; link.click(); URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="!bg-background p-6 space-y-6">
@@ -175,7 +180,7 @@ export default function Financeiro() {
             <label className="text-sm">Até<input aria-label="Fim do período contábil" type="date" className="mt-1 w-full rounded-md border px-3 py-2" value={accountingDraft.to} onChange={event => setAccountingDraft({ ...accountingDraft, to: event.target.value })} /></label>
             <label className="text-sm md:col-span-2">Centros de resultado<select aria-label="Centros do relatório contábil" multiple className="mt-1 min-h-10 w-full rounded-md border px-3 py-2" value={accountingDraft.centerIds} onChange={event => setAccountingDraft({ ...accountingDraft, centerIds: Array.from(event.target.selectedOptions, option => option.value) })}>{resultCenters.map(center => <option key={center.id} value={center.id}>{center.code} · {center.name}</option>)}</select></label>
           </div>
-          <div className="flex flex-wrap gap-2"><Button type="button" onClick={prepareAccounting}>Preparar para o contador</Button>{accountingReport && <><Button type="button" variant="outline" onClick={downloadAccountingCsv}>Baixar CSV</Button><Button type="button" variant="outline" onClick={() => window.print()}>Imprimir resumo</Button></>}</div>
+          <div className="flex flex-wrap gap-2"><Button type="button" onClick={prepareAccounting}>Preparar para o contador</Button>{accountingReport && <><Button type="button" variant="outline" onClick={downloadAccountingCsv}>Baixar CSV</Button><Button type="button" variant="outline" onClick={downloadAccountingPdf}>Baixar PDF verificável</Button><Button type="button" variant="outline" onClick={() => window.print()}>Imprimir resumo</Button></>}</div>
           {accountingError && <p role="alert" className="text-sm text-red-600">{accountingError}</p>}
           {accountingReport && <div className="rounded-md border bg-muted/20 p-3 text-sm" aria-label="Prévia contábil"><p>Gerado em {new Date(accountingReport.generatedAt).toLocaleString('pt-BR')} · clínica {accountingReport.clinicId}</p><p>Vendas {formatBRL(accountingReport.totals.billed)} · Recebimentos {formatBRL(accountingReport.totals.received)} · Pendentes {formatBRL(accountingReport.totals.pending)} · Descontos {formatBRL(accountingReport.totals.discounts)} · Despesas {formatBRL(accountingReport.totals.expenses)}</p><p>Pendências: {accountingReport.pendencies.unclassifiedExpenses} despesas sem centro, {accountingReport.pendencies.missingFiscalDocuments} faturas sem documento fiscal.</p></div>}
         </CardContent>

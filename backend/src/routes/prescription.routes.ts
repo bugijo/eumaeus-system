@@ -18,6 +18,10 @@ router.get('/prescriptions/:id/versions', requireRoles(ROLE.DONO, ROLE.VETERINAR
 router.put('/prescriptions/:id', requireRoles(ROLE.DONO, ROLE.VETERINARIO), PrescriptionController.updatePrescription);
 router.patch('/prescriptions/:id/review', requireRoles(ROLE.DONO, ROLE.VETERINARIO), PrescriptionController.reviewPrescription);
 router.get('/prescriptions/:id/print', requireRoles(ROLE.DONO, ROLE.VETERINARIO, ROLE.AUXILIAR), PrescriptionController.printPrescription);
+router.get('/prescriptions/:id/pdf', requireRoles(ROLE.DONO, ROLE.VETERINARIO, ROLE.AUXILIAR), PrescriptionController.downloadPrescriptionPdf);
+router.post('/prescriptions/:id/shares', requireRoles(ROLE.DONO, ROLE.VETERINARIO), PrescriptionController.preparePrescriptionShare);
+router.post('/prescription-shares/:shareId/queue', requireRoles(ROLE.DONO, ROLE.VETERINARIO), PrescriptionController.queuePrescriptionShare);
+router.get('/prescription-shares/:shareId', requireRoles(ROLE.DONO, ROLE.VETERINARIO, ROLE.AUXILIAR), PrescriptionController.getPrescriptionShare);
 
 // DELETE /api/prescriptions/:id - Deletar receita
 router.delete('/prescriptions/:id', requireRoles(ROLE.DONO, ROLE.VETERINARIO), PrescriptionController.deletePrescription);

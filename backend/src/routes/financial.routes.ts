@@ -9,6 +9,7 @@ router.get('/centers', read, financialController.centers);
 router.get('/expenses', read, financialController.expenses);
 router.post('/centers', write, financialController.createCenter);
 router.post('/accounting/prepare', write, financialController.prepareAccountingExport);
+router.post('/accounting/pdf', write, financialController.accountingPdf);
 router.post('/expenses', write, financialController.createExpense);
 router.post('/invoices/:id/payments', write, financialController.receive);
 router.post('/payments/:paymentId/reverse', write, financialController.reverse);

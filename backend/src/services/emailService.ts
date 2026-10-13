@@ -27,7 +27,7 @@ export interface VaccineReminderData {
 }
 
 class EmailService {
-  private transporter: nodemailer.Transporter | undefined;
+  private transporter: ReturnType<typeof nodemailer.createTransport> | undefined;
   private from: string;
 
   constructor(emailConfig = config.email) {

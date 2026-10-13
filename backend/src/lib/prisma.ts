@@ -11,6 +11,7 @@ const TENANT_MODELS = new Set([
   'servicePackage', 'packageContract', 'packageSession', 'productLot', 'stockMovement',
   'vaccinationRecord', 'resultCenter', 'payment', 'expense', 'specialistProfile', 'specialistAvailability', 'specialistAssignment',
   'prescription', 'prescriptionItem', 'financialAuditEvent', 'assistantReminder', 'assistantReminderAction',
+  'documentShare', 'documentShareEvent',
   'hospitalizationAdmission', 'hospitalizationTask', 'hospitalizationPrescription', 'hospitalizationHandoff',
   'surgeryCase', 'surgeryBudgetVersion', 'surgeryConsent', 'surgeryChecklistItem', 'surgeryInstruction',
 ]);
@@ -42,6 +43,8 @@ const TENANT_RELATIONS: Record<string, Record<string, { target: string; many: bo
   prescriptionItem: { prescription: { target: 'prescription', many: false } },
   assistantReminder: { createdBy: { target: 'user', many: false }, resolvedBy: { target: 'user', many: false }, actions: { target: 'assistantReminderAction', many: true } },
   assistantReminderAction: { reminder: { target: 'assistantReminder', many: false }, actor: { target: 'user', many: false } },
+  documentShare: { createdBy: { target: 'user', many: false }, events: { target: 'documentShareEvent', many: true } },
+  documentShareEvent: { share: { target: 'documentShare', many: false }, actor: { target: 'user', many: false } },
   resultCenter: { products: { target: 'product', many: true }, invoices: { target: 'invoice', many: true }, invoiceItems: { target: 'invoiceItem', many: true }, expenses: { target: 'expense', many: true } },
   invoice: { appointment: { target: 'appointment', many: false }, items: { target: 'invoiceItem', many: true }, resultCenter: { target: 'resultCenter', many: false }, payments: { target: 'payment', many: true } },
   invoiceItem: { invoice: { target: 'invoice', many: false }, service: { target: 'service', many: false }, packageSession: { target: 'packageSession', many: false }, resultCenter: { target: 'resultCenter', many: false } },

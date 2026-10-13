@@ -93,6 +93,13 @@ export const prescriptionApi = {
     const response = await apiClient.get<string>(`/prescriptions/${id}/print`);
     return response.data;
   },
+  async downloadPdf(id: number): Promise<Blob> {
+    const response = await apiClient.get(`/prescriptions/${id}/pdf`, { responseType: 'blob' });
+    return response.data;
+  },
+  async prepareShare(id: number, recipient: string) { return (await apiClient.post(`/prescriptions/${id}/shares`, { recipient })).data; },
+  async queueShare(shareId: number) { return (await apiClient.post(`/prescription-shares/${shareId}/queue`)).data; },
+  async getShare(shareId: number) { return (await apiClient.get(`/prescription-shares/${shareId}`)).data; },
 
   // Deletar receita
   async deletePrescription(id: number): Promise<void> {
