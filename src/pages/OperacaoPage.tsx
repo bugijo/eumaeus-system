@@ -25,6 +25,13 @@ export default function OperacaoPage() {
   const [loading, setLoading] = useState(false);
   const [actionPending, setActionPending] = useState(false);
   const [loadError, setLoadError] = useState('');
+  const communicationCategories = [
+    ['BASIC', 'Básico'],
+    ['PET_READY', 'Somente pet pronto'],
+    ['FOLLOW_UP', 'Acompanhamento'],
+    ['HEALTH', 'Saúde'],
+    ['CAMPAIGNS', 'Campanhas'],
+  ] as const;
 
   const validId = (value: string) => /^\d+$/.test(value) && Number(value) > 0;
 
@@ -53,9 +60,9 @@ export default function OperacaoPage() {
     finally { setActionPending(false); }
   };
 
-  const configure = async (category: string, enabled: boolean, stopAll = false) => {
+  const configure = async (category: string, enabled: boolean, stopAll = false, pausedUntil?: string | null) => {
     if (!validId(tutorId)) return setMessage('Informe um ID positivo de tutor.');
-    await run(() => apiClient.put(`/tutors/${tutorId}/communication-preferences`, { sender: 'SYSTEM', category, enabled, stopAll }), 'Preferência salva. O envio continua em modo simulação.');
+    await run(() => apiClient.put(`/tutors/${tutorId}/communication-preferences`, { sender: 'SYSTEM', category, enabled, stopAll, pausedUntil }), 'Preferência salva. O envio continua em modo simulação.');
   };
 
   return <main className="space-y-6 p-6">
@@ -65,7 +72,7 @@ export default function OperacaoPage() {
     {message && <p role="status" aria-live="polite" className="rounded-md border p-3 text-sm">{message}</p>}
     <section className="rounded-lg border bg-card p-4 space-y-4">
       <h2 className="text-lg font-medium">Preferências e histórico do tutor</h2>
-      <div className="flex flex-wrap gap-2"><input aria-label="ID do tutor" className="h-10 rounded-md border bg-background px-3" placeholder="ID do tutor" value={tutorId} onChange={e => setTutorId(e.target.value)} /><Button disabled={actionPending || !validId(tutorId)} onClick={() => configure('BASIC', true)}>Ativar avisos</Button><Button disabled={actionPending || !validId(tutorId)} variant="outline" onClick={() => configure('BASIC', false, true)}>Parada total</Button><Button disabled={actionPending || !validId(tutorId)} variant="outline" onClick={() => configure('PET_READY', true)}>Somente pet pronto</Button></div>
+      <div className="flex flex-wrap gap-2"><input aria-label="ID do tutor" className="h-10 rounded-md border bg-background px-3" placeholder="ID do tutor" value={tutorId} onChange={e => setTutorId(e.target.value)} />{communicationCategories.map(([category, label]) => <Button key={category} disabled={actionPending || !validId(tutorId)} variant="outline" onClick={() => configure(category, true)}>{label}</Button>)}<Button disabled={actionPending || !validId(tutorId)} variant="outline" onClick={() => configure('BASIC', true, false, new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString())}>Pausar 24h</Button><Button disabled={actionPending || !validId(tutorId)} variant="outline" onClick={() => configure('BASIC', false, true)}>Parada total</Button></div>
       <div className="space-y-2">{history.map(item => <div key={item.id} className="flex justify-between border-b py-2 text-sm"><span>{item.eventType} · {item.category}</span><span>{item.status}</span></div>)}{tutorId && !history.length && <p className="text-sm text-muted-foreground">Nenhum aviso para este tutor.</p>}</div>
     </section>
     <section className="rounded-lg border bg-card p-4 space-y-4">
