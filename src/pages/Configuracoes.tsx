@@ -13,8 +13,13 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { UserPlus, Edit, Trash2, Save, Settings, Bell, Mail, Clock, TestTube, RotateCcw, Info } from 'lucide-react';
 import { useClinicSettings, useUpdateClinicSettings, useTestEmailSettings, useResetClinicSettings, useTemplateVariables } from '@/api/clinicSettingsApi';
 import { toast } from 'sonner';
+import { serviceApi, ServiceType } from '@/api/serviceApi';
 
 export default function Configuracoes() {
+  const [catalogServices, setCatalogServices] = useState<ServiceType[]>([]);
+  const [catalogLoading, setCatalogLoading] = useState(false);
+  const [catalogSaving, setCatalogSaving] = useState(false);
+  const [catalogForm, setCatalogForm] = useState({ name: '', description: '', duration: '60', price: '', category: 'CLINICA' });
   const [emailReminders, setEmailReminders] = useState(true);
   const [whatsappReminders, setWhatsappReminders] = useState(false);
   const [emailHealthAlerts, setEmailHealthAlerts] = useState(true);
@@ -27,6 +32,24 @@ export default function Configuracoes() {
   const updateSettingsMutation = useUpdateClinicSettings();
   const testEmailMutation = useTestEmailSettings();
   const resetSettingsMutation = useResetClinicSettings();
+
+  const loadCatalog = async () => {
+    setCatalogLoading(true);
+    try { setCatalogServices(await serviceApi.getAllServices()); }
+    catch { toast.error('Não foi possível carregar o catálogo de serviços'); }
+    finally { setCatalogLoading(false); }
+  };
+  React.useEffect(() => { void loadCatalog(); }, []);
+  const handleCreateCatalogService = async () => {
+    setCatalogSaving(true);
+    try {
+      await serviceApi.createService({ ...catalogForm, duration: Number(catalogForm.duration), price: Number(catalogForm.price) });
+      toast.success('Serviço persistido no catálogo da clínica');
+      setCatalogForm({ name: '', description: '', duration: '60', price: '', category: 'CLINICA' });
+      await loadCatalog();
+    } catch { toast.error('Não foi possível salvar o serviço'); }
+    finally { setCatalogSaving(false); }
+  };
 
   // Estados locais para os formulários
   const [localSettings, setLocalSettings] = useState({
@@ -121,11 +144,12 @@ export default function Configuracoes() {
       </div>
 
       <Tabs defaultValue="geral" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="geral">Geral</TabsTrigger>
           <TabsTrigger value="usuarios">Usuários</TabsTrigger>
           <TabsTrigger value="notificacoes">Notificações</TabsTrigger>
           <TabsTrigger value="empresa">Dados da Empresa</TabsTrigger>
+          <TabsTrigger value="servicos">Serviços</TabsTrigger>
         </TabsList>
 
         <TabsContent value="geral" className="space-y-6">
@@ -584,6 +608,29 @@ export default function Configuracoes() {
                 <Save className="mr-2 h-4 w-4" />
                 Salvar Dados Fiscais
               </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="servicos" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Catálogo de serviços</CardTitle>
+              <CardDescription>Serviços persistidos por empresa, usados na agenda e preservados nos históricos contratados.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="space-y-2"><Label htmlFor="service-name">Nome</Label><Input id="service-name" value={catalogForm.name} onChange={e => setCatalogForm(v => ({ ...v, name: e.target.value }))} placeholder="Banho sintético" /></div>
+                <div className="space-y-2"><Label htmlFor="service-category">Categoria</Label><select id="service-category" className="h-10 rounded-md border bg-background px-3" value={catalogForm.category} onChange={e => setCatalogForm(v => ({ ...v, category: e.target.value }))}><option value="CLINICA">Clínica</option><option value="BANHO_TOSA">Banho e tosa</option></select></div>
+                <div className="space-y-2"><Label htmlFor="service-price">Preço (R$)</Label><Input id="service-price" type="number" min="0" step="0.01" value={catalogForm.price} onChange={e => setCatalogForm(v => ({ ...v, price: e.target.value }))} placeholder="0,00" /></div>
+                <div className="space-y-2"><Label htmlFor="service-duration">Duração (minutos)</Label><Input id="service-duration" type="number" min="1" step="1" value={catalogForm.duration} onChange={e => setCatalogForm(v => ({ ...v, duration: e.target.value }))} /></div>
+                <div className="space-y-2 md:col-span-2"><Label htmlFor="service-description">Descrição</Label><Textarea id="service-description" value={catalogForm.description} onChange={e => setCatalogForm(v => ({ ...v, description: e.target.value }))} placeholder="Descrição do serviço" /></div>
+              </div>
+              <Button onClick={handleCreateCatalogService} disabled={catalogSaving || !catalogForm.name.trim() || !catalogForm.price}>{catalogSaving ? 'Salvando...' : 'Salvar serviço'}</Button>
+              <div className="rounded-md border">
+                <div className="border-b px-4 py-3 font-medium">Serviços ativos {catalogLoading ? '(carregando...)' : `(${catalogServices.length})`}</div>
+                {catalogServices.length === 0 && !catalogLoading ? <p className="p-4 text-sm text-muted-foreground">Nenhum serviço cadastrado nesta clínica.</p> : <div className="divide-y">{catalogServices.map(service => <div key={service.id} className="flex items-center justify-between px-4 py-3 text-sm"><span>{service.name} · {service.category} · {service.duration} min</span><span>R$ {Number(service.price).toFixed(2).replace('.', ',')}</span></div>)}</div>}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

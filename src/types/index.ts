@@ -27,6 +27,9 @@ export interface Pet {
 export enum AppointmentStatus {
   SCHEDULED = 'SCHEDULED',
   CONFIRMED = 'CONFIRMED',
+  ARRIVED = 'ARRIVED',
+  IN_PROGRESS = 'IN_PROGRESS',
+  READY = 'READY',
   CANCELLED = 'CANCELLED',
   COMPLETED = 'COMPLETED'
 }

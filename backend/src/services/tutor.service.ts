@@ -1,7 +1,10 @@
 import { Tutor } from '../models/tutor.model';
 import { prisma } from '../lib/prisma';
 
-const isTestEnv = process.env.NODE_ENV === 'test';
+// O fluxo local integrado deve usar PostgreSQL mesmo com NODE_ENV=test.
+// Memória só é permitida quando um teste unitário a solicita explicitamente;
+// nunca pode mascarar falhas de persistência entre tutor e pet.
+const isMemoryStoreEnabled = process.env.USE_IN_MEMORY_TUTOR_STORE === 'true';
 
 export class ServiceError extends Error {
   constructor(message: string, public statusCode = 500) {
@@ -87,7 +90,7 @@ const getCurrentMonthBounds = () => {
 export class TutorService {
   static async getTutorStats(): Promise<{ total: number; active: number; newThisMonth: number }> {
     try {
-      if (isTestEnv) {
+      if (isMemoryStoreEnabled) {
         const activeTutors = memoryStore.tutors.filter(tutor => tutor.deletedAt === null);
         const total = activeTutors.length;
         const startOfMonth = getCurrentMonthBounds();
@@ -129,7 +132,7 @@ export class TutorService {
 
   static async getAllTutors(): Promise<Tutor[]> {
     try {
-      if (isTestEnv) {
+      if (isMemoryStoreEnabled) {
         return memoryStore.tutors
           .filter(tutor => tutor.deletedAt === null)
           .map(normalizeTutor);
@@ -158,7 +161,7 @@ export class TutorService {
     try {
       const validatedData = validateTutorData(newTutorData);
 
-      if (isTestEnv) {
+      if (isMemoryStoreEnabled) {
         ensureNotDuplicate(validatedData.email);
 
         const now = new Date();
@@ -186,7 +189,7 @@ export class TutorService {
 
       console.error('Erro ao criar tutor:', error);
 
-      if (!isTestEnv && (error as any)?.code === 'P2002') {
+      if (!isMemoryStoreEnabled && (error as any)?.code === 'P2002') {
         throw new ServiceError('Tutor com este e-mail já existe', 409);
       }
 
@@ -196,7 +199,7 @@ export class TutorService {
 
   static async getTutorById(id: number): Promise<Tutor | null> {
     try {
-      if (isTestEnv) {
+      if (isMemoryStoreEnabled) {
         const tutor = memoryStore.tutors.find(item => item.id === id && item.deletedAt === null);
         return tutor ? normalizeTutor(tutor) : null;
       }
@@ -222,7 +225,7 @@ export class TutorService {
     try {
       const validatedData = validateTutorData({ ...updatedData, name: updatedData.name ?? '', email: updatedData.email ?? '' });
 
-      if (isTestEnv) {
+      if (isMemoryStoreEnabled) {
         const tutorIndex = memoryStore.tutors.findIndex(item => item.id === id && item.deletedAt === null);
 
         if (tutorIndex === -1) {
@@ -258,7 +261,7 @@ export class TutorService {
 
       console.error('Erro ao atualizar tutor:', error);
 
-      if (!isTestEnv && (error as any)?.code === 'P2002') {
+      if (!isMemoryStoreEnabled && (error as any)?.code === 'P2002') {
         throw new ServiceError('Tutor com este e-mail já existe', 409);
       }
 
@@ -268,7 +271,7 @@ export class TutorService {
 
   static async deleteTutor(id: number): Promise<boolean> {
     try {
-      if (isTestEnv) {
+      if (isMemoryStoreEnabled) {
         const tutor = memoryStore.tutors.find(item => item.id === id && item.deletedAt === null);
 
         if (!tutor) {
@@ -308,7 +311,7 @@ export class TutorService {
   }
 
   static clearTestData() {
-    if (isTestEnv) {
+    if (isMemoryStoreEnabled) {
       memoryStore.tutors = [];
       memoryStore.nextId = 1;
     }

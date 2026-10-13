@@ -578,3 +578,15 @@ Confirmações pendentes preparadas: registrar despesa/recebimento/estorno finan
 - [x] Proxy endurecido contra sobrescrita explícita de `clinicId`: updates recebem o contexto autenticado e valores divergentes são rejeitados; relações `connect`/`disconnect` continuam bloqueadas no proxy para exigir validação de serviço.
 - [x] Regressão do proxy adicionada: derivação de `clinicId`, rejeição de associação relacional aninhada e rejeição de `clinicId` divergente; `27/27` testes focais e build backend aprovados.
 - [ ] Pendente: validação HTTP/PG de associação por chaves estrangeiras e operações em lote; a cobertura atual prova o guard do proxy, não a jornada HTTP completa.
+### Jornada visual operacional e catálogo — checkpoint 2026-10-13
+
+**Ambiente/evidência:** PostgreSQL Docker local `eumaeus-postgres-local` (`eumaeus_local`), backend da worktree em `:3334`, frontend em `:4174`, usuário sintético da clínica `99001`. Nenhum banco remoto, Hermes ou transporte externo foi usado.
+
+- Corrigido o defeito de persistência em que `NODE_ENV=test` ativava um armazenamento em memória de tutores, enquanto pets usavam PostgreSQL. O fallback agora só é habilitado por `USE_IN_MEMORY_TUTOR_STORE=true`; o fluxo integrado local permanece no banco. Evidência visual: tutor criado pela tela, recarregado e encontrado como id 54; pet Luna QA Persistente criado pela tela e reapareceu após reload.
+- Implementado o primeiro caminho visual de catálogo em Configurações → Serviços: nome, categoria, preço, duração e descrição; leitura e criação usam o catálogo persistido da clínica. Serviço sintético `Banho QA Jornada`, categoria `BANHO_TOSA`, R$ 45,90, 50 min, foi criado por clique e reapareceu na tela.
+- Corrigida a projeção do serviço associado no retorno de agendamentos. Antes a agenda mostrava `undefined - Pet ID`; agora mostra `Banho QA Jornada - Pet ID: 48`. Regressão focal: `backend/src/__tests__/appointment.service.projection.test.ts` (1/1).
+- Jornada visual comprovada após reload em cada transição: criação do agendamento → `CONFIRMED` → `ARRIVED` → `IN_PROGRESS` → `READY` → `COMPLETED`. A agenda mostrou o serviço, o pet e o status persistidos. As transições geram/cancelam comunicação transacional pelo backend; histórico de comunicação ainda precisa de validação visual dedicada.
+
+**Estado da matriz neste checkpoint:** cadastro tutor/pet, catálogo e agenda operacional estão implementados e validados pela interface no ambiente sintético. Pacote, cobertura de cobrança, adicional, desconto, recebimento e histórico de avisos ainda não estão validados visualmente nesta sessão; não foram marcados como concluídos. Financeiro e ações clínicas permanecem sujeitos às confirmações específicas aplicáveis.
+
+**Verificações:** `npm run build` frontend passou (2674 módulos); `npm run build` backend passou; teste focal de projeção passou (1 suíte/1 teste). A suíte antiga `appointment.status.integration.test.ts` continua com 3 falhas 401 por fixture de autenticação incompatível com a validação atual de usuário; isso é resultado inconclusivo/preexistente para os três cenários, não evidência de aprovação.

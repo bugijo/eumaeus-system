@@ -16,6 +16,10 @@ export interface ServiceCategory {
 }
 
 export const serviceApi = {
+  createService: async (data: { name: string; description?: string; duration: number; price: number; category: string }) => {
+    const response = await apiClient.post('/services', data);
+    return response.data.data as ServiceType;
+  },
   // GET /api/services - Buscar todos os serviços
   getAllServices: async (params?: {
     category?: string;
