@@ -90,6 +90,13 @@ jest.mock('@prisma/client', () => {
       updateMany: jest.fn(),
       findMany: jest.fn(),
     },
+    whatsAppInboundEvent: {
+      findFirst: jest.fn(),
+      create: jest.fn(),
+      findMany: jest.fn(),
+      updateMany: jest.fn(),
+      update: jest.fn(),
+    },
     communicationAttempt: { create: jest.fn() },
     tutorCommunicationPreference: { findFirst: jest.fn(), findMany: jest.fn(), create: jest.fn(), update: jest.fn() },
     vaccinationRecord: {

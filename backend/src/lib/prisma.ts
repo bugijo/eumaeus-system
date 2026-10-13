@@ -7,7 +7,7 @@ const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 const TENANT_MODELS = new Set([
   'tutor', 'user', 'pet', 'appointment', 'medicalRecord', 'medicalRecordProduct',
   'product', 'service', 'catalogService', 'invoice', 'invoiceItem', 'clinicSettings',
-  'tutorCommunicationPreference', 'communicationOutbox',
+  'tutorCommunicationPreference', 'communicationOutbox', 'whatsAppInboundEvent',
   'servicePackage', 'packageContract', 'packageSession', 'productLot', 'stockMovement',
   'vaccinationRecord', 'resultCenter', 'payment', 'expense', 'specialistProfile', 'specialistAvailability', 'specialistAssignment',
   'prescription', 'prescriptionItem', 'financialAuditEvent',
@@ -31,6 +31,7 @@ const TENANT_RELATIONS: Record<string, Record<string, { target: string; many: bo
   catalogService: { appointments: { target: 'service', many: true }, coveredPackages: { target: 'servicePackage', many: true } },
   tutorCommunicationPreference: { tutor: { target: 'tutor', many: false } },
   communicationOutbox: { tutor: { target: 'tutor', many: false } },
+  whatsAppInboundEvent: { tutor: { target: 'tutor', many: false } },
   servicePackage: { contracts: { target: 'packageContract', many: true }, coveredCatalogService: { target: 'catalogService', many: false } },
   packageContract: { package: { target: 'servicePackage', many: false }, tutor: { target: 'tutor', many: false }, pet: { target: 'pet', many: false }, sessions: { target: 'packageSession', many: true } },
   packageSession: { contract: { target: 'packageContract', many: false }, appointment: { target: 'appointment', many: false }, service: { target: 'service', many: false }, invoiceItem: { target: 'invoiceItem', many: false } },
@@ -117,7 +118,9 @@ const SAFE_RAW_SQL = [
   /^SELECT\s+1\s+FROM\s+"public"\."AuthProfile"\s+LIMIT\s+1$/i,
   /^SELECT\s+DISTINCT\s+"clinicId"\s+FROM\s+"User"\s+WHERE\s+"clinicId"\s+IS\s+NOT\s+NULL\s+ORDER\s+BY\s+"clinicId"$/i,
   /^SELECT\s+pg_advisory_xact_lock\(/i,
-  /^SELECT\s+"id"\s+FROM\s+"Invoice"\s+WHERE\s+"id"\s*=\s*\$\d+\s+FOR\s+UPDATE$/i,
+  // Prisma tagged SQL exposes either the placeholder or the interpolated
+  // fragment array to the proxy; both forms are this exact row lock.
+  /^SELECT\s+"id"\s+FROM\s+"Invoice"\s+WHERE\s+"id"\s*=\s*(?:\$\d+)?\s+FOR\s+UPDATE$/i,
 ];
 
 const assertSafeRawQuery = (query: unknown): void => {

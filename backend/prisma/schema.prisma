@@ -53,6 +53,7 @@ model Tutor {
   appointments             Appointment[]
   communicationPreferences TutorCommunicationPreference[]
   communicationOutbox      CommunicationOutbox[]
+  whatsappInboundEvents    WhatsAppInboundEvent[]
   packageContracts         PackageContract[]
 
   // Relacionamento 1-para-1 opcional com AuthProfile
@@ -563,6 +564,42 @@ model CommunicationOutbox {
   @@index([clinicId, status, availableAt])
   @@index([clinicId, tutorId, appointmentId])
   @@unique([clinicId, dedupeKey])
+}
+
+/// Eventos recebidos do provedor. Este modelo é deliberadamente separado do
+/// outbox de saída: receber uma mensagem nunca a torna uma mensagem a enviar.
+model WhatsAppInboundEvent {
+  id                 Int       @id @default(autoincrement())
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  clinicId           Int
+  tutorId            Int
+  provider           String
+  channelId          String
+  externalEventId    String
+  eventType          String
+  contactPhone       String?
+  payload            Json
+  status             String    @default("RECEIVED")
+  attempts           Int       @default(0)
+  maxAttempts        Int       @default(3)
+  availableAt        DateTime  @default(now())
+  claimedAt          DateTime?
+  leaseUntil         DateTime?
+  workerId           String?
+  processedAt        DateTime?
+  lastError          String?
+  correlationKey     String?
+  correlationId      String?
+  aggregateKey       String?
+  sequence           Int?
+  occurredAt         DateTime?
+  tutor              Tutor     @relation(fields: [tutorId], references: [id], onDelete: Cascade)
+
+  @@unique([clinicId, channelId, externalEventId])
+  @@index([clinicId, status, availableAt])
+  @@index([clinicId, tutorId, createdAt])
+  @@index([clinicId, correlationKey])
 }
 
 model CommunicationAttempt {

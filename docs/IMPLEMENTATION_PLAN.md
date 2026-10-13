@@ -536,6 +536,16 @@ Confirmações pendentes preparadas: registrar despesa/recebimento/estorno finan
 - [x] `docs/DEV_OFFICE.md` registra escopos, limites, critérios de aceite e a ausência da skill `eumaeus-dev`. Seis frentes fizeram auditoria somente leitura; navegador, migrations, integração e commits ficaram com o coordenador.
 - [x] Hipótese confirmada: chave de idempotência de pagamento reutilizada em outra fatura/valor agora é rejeitada; a UI gera uma chave por tentativa e preserva a mesma chave somente em retry da mesma tentativa. Regressão financeira: 8/8 aprovados no lote focal; build backend aprovado.
 
+### WhatsApp inbound dedicado e concorrência HTTP — checkpoint 2026-10-12
+
+- [x] A persistência provisória em `CommunicationOutbox` foi substituída por `WhatsAppInboundEvent`, com clínica/canal/provedor/evento externo, telefone, payload append-only, estado, tentativas, lease, ordenação, correlação e índices de deduplicação. A migration `z_20261012103000_whatsapp_inbound_events` preserva rows inbound históricos válidos e remove somente suas cópias do outbox de saída; dados sem `eventId` não são adivinhados nem removidos.
+- [x] A rota WhatsApp agora grava no modelo inbound dedicado e o endpoint de dispatch de comunicação processa essa mesma fila lógica com claims condicionais, lease recuperável, retry/backoff limitado e estado fora de ordem sem regressão. Nenhum processamento envia mensagem real.
+- [x] Contrato de processamento isolado: commit `115326f`, `4/4` testes aprovados para claim concorrente, retry, lease expirado, ordenação e correlação. Focal combinado WhatsApp/processador: `8/8`; build backend aprovado.
+- [x] Migrations locais PostgreSQL aplicadas e status `26 migrations found / schema up to date`; banco Docker `eumaeus-postgres-local` foi o único alvo.
+- [x] Harness HTTP autenticado real: commit `18663fd` mais ajuste do cenário de parcelas. Execução final `ok: true`: pagamentos/idempotência/autoria, duas parcelas iguais com chaves distintas, pacote, estoque, estorno concorrente e isolamento entre clínicas. O retry de conflito serializável reutiliza a mesma chave; não cria operação duplicada.
+- [ ] Ainda parcial: não há conexão real com Meta nem entrega externa; o transporte permanece simulação/local. O histórico inbound está persistido e processável, mas correlação semântica com cada mensagem outbound depende do identificador fornecido pelo provedor.
+- [ ] Validação visual por cliques das jornadas permanece separada dos testes HTTP/DB; não foi contada como concluída por estes scripts.
+
 ### Auditoria isolada da suíte frontend — 2026-10-12
 
 - [x] Causa da execução anterior inconclusiva identificada: `package.json` define `test` como `vitest` sem `run`, portanto `npm test` sem argumentos entra em modo watch/interativo e não produz conclusão apropriada para automação.
