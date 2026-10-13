@@ -50,3 +50,33 @@ condicional por `status = 'POSTED'`, espelhando os invariantes aplicados no
 serviço financeiro. O processo termina com código `2` quando uma expectativa
 de integridade falha. Todas as fixtures são removidas ao final (`Tutor`,
 `Payment`, `Product` e `PackageContract` no clinic `9201` iguais a zero).
+
+## Harness HTTP autenticado
+
+`http-concurrency-authenticated.mjs` é uma prova pela aplicação real, sem
+mocks: cria duas clínicas sintéticas e contas temporárias, faz login por
+`/api/auth/login` e dispara requisições simultâneas para pagamentos,
+idempotência, estorno, consumo da última sessão, estoque e tentativas
+cruzadas. Remove apenas linhas identificadas pelo marcador da própria execução;
+a senha é mantida somente em memória e nunca é impressa.
+
+Pré-requisitos: `eumaeus-postgres-local` com `eumaeus_local`, schema migrado e
+backend local iniciado com `DATABASE_URL`, `JWT_SECRET` e
+`REFRESH_TOKEN_SECRET` válidos. Nunca aponte para banco remoto.
+
+```bash
+npm --prefix backend run build
+DATABASE_URL='postgresql://eumaeus:eumaeus_local_only@127.0.0.1:55432/eumaeus_local' \
+JWT_SECRET='(segredo local com pelo menos 32 caracteres)' \
+REFRESH_TOKEN_SECRET='(outro segredo local com pelo menos 32 caracteres)' \
+NODE_ENV=test PORT=3334 node backend/dist/src/bootstrap.js
+node backend/scripts/real-local/http-concurrency-authenticated.mjs
+```
+
+Execução local em 2026-10-13: pacote (HTTP 201/409, uma sessão, saldo zero),
+estoque (HTTP 201/409, uma movimentação, saldo zero), escrita cruzada rejeitada
+e leitura cruzada vazia foram confirmados. Pagamentos e estorno ficaram
+inconclusivos por falha reproduzível do backend: HTTP 409, `SQL direto bloqueado:
+use o Prisma escopado ou uma migração oficial`. O harness sai com `ok: false`
+até a allowlist do lock financeiro ser corrigida. Nenhum dado real ou remoto
+foi usado.
