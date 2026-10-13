@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import apiClient from '../api/apiClient';
 import { Button } from '@/components/ui/button';
+import { serviceApi, ServiceType } from '@/api/serviceApi';
 
 type ServicePackage = { id: number; name: string; price: number | string; totalSessions: number; validityDays: number };
 type PackageSession = { id: number; appointmentId: number; serviceId?: number | null; reversedAt?: string | null; reversalReason?: string | null };
@@ -25,6 +26,8 @@ export default function OperacaoPage() {
   const [loading, setLoading] = useState(false);
   const [actionPending, setActionPending] = useState(false);
   const [loadError, setLoadError] = useState('');
+  const [catalogServices, setCatalogServices] = useState<ServiceType[]>([]);
+  const [packageForm, setPackageForm] = useState({ name: '', description: '', price: '', totalSessions: '3', validityDays: '30', coveredCatalogServiceId: '' });
   const communicationCategories = [
     ['BASIC', 'Básico'],
     ['PET_READY', 'Somente pet pronto'],
@@ -53,6 +56,7 @@ export default function OperacaoPage() {
   }, [contractId, tutorId]);
 
   useEffect(() => { void load(); }, [load]);
+  useEffect(() => { void serviceApi.getAllServices().then(setCatalogServices).catch(() => setLoadError('Não foi possível carregar o catálogo para o pacote.')); }, []);
 
   const run = async (action: () => Promise<unknown>, success: string) => {
     try { setActionPending(true); await action(); setMessage(success); await load(); }
@@ -63,6 +67,17 @@ export default function OperacaoPage() {
   const configure = async (category: string, enabled: boolean, stopAll = false, pausedUntil?: string | null) => {
     if (!validId(tutorId)) return setMessage('Informe um ID positivo de tutor.');
     await run(() => apiClient.put(`/tutors/${tutorId}/communication-preferences`, { sender: 'SYSTEM', category, enabled, stopAll, pausedUntil }), 'Preferência salva. O envio continua em modo simulação.');
+  };
+
+  const createPackage = async () => {
+    try {
+      setActionPending(true);
+      await apiClient.post('/packages', { ...packageForm, price: Number(packageForm.price), totalSessions: Number(packageForm.totalSessions), validityDays: Number(packageForm.validityDays), coveredCatalogServiceId: Number(packageForm.coveredCatalogServiceId) });
+      setPackageForm({ name: '', description: '', price: '', totalSessions: '3', validityDays: '30', coveredCatalogServiceId: '' });
+      setMessage('Pacote persistido e vinculado ao serviço coberto.');
+      await load();
+    } catch (error: any) { setMessage(error.response?.data?.error ?? 'Pacote recusado.'); }
+    finally { setActionPending(false); }
   };
 
   return <main className="space-y-6 p-6">
@@ -77,6 +92,7 @@ export default function OperacaoPage() {
     </section>
     <section className="rounded-lg border bg-card p-4 space-y-4">
       <h2 className="text-lg font-medium">Pacotes disponíveis</h2>
+      <div className="grid gap-2 md:grid-cols-3"><input aria-label="Nome do pacote" className="h-10 rounded-md border bg-background px-3" placeholder="Nome do pacote" value={packageForm.name} onChange={e => setPackageForm({ ...packageForm, name: e.target.value })} /><input aria-label="Preço do pacote" className="h-10 rounded-md border bg-background px-3" inputMode="decimal" placeholder="Preço" value={packageForm.price} onChange={e => setPackageForm({ ...packageForm, price: e.target.value })} /><select aria-label="Serviço coberto do pacote" className="h-10 rounded-md border bg-background px-3" value={packageForm.coveredCatalogServiceId} onChange={e => setPackageForm({ ...packageForm, coveredCatalogServiceId: e.target.value })}><option value="">Serviço coberto</option>{catalogServices.map(service => <option key={service.id} value={service.id}>{service.name} · {service.category}</option>)}</select><input aria-label="Sessões do pacote" className="h-10 rounded-md border bg-background px-3" type="number" min="1" value={packageForm.totalSessions} onChange={e => setPackageForm({ ...packageForm, totalSessions: e.target.value })} /><input aria-label="Validade do pacote" className="h-10 rounded-md border bg-background px-3" type="number" min="1" value={packageForm.validityDays} onChange={e => setPackageForm({ ...packageForm, validityDays: e.target.value })} /><input aria-label="Descrição do pacote" className="h-10 rounded-md border bg-background px-3" placeholder="Descrição" value={packageForm.description} onChange={e => setPackageForm({ ...packageForm, description: e.target.value })} /><Button disabled={actionPending || !packageForm.name.trim() || !packageForm.price || !packageForm.coveredCatalogServiceId} onClick={createPackage}>Criar pacote</Button></div>
       <div className="grid gap-3 md:grid-cols-3">{packages.map(item => <article key={item.id} className="rounded-md border p-3"><h3 className="font-medium">{item.name}</h3><p>{item.totalSessions} sessões · {item.validityDays} dias</p><p className="font-semibold">R$ {money(item.price)}</p><Button className="mt-2" size="sm" onClick={() => setPackageId(String(item.id))}>Selecionar</Button></article>)}</div>
       {!packages.length && <p className="text-sm text-muted-foreground">Nenhum pacote ativo cadastrado.</p>}
       <div className="grid gap-2 md:grid-cols-3"><input aria-label="ID do pacote" className="h-10 rounded-md border bg-background px-3" placeholder="ID do pacote" value={packageId} onChange={e => setPackageId(e.target.value)} /><input aria-label="ID do pet" className="h-10 rounded-md border bg-background px-3" placeholder="ID do pet" value={petId} onChange={e => setPetId(e.target.value)} /><Button disabled={actionPending || !validId(packageId) || !validId(tutorId) || !validId(petId)} onClick={() => run(() => apiClient.post(`/packages/${packageId}/purchases`, { tutorId: Number(tutorId), petId: Number(petId) }).then(response => { setContractId(String(response.data.data.id)); }), 'Contrato criado e saldo disponível.')}>Criar contrato</Button></div>
