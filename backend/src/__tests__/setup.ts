@@ -136,6 +136,8 @@ jest.mock('@prisma/client', () => {
     resultCenter: { findFirst: jest.fn(), findMany: jest.fn() },
     expense: { findMany: jest.fn(), create: jest.fn() },
     financialAuditEvent: { create: jest.fn() },
+    assistantReminder: { findUnique: jest.fn(), findMany: jest.fn(), create: jest.fn(), update: jest.fn(), updateMany: jest.fn() },
+    assistantReminderAction: { create: jest.fn() },
   };
 
   mockPrisma.$transaction.mockImplementation((callback: (tx: any) => unknown) => callback(mockPrisma));

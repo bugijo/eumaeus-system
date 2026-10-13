@@ -205,9 +205,9 @@ model StockMovement {
   product            Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
   lot                ProductLot @relation(fields: [lotId], references: [id], onDelete: Cascade)
 
+  @@unique([clinicId, idempotencyKey])
   @@index([clinicId, productId, createdAt])
   @@index([clinicId, appointmentId])
-  @@unique([clinicId, idempotencyKey])
 }
 
 // 5. Modelo para Serviços e Produtos (para faturamento)
@@ -305,9 +305,12 @@ model User {
   surgeryConsentRecordings           SurgeryConsent[]              @relation("SurgeryConsentRecorder")
   surgeryChecklistCompletions        SurgeryChecklistItem[]        @relation("SurgeryChecklistCompleter")
   surgeryInstructionApprovals        SurgeryInstruction[]          @relation("SurgeryInstructionApprover")
-  createdExpenses                    Expense[]                    @relation("ExpenseAuthor")
-  financialAuditEvents               FinancialAuditEvent[]        @relation("FinancialAuditActor")
-  receivedPayments                   Payment[]                    @relation("PaymentReceiver")
+  createdExpenses                    Expense[]                     @relation("ExpenseAuthor")
+  financialAuditEvents               FinancialAuditEvent[]         @relation("FinancialAuditActor")
+  assistantRemindersCreated          AssistantReminder[]           @relation("AssistantReminderCreatedBy")
+  assistantRemindersResolved         AssistantReminder[]           @relation("AssistantReminderResolvedBy")
+  assistantReminderActions           AssistantReminderAction[]     @relation("AssistantReminderActionActor")
+  receivedPayments                   Payment[]                     @relation("PaymentReceiver")
 }
 
 model Prescription {
@@ -456,38 +459,38 @@ model ResultCenter {
 }
 
 model Payment {
-  id             Int       @id @default(autoincrement())
-  createdAt      DateTime  @default(now())
-  clinicId       Int
-  invoiceId      Int
-  amount         Decimal   @db.Decimal(12, 2)
-  method         String
-  status         String    @default("POSTED")
-  receivedAt     DateTime  @default(now())
-  idempotencyKey String
-  reversedAt     DateTime?
-  reversalReason String?
+  id               Int                   @id @default(autoincrement())
+  createdAt        DateTime              @default(now())
+  clinicId         Int
+  invoiceId        Int
+  amount           Decimal               @db.Decimal(12, 2)
+  method           String
+  status           String                @default("POSTED")
+  receivedAt       DateTime              @default(now())
+  idempotencyKey   String
+  reversedAt       DateTime?
+  reversalReason   String?
   receivedByUserId Int?
-  invoice        Invoice   @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
-  receivedByUser User?     @relation("PaymentReceiver", fields: [receivedByUserId], references: [id], onDelete: SetNull)
-  auditEvents    FinancialAuditEvent[]
+  invoice          Invoice               @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  receivedByUser   User?                 @relation("PaymentReceiver", fields: [receivedByUserId], references: [id], onDelete: SetNull)
+  auditEvents      FinancialAuditEvent[]
 
   @@unique([clinicId, idempotencyKey])
   @@index([clinicId, invoiceId, status])
 }
 
 model Expense {
-  id             Int           @id @default(autoincrement())
-  createdAt      DateTime      @default(now())
+  id             Int                   @id @default(autoincrement())
+  createdAt      DateTime              @default(now())
   clinicId       Int
   description    String
-  amount         Decimal       @db.Decimal(12, 2)
+  amount         Decimal               @db.Decimal(12, 2)
   resultCenterId Int?
-  incurredAt     DateTime      @default(now())
+  incurredAt     DateTime              @default(now())
   reason         String?
   createdById    Int?
-  resultCenter   ResultCenter? @relation(fields: [resultCenterId], references: [id], onDelete: SetNull)
-  createdBy      User?         @relation("ExpenseAuthor", fields: [createdById], references: [id], onDelete: SetNull)
+  resultCenter   ResultCenter?         @relation(fields: [resultCenterId], references: [id], onDelete: SetNull)
+  createdBy      User?                 @relation("ExpenseAuthor", fields: [createdById], references: [id], onDelete: SetNull)
   auditEvents    FinancialAuditEvent[]
 
   @@index([clinicId, resultCenterId, incurredAt])
@@ -508,6 +511,51 @@ model FinancialAuditEvent {
 
   @@index([clinicId, eventType, createdAt])
   @@index([clinicId, expenseId])
+}
+
+model AssistantReminder {
+  id               Int                       @id @default(autoincrement())
+  createdAt        DateTime                  @default(now())
+  updatedAt        DateTime                  @updatedAt
+  clinicId         Int
+  reminderKey      String
+  kind             String
+  sourceType       String
+  sourceId         Int
+  title            String
+  reason           String
+  dueAt            DateTime?
+  status           String                    @default("ACTIVE")
+  snoozedUntil     DateTime?
+  createdByUserId  Int?
+  resolvedByUserId Int?
+  resolvedAt       DateTime?
+  dismissedReason  String?
+  snoozedReason    String?
+  createdBy        User?                     @relation("AssistantReminderCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  resolvedBy       User?                     @relation("AssistantReminderResolvedBy", fields: [resolvedByUserId], references: [id], onDelete: SetNull)
+  actions          AssistantReminderAction[]
+
+  @@unique([clinicId, reminderKey])
+  @@index([clinicId, status, snoozedUntil])
+  @@index([clinicId, sourceType, sourceId])
+}
+
+model AssistantReminderAction {
+  id           Int               @id @default(autoincrement())
+  createdAt    DateTime          @default(now())
+  clinicId     Int
+  reminderId   Int
+  actorUserId  Int
+  action       String
+  fromStatus   String
+  toStatus     String
+  reason       String?
+  snoozedUntil DateTime?
+  reminder     AssistantReminder @relation(fields: [reminderId], references: [id], onDelete: Cascade)
+  actor        User              @relation("AssistantReminderActionActor", fields: [actorUserId], references: [id], onDelete: Restrict)
+
+  @@index([clinicId, reminderId, createdAt])
 }
 
 model InvoiceDiscount {
@@ -561,40 +609,40 @@ model CommunicationOutbox {
   tutor         Tutor                  @relation(fields: [tutorId], references: [id], onDelete: Cascade)
   attemptsLog   CommunicationAttempt[]
 
+  @@unique([clinicId, dedupeKey])
   @@index([clinicId, status, availableAt])
   @@index([clinicId, tutorId, appointmentId])
-  @@unique([clinicId, dedupeKey])
 }
 
 /// Eventos recebidos do provedor. Este modelo é deliberadamente separado do
 /// outbox de saída: receber uma mensagem nunca a torna uma mensagem a enviar.
 model WhatsAppInboundEvent {
-  id                 Int       @id @default(autoincrement())
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
-  clinicId           Int
-  tutorId            Int
-  provider           String
-  channelId          String
-  externalEventId    String
-  eventType          String
-  contactPhone       String?
-  payload            Json
-  status             String    @default("RECEIVED")
-  attempts           Int       @default(0)
-  maxAttempts        Int       @default(3)
-  availableAt        DateTime  @default(now())
-  claimedAt          DateTime?
-  leaseUntil         DateTime?
-  workerId           String?
-  processedAt        DateTime?
-  lastError          String?
-  correlationKey     String?
-  correlationId      String?
-  aggregateKey       String?
-  sequence           Int?
-  occurredAt         DateTime?
-  tutor              Tutor     @relation(fields: [tutorId], references: [id], onDelete: Cascade)
+  id              Int       @id @default(autoincrement())
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  clinicId        Int
+  tutorId         Int
+  provider        String
+  channelId       String
+  externalEventId String
+  eventType       String
+  contactPhone    String?
+  payload         Json
+  status          String    @default("RECEIVED")
+  attempts        Int       @default(0)
+  maxAttempts     Int       @default(3)
+  availableAt     DateTime  @default(now())
+  claimedAt       DateTime?
+  leaseUntil      DateTime?
+  workerId        String?
+  processedAt     DateTime?
+  lastError       String?
+  correlationKey  String?
+  correlationId   String?
+  aggregateKey    String?
+  sequence        Int?
+  occurredAt      DateTime?
+  tutor           Tutor     @relation(fields: [tutorId], references: [id], onDelete: Cascade)
 
   @@unique([clinicId, channelId, externalEventId])
   @@index([clinicId, status, availableAt])

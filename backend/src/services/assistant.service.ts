@@ -1,5 +1,6 @@
 import { prisma } from '../lib/prisma';
 import { getCurrentClinicId } from '../tenantContext';
+import { AssistantReminderService } from './assistantReminder.service';
 
 export interface AssistantAlert {
   id: string;
@@ -35,6 +36,15 @@ export class AssistantService {
     for (const item of packages) alerts.push({ id: `package:${item.id}`, source: `package:${item.id}`, kind: 'PACKAGE', title: `Pacote próximo do fim: ${item.package.name}`, reason: `${item.remainingSessions} sessão(ões) restantes`, dueAt: item.expiresAt.toISOString(), href: '/operacao' });
     for (const item of tasks) alerts.push({ id: `task:${item.id}`, source: `task:${item.id}`, kind: 'TASK', title: `Tarefa atrasada: ${item.title}`, reason: 'Execução ainda pendente', dueAt: item.scheduledAt?.toISOString(), href: '/assistencia' });
     for (const item of communication) alerts.push({ id: `communication:${item.id}`, source: `communication:${item.id}`, kind: 'COMMUNICATION', title: `Falha de comunicação ${item.eventType}`, reason: item.lastError || 'Transporte simulado falhou', href: '/operacao' });
+    await Promise.all(alerts.map((alert) => AssistantReminderService.upsertOccurrence({
+      reminderKey: alert.id,
+      kind: alert.kind,
+      sourceType: alert.source.split(':')[0],
+      sourceId: Number(alert.source.split(':')[1]),
+      title: alert.title,
+      reason: alert.reason,
+      dueAt: alert.dueAt ? new Date(alert.dueAt) : undefined,
+    })));
     return { generatedAt: now.toISOString(), clinicId, alerts };
   }
 }

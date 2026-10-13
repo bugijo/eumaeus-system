@@ -45,3 +45,8 @@ export const getAssistantSummary = async (): Promise<AssistantSummary> => {
   const { data } = await apiClient.get('/dashboard/assistant');
   return data;
 };
+export interface AssistantReminder { id: number; reminderKey: string; kind: string; sourceType: string; sourceId: number; title: string; reason: string; status: string; snoozedUntil?: string | null; actions?: Array<{ action: string; reason?: string | null; createdAt: string }>; }
+export const getAssistantReminders = async (): Promise<AssistantReminder[]> => (await apiClient.get('/dashboard/assistant/reminders')).data;
+export const dismissAssistantReminder = async (id: number, reason: string) => (await apiClient.post(`/dashboard/assistant/reminders/${id}/dismiss`, { reason })).data;
+export const snoozeAssistantReminder = async (id: number, until: string, reason: string) => (await apiClient.post(`/dashboard/assistant/reminders/${id}/snooze`, { until, reason })).data;
+export const resolveAssistantReminder = async (id: number, reason: string) => (await apiClient.post(`/dashboard/assistant/reminders/${id}/resolve`, { reason })).data;
