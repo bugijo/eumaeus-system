@@ -8,5 +8,6 @@ router.get('/stats', requireRoles(ROLE.DONO, ROLE.VETERINARIO, ROLE.RECEPCAO, RO
 router.get('/upcoming-appointments', requireRoles(ROLE.DONO, ROLE.VETERINARIO, ROLE.RECEPCAO, ROLE.AUXILIAR), dashboardController.getUpcomingAppointments);
 router.get('/recent-activities', requireRoles(ROLE.DONO, ROLE.VETERINARIO, ROLE.RECEPCAO, ROLE.AUXILIAR, ROLE.FINANCEIRO), dashboardController.getRecentActivities);
 router.get('/activity', requireRoles(ROLE.DONO, ROLE.VETERINARIO, ROLE.RECEPCAO, ROLE.AUXILIAR, ROLE.FINANCEIRO), dashboardController.getRecentActivity);
+router.get('/assistant', requireRoles(ROLE.DONO, ROLE.VETERINARIO, ROLE.RECEPCAO, ROLE.AUXILIAR, ROLE.FINANCEIRO), dashboardController.getAssistantSummary);
 
 export default router;
