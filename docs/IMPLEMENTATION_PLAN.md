@@ -204,7 +204,7 @@ Registro: a skill `eumaeus-dev` não foi encontrada nas skills locais nem nas in
 ## Checkpoint 2026-10-13 — lembretes persistentes do assistente
 
 - [x] `AssistantReminder` e `AssistantReminderAction` adicionados ao Prisma com chave estável por clínica/ocorrência, status `ACTIVE/SNOOZED/DISMISSED/RESOLVED`, autoria, prazo e histórico; migration `20261013120000_assistant_reminders` aplicada somente no PostgreSQL Docker local.
-- [x] Serviço transacional implementa deduplicação, adiamento com reativação após prazo, dispensa e resolução explícitas; ações não alteram a origem (dispensar recebível não paga fatura; resolver é apenas estado do lembrete).
+- [x] Serviço transacional implementa deduplicação, adiamento com reativação após prazo, dispensa e resolução explícitas; a reativação automática registra ação `REACTIVATED`, e ações não alteram a origem (dispensar recebível não paga fatura; resolver é apenas estado do lembrete).
 - [x] Rotas protegidas e painel exibem histórico persistente, erros, estado vazio e ações justificadas; o proxy Prisma inclui lembretes e relações no escopo de clínica.
 - [x] Evidência automatizada nova: `assistant.reminder.service.test.ts` 2/2 e regressão `assistant.service.test.ts` 1/1; backend build aprovado, frontend build aprovado com `VITE_API_URL=http://127.0.0.1:3334`.
 - [ ] Falta validação visual desta nova UI e sincronização explícita de “origem resolvida” a partir de cada módulo de origem; a API já mantém a distinção e não executa a ação de origem.

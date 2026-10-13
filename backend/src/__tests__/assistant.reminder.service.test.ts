@@ -8,7 +8,9 @@ describe('AssistantReminderService', () => {
     (prisma as any).assistantReminder.findUnique.mockResolvedValue(reminder);
     (prisma as any).assistantReminder.update.mockResolvedValue({ ...reminder, status: 'SNOOZED' });
     (prisma as any).assistantReminderAction.create.mockResolvedValue({ id: 1 });
-    (prisma as any).assistantReminder.findMany.mockResolvedValue([{ ...reminder, status: 'ACTIVE', actions: [{ id: 1, action: 'SNOOZED' }] }]);
+    (prisma as any).assistantReminder.findMany
+      .mockResolvedValueOnce([{ ...reminder, status: 'SNOOZED' }])
+      .mockResolvedValueOnce([{ ...reminder, status: 'ACTIVE', actions: [{ id: 1, action: 'REACTIVATED' }] }]);
 
     await runWithClinic(4, () => runWithUser(99, async () => {
       await expect(AssistantReminderService.upsertOccurrence({
@@ -23,6 +25,7 @@ describe('AssistantReminderService', () => {
 
     expect((prisma as any).assistantReminder.findUnique).toHaveBeenCalledWith(expect.objectContaining({ where: { clinicId_reminderKey: { clinicId: 4, reminderKey: 'invoice:12' } } }));
     expect((prisma as any).assistantReminderAction.create).toHaveBeenCalled();
+    expect((prisma as any).assistantReminderAction.create).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ action: 'REACTIVATED' }) }));
     expect((prisma as any).assistantReminder.findMany).toHaveBeenCalledWith(expect.objectContaining({ where: expect.objectContaining({ clinicId: 4 }) }));
   });
 
