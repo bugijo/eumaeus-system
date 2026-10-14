@@ -2,6 +2,18 @@ import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { getCurrentClinicId, getCurrentUserId } from '../tenantContext';
 
+const ACCOUNTING_UTC_OFFSET = '-03:00';
+
+const accountingBoundary = (date: string, endOfDay: boolean) => {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return new Date(Number.NaN);
+  return new Date(`${date}T${endOfDay ? '23:59:59.999' : '00:00:00.000'}${ACCOUNTING_UTC_OFFSET}`);
+};
+
+const asDate = (value: unknown, fallback?: unknown) => {
+  const date = value ? new Date(value as string | number | Date) : fallback ? new Date(fallback as string | number | Date) : null;
+  return date && !Number.isNaN(date.getTime()) ? date : null;
+};
+
 export class FinancialService {
   static listCenters() { return prisma.resultCenter.findMany({ orderBy: { code: 'asc' } }); }
   static listExpenses() { return (prisma.expense as any).findMany({ include: { resultCenter: true }, orderBy: { incurredAt: 'desc' } }); }
@@ -14,8 +26,8 @@ export class FinancialService {
     const clinicId = getCurrentClinicId();
     const actorUserId = getCurrentUserId();
     if (!clinicId || !actorUserId) throw new Error('Autoria autenticada obrigatória');
-    const from = new Date(`${input.from}T00:00:00.000Z`);
-    const to = new Date(`${input.to}T23:59:59.999Z`);
+    const from = accountingBoundary(input.from, false);
+    const to = accountingBoundary(input.to, true);
     if (!input.from || !input.to || Number.isNaN(from.getTime()) || Number.isNaN(to.getTime()) || from > to) {
       throw new Error('Período inválido');
     }
@@ -24,7 +36,7 @@ export class FinancialService {
     return prisma.$transaction(async (tx: any) => {
       const [invoices, expenses, centers] = await Promise.all([
         tx.invoice.findMany({
-          where: { clinicId, createdAt: { gte: from, lte: to }, ...(centerFilter ? { resultCenterId: centerFilter } : {}) },
+          where: { clinicId, createdAt: { lte: to }, ...(centerFilter ? { resultCenterId: centerFilter } : {}) },
           include: { payments: true, discounts: true, items: true, resultCenter: true },
           orderBy: { createdAt: 'asc' },
         }),
@@ -41,14 +53,36 @@ export class FinancialService {
         for (const value of values) total = total.plus(value || zero) as Prisma.Decimal;
         return total;
       };
-      const billed = sum(invoices.map((invoice: any) => invoice.totalAmount));
-      const discounts = sum(invoices.flatMap((invoice: any) => invoice.discounts.map((discount: any) => discount.amount)));
-      const received = sum(invoices.flatMap((invoice: any) => invoice.payments.filter((payment: any) => payment.status === 'POSTED').map((payment: any) => payment.amount)));
-      const reversed = sum(invoices.flatMap((invoice: any) => invoice.payments.filter((payment: any) => payment.status === 'REVERSED').map((payment: any) => payment.amount)));
+      const isBetween = (value: unknown, start: Date, end: Date) => {
+        const date = asDate(value);
+        return Boolean(date && date >= start && date <= end);
+      };
+      const isBeforeOrAt = (value: unknown, end: Date) => {
+        const date = asDate(value);
+        return Boolean(date && date <= end);
+      };
+      const billedInvoices = invoices.filter((invoice: any) => isBetween(invoice.createdAt, from, to));
+      const billed = sum(billedInvoices.map((invoice: any) => invoice.totalAmount));
+      const discounts = sum(billedInvoices.flatMap((invoice: any) => invoice.discounts.map((discount: any) => discount.amount)));
+      const periodPayments = invoices.flatMap((invoice: any) => invoice.payments.map((payment: any) => ({ invoice, payment })));
+      const received = sum(periodPayments
+        .filter(({ invoice, payment }: any) => isBetween(payment.receivedAt || invoice.createdAt, from, to))
+        .map(({ payment }: any) => payment.amount));
+      const reversed = sum(periodPayments
+        .filter(({ payment }: any) => payment.status === 'REVERSED' && isBetween(payment.reversedAt, from, to))
+        .map(({ payment }: any) => payment.amount));
       const expensesTotal = sum(expenses.map((expense: any) => expense.amount));
-      const pending = sum(invoices.filter((invoice: any) => invoice.status === 'PENDING').map((invoice: any) => invoice.totalAmount));
+      const balanceAtEnd = (invoice: any) => {
+        if (invoice.status === 'CANCELLED') return new Prisma.Decimal(0);
+        const receivedAtEnd = sum(invoice.payments
+          .filter((payment: any) => isBeforeOrAt(payment.receivedAt || invoice.createdAt, to) && !isBeforeOrAt(payment.reversedAt, to))
+          .map((payment: any) => payment.amount));
+        const balance = invoice.totalAmount instanceof Prisma.Decimal ? invoice.totalAmount.plus(new Prisma.Decimal(`-${receivedAtEnd.toString()}`)) : new Prisma.Decimal(invoice.totalAmount).plus(new Prisma.Decimal(`-${receivedAtEnd.toString()}`));
+        return balance.greaterThan(new Prisma.Decimal(0)) ? balance : new Prisma.Decimal(0);
+      };
+      const pending = sum(invoices.map(balanceAtEnd));
       const unclassifiedExpenses = expenses.filter((expense: any) => !expense.resultCenterId).length;
-      const missingFiscalDocuments = invoices.filter((invoice: any) => !invoice.nfeId).length;
+      const missingFiscalDocuments = billedInvoices.filter((invoice: any) => !invoice.nfeId).length;
       const report = {
         generatedAt: new Date().toISOString(),
         period: { from: input.from, to: input.to },
@@ -58,12 +92,12 @@ export class FinancialService {
           billed: billed.toFixed(2), received: received.toFixed(2), reversed: reversed.toFixed(2),
           pending: pending.toFixed(2), discounts: discounts.toFixed(2), expenses: expensesTotal.toFixed(2),
         },
-        counts: { invoices: invoices.length, payments: invoices.flatMap((invoice: any) => invoice.payments).length, expenses: expenses.length },
+        counts: { invoices: billedInvoices.length, payments: periodPayments.filter(({ invoice, payment }: any) => isBetween(payment.receivedAt || invoice.createdAt, from, to) || isBetween(payment.reversedAt, from, to)).length, expenses: expenses.length },
         pendencies: { unclassifiedExpenses, missingFiscalDocuments },
-        invoices: invoices.map((invoice: any) => ({
+        invoices: billedInvoices.map((invoice: any) => ({
           id: invoice.id, createdAt: invoice.createdAt, status: invoice.status, totalAmount: invoice.totalAmount.toFixed(2),
           discount: sum(invoice.discounts.map((discount: any) => discount.amount)).toFixed(2),
-          received: sum(invoice.payments.filter((payment: any) => payment.status === 'POSTED').map((payment: any) => payment.amount)).toFixed(2),
+          received: sum(invoice.payments.filter((payment: any) => isBeforeOrAt(payment.receivedAt || invoice.createdAt, to) && !isBeforeOrAt(payment.reversedAt, to)).map((payment: any) => payment.amount)).toFixed(2),
           fiscalDocument: invoice.nfeId ? { id: invoice.nfeId, status: 'REGISTERED' } : null,
         })),
         expenses: expenses.map((expense: any) => ({ id: expense.id, incurredAt: expense.incurredAt, description: expense.description, amount: expense.amount.toFixed(2), reason: expense.reason, resultCenter: expense.resultCenter ? { code: expense.resultCenter.code, name: expense.resultCenter.name } : null })),
