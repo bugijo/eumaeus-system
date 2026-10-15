@@ -134,6 +134,20 @@ describe('API Client', () => {
 
       await expect(apiClient.get('/test')).rejects.toThrow('Network Error');
     });
+
+    it('deve preservar respostas binárias quando responseType for blob', async () => {
+      const pdfBlob = new Blob(['%PDF-1.7 synthetic'], { type: 'application/pdf' });
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        blob: async () => pdfBlob,
+      });
+
+      const response = await apiClient.post('/financial/accounting/pdf', {}, { responseType: 'blob' });
+
+      expect(response.data).toBe(pdfBlob);
+      expect(response.data).toBeInstanceOf(Blob);
+    });
   });
 
   describe('Métodos HTTP', () => {

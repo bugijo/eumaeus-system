@@ -1,7 +1,9 @@
 import request from 'supertest';
 import jwt from 'jsonwebtoken';
 import { app } from '../server';
-import { prisma } from '../lib/prisma';
+import { prisma as rawPrisma } from '../lib/prisma';
+
+const prisma = rawPrisma as any;
 
 const accessToken = jwt.sign(
   { id: 1, type: 'user', role: 'DONO', clinicId: 1 },
@@ -9,10 +11,39 @@ const accessToken = jwt.sign(
   { algorithm: 'HS256', expiresIn: '5m' },
 );
 
+let createdTutorEmails: Set<string>;
+
+const syntheticTutor = (data: any, id: number) => ({
+  id,
+  name: data.name,
+  email: data.email,
+  phone: data.phone ?? '',
+  address: data.address ?? null,
+  clinicId: 1,
+  deletedAt: null,
+});
+
 describe('Tutors API', () => {
   beforeAll(async () => {
     // Setup test database
     await prisma.$connect();
+  });
+
+  beforeEach(() => {
+    createdTutorEmails = new Set();
+    prisma.user.findFirst.mockResolvedValue({ id: 1, clinicId: 1, roleName: 'DONO', active: true });
+    prisma.tutor.findMany.mockResolvedValue([]);
+    prisma.tutor.count.mockResolvedValue(0);
+    prisma.tutor.create.mockImplementation(async ({ data }: any) => {
+      const email = String(data.email).toLowerCase();
+      if (createdTutorEmails.has(email)) {
+        const error: any = new Error('duplicate synthetic tutor email');
+        error.code = 'P2002';
+        throw error;
+      }
+      createdTutorEmails.add(email);
+      return syntheticTutor(data, 100 + createdTutorEmails.size);
+    });
   });
 
   afterAll(async () => {

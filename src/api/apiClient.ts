@@ -20,6 +20,7 @@ export interface RequestConfig {
   timeout?: number;
   signal?: AbortSignal;
   retry?: number;
+  responseType?: 'json' | 'text' | 'blob';
   skipAuth?: boolean;
   _retry?: boolean;
 }
@@ -140,7 +141,15 @@ const getHeaderValue = (headers: any, key: string): string | undefined => {
   return undefined;
 };
 
-const parseResponseBody = async (response: any) => {
+const parseResponseBody = async (response: any, responseType: RequestConfig['responseType'] = 'json') => {
+  if (responseType === 'blob' && typeof response?.blob === 'function') {
+    return response.blob();
+  }
+
+  if (responseType === 'text' && typeof response?.text === 'function') {
+    return response.text();
+  }
+
   const contentType = getHeaderValue(response?.headers, 'content-type') ?? '';
 
   if (typeof response?.json === 'function' && (!contentType || contentType.includes('application/json'))) {
@@ -349,7 +358,7 @@ class HttpClient {
 
         const responseLike: any = rawResponse ?? fallbackResponse;
         const headersMap = toHeadersMap(responseLike.headers);
-        const data = await parseResponseBody(responseLike);
+        const data = await parseResponseBody(responseLike, preparedConfig.responseType);
         const status = typeof responseLike.status === 'number' ? responseLike.status : responseLike.ok === false ? 500 : 200;
         const ok = 'ok' in responseLike ? !!responseLike.ok : status >= 200 && status < 300;
 
@@ -428,7 +437,7 @@ class HttpClient {
 }
 
 const runtimeDefaultBaseUrl =
-  typeof window !== 'undefined' && window.location.hostname !== 'localhost'
+  typeof window !== 'undefined' && !['localhost', '127.0.0.1'].includes(window.location.hostname)
     ? window.location.origin
     : 'http://localhost:3333';
 

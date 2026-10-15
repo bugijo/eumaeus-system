@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import Financeiro from '../Financeiro';
 import { useApplyInvoiceDiscount, useFinancialStats, useInvoices } from '../../api/invoiceApi';
 import { ACCOUNTS_PAYABLE_DATA_SOURCE } from '../../constants';
-import { useCreateExpense, useCreateResultCenter, useExpenses, useReceivePayment, useResultCenters, useReversePayment } from '../../api/financialApi';
+import { financialApi, useCreateExpense, useCreateResultCenter, useExpenses, useReceivePayment, useResultCenters, useReversePayment } from '../../api/financialApi';
 import { useAuthStore } from '../../stores/authStore';
 
 vi.mock('../../stores/authStore', () => ({ useAuthStore: vi.fn() }));
@@ -16,6 +16,11 @@ vi.mock('../../api/invoiceApi', () => ({
   useApplyInvoiceDiscount: vi.fn(),
 }));
 vi.mock('../../api/financialApi', () => ({
+  financialApi: {
+    prepareAccountingExport: vi.fn(),
+    prepareAccountingShare: vi.fn(),
+    queueAccountingShare: vi.fn(),
+  },
   useCreateExpense: vi.fn(),
   useExpenses: vi.fn(),
   useReceivePayment: vi.fn(),
@@ -99,5 +104,37 @@ describe('Financeiro', () => {
     await user.type(amount, '5,00');
     expect(screen.getByRole('button', { name: 'Registrar recebimento' })).toBeEnabled();
     expect(receive).not.toHaveBeenCalled();
+  });
+
+  it('prepara e enfileira compartilhamento contábil sem diálogos nativos', async () => {
+    vi.mocked(useApplyInvoiceDiscount).mockReturnValue({ mutate: vi.fn() } as any);
+    vi.mocked(useAuthStore).mockImplementation((selector: any) => selector({ user: { role: 'DONO' } }));
+    vi.mocked(useReceivePayment).mockReturnValue({ mutate: vi.fn(), isPending: false } as any);
+    vi.mocked(useReversePayment).mockReturnValue({ mutate: vi.fn(), isPending: false } as any);
+    vi.mocked(useCreateExpense).mockReturnValue({ mutate: vi.fn(), isPending: false, isError: false } as any);
+    vi.mocked(useCreateResultCenter).mockReturnValue({ mutate: vi.fn(), isPending: false, isError: false } as any);
+    vi.mocked(useExpenses).mockReturnValue({ data: [] } as any);
+    vi.mocked(useResultCenters).mockReturnValue({ data: [] } as any);
+    vi.mocked(useFinancialStats).mockReturnValue({ data: { paid: { amount: 0, count: 0 }, pending: { amount: 0, count: 0 }, cancelled: { amount: 0, count: 0 } }, isLoading: false, error: null } as any);
+    vi.mocked(useInvoices).mockReturnValue({ data: [], isLoading: false, error: null } as any);
+    vi.mocked(financialApi.prepareAccountingExport).mockResolvedValue({
+      generatedAt: '2026-10-15T12:00:00Z', period: { from: '2026-10-01', to: '2026-10-15' }, clinicId: 99001,
+      resultCenters: [], totals: { billed: '0.00', received: '0.00', pending: '0.00', discounts: '0.00', expenses: '0.00' },
+      counts: { invoices: 0, payments: 0, expenses: 0 }, pendencies: { unclassifiedExpenses: 0, missingFiscalDocuments: 0 }, invoices: [], expenses: [],
+    });
+    vi.mocked(financialApi.prepareAccountingShare).mockResolvedValue({ id: 7, recipient: 'contador.qa@example.invalid', status: 'PREPARED' } as any);
+    vi.mocked(financialApi.queueAccountingShare).mockResolvedValue({ id: 7, recipient: 'contador.qa@example.invalid', status: 'QUEUED' } as any);
+
+    const user = userEvent.setup();
+    render(<Financeiro />);
+    await user.click(screen.getByRole('button', { name: 'Preparar para o contador' }));
+    await user.type(screen.getByRole('textbox', { name: 'Destinatário do compartilhamento contábil' }), 'contador.qa@example.invalid');
+    await user.click(screen.getByRole('button', { name: 'Preparar compartilhamento' }));
+
+    expect(financialApi.prepareAccountingShare).toHaveBeenCalledWith(expect.objectContaining({ recipient: 'contador.qa@example.invalid' }));
+    expect(screen.getByText(/Prévia preparada para contador\.qa@example\.invalid/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Enfileirar compartilhamento simulado' }));
+    expect(financialApi.queueAccountingShare).toHaveBeenCalledWith(7);
+    expect(screen.getByText(/enfileirado em simulação/)).toBeInTheDocument();
   });
 });
