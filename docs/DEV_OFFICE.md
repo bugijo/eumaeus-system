@@ -28,6 +28,16 @@ Planejar → auditar → implementar em escopo disjunto → testar focalmente �
 
 Hipóteses só serão classificadas como vulnerabilidades após reprodução local ou teste pertinente. Testes por HTTP/API, testes automatizados e validação visual serão registrados separadamente.
 
+## Backup contínuo no GitHub
+
+- Remote oficial de backup: `origin` → `https://github.com/bugijo/eumaeus-system.git`.
+- O coordenador publica somente a branch `codex/eumaeus-dev-office-20261012`; `main`, worktrees paralelas e branches de auditoria não são alteradas automaticamente.
+- Antes de cada push: confirmar `git remote -v`, branch/upstream, divergência, `git status`, conteúdo staged e uma busca por `.env`, chaves, tokens, bancos locais, credenciais, dados de clientes/pacientes e artefatos gerados.
+- Cada entrega funcional deve seguir: teste focal → revisão de diff/segurança → commit descritivo → `git push origin codex/eumaeus-dev-office-20261012` → `git ls-remote --heads origin codex/eumaeus-dev-office-20261012`, comparando o SHA remoto com `git rev-parse HEAD`.
+- Falha de push não autoriza reset, force push ou descarte: manter os commits locais, registrar o erro e repetir somente após diagnosticar a causa.
+- Relatórios sintéticos versionáveis ficam em [`docs/evidence/`](./evidence/); relatórios com segredos, tokens, dados pessoais ou banco local permanecem fora do GitHub.
+- Recuperação: clonar o repositório, buscar a branch coordenadora, verificar o SHA remoto contra o registro deste documento e recriar uma worktree dedicada; nunca usar `reset --hard` sobre uma worktree de trabalho existente.
+
 ## Critérios de aceite da continuidade
 
 - Toda operação financeira autoritativa usa Decimal, autoria autenticada, isolamento por clínica, idempotência e auditoria transacional.
@@ -77,5 +87,5 @@ Validação anterior: build backend e `prisma validate` passaram.
 - Frontend/API: build Vite passou após a correção do cliente HTTP; o teste direcionado `src/api/__tests__/apiClient.test.ts` + `src/pages/__tests__/Financeiro.test.tsx` passou 20/20, com teste novo para `responseType: 'blob'`. O Vitest amplo foi executado e registrou 42 suítes / 88 testes, 12 falhas não relacionadas já existentes em ErrorBoundary, ReceitaPrintPage, UpcomingAppointments e loading-states; não foram alteradas para mascarar resultado.
 - PostgreSQL local sintético `eumaeus-postgres-local` (`localhost:55432/eumaeus_local`) recebeu dados marcados de QA sem exclusão: fatura anterior com recebimento no período, fatura do período com recebimento posterior e desconto posterior, parcial, pagamento/estorno no mesmo período, bordas São Paulo, dois centros/despesa sem classificação e clínica 99001 isolada. Para `2026-10-01`–`2026-10-15`, API e prévia visual coincidiram: faturado `470,00`, recebido `200,00`, revertido `120,00`, pendente `490,00`, descontos `20,00`, despesas `37,00`, 3 faturas, 3 pagamentos, 2 despesas, 1 sem centro e 3 sem documento fiscal.
 - CSV visual inspecionado em `/home/giovanni/Downloads/eumaeus-contabil-2026-10-01-2026-10-15 (1).csv`: 6 linhas de detalhe mais cabeçalho; as vendas são `200,00`, `150,00`, `120,00` e as despesas `25,00`/`12,00`, coerentes com a prévia. PDF API inspecionado em `/tmp/eumaeus-accounting.pdf`: PDF 1.3, 14.391 bytes, assinatura `%PDF-1.3`.
-- Compartilhamento contábil backend foi preparado/enfileirado somente em simulação para `contador.qa@example.invalid`; `DocumentShare` id 1 ficou `QUEUED` com eventos `DRAFT→PREPARED→QUEUED`, sem transporte externo. A validação visual encontrou defeito confirmado: o navegador local não suporta `window.prompt`, e o botão aborta antes de persistir. A correção inline está desenhada, mas aguarda aprovação explícita do design bounded exigido pela skill de brainstorming.
+- Compartilhamento contábil backend foi preparado/enfileirado somente em simulação para `contador.qa@example.invalid`; `DocumentShare` id 1 ficou `QUEUED` com eventos `DRAFT→PREPARED→QUEUED`, sem transporte externo. A validação visual encontrou o defeito original: o navegador local não suporta `window.prompt`; a correção inline foi implementada e coberta por teste de interação, mantendo revisão do destinatário e fila simulada sem transporte.
 - Assistente visual: login QA foi comprovado separadamente por HTTP e pela interface; após reload o painel mostrou 3 pendências com origem `invoice:80/82/83`, histórico persistente e justificativas inline. O lembrete `1` foi adiado pela interface com `Validação visual local` e voltou como `SNOOZED` após a mutação; a API continua exigindo justificativa. A interface não usa mais `prompt()`/`confirm()` nativos.
