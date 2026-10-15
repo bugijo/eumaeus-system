@@ -53,7 +53,7 @@ Hipóteses só serão classificadas como vulnerabilidades após reprodução loc
 
 - Worktree: `/media/giovanni/HD/Projetos/Eumaeus-dev`.
 - Branch: `codex/eumaeus-dev-office-20261012`.
-- HEAD de retomada informado: `bac14bf46c0426f32ab773be7674596064f4606d`; após esta continuidade, as alterações ainda estão no working tree até o commit de evidência abaixo.
+- HEAD de retomada informado: `bac14bf46c0426f32ab773be7674596064f4606d`; checkpoint publicado desta continuidade: `8b42c8b0dfed8e348f406d0163367d25fee2d3fd`.
 - `b738fe9bc80d175dcb2af34039751ba8a5f9e232` e `f615bd00cfa6123b2eb76e2aa6611d225cb78af8` permanecem ancestrais locais; nenhum avanço foi retrocedido.
 - A branch está 55 commits à frente de `origin/main`; `origin/main` não foi usado como base de trabalho.
 
