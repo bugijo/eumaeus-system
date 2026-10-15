@@ -5,14 +5,14 @@ const prismaMock = {
   appointment: { findFirst: jest.fn() },
   user: { findFirst: jest.fn() },
   hospitalizationAdmission: { create: jest.fn(), findFirst: jest.fn(), findMany: jest.fn(), update: jest.fn() },
-  hospitalizationTask: { create: jest.fn(), update: jest.fn() },
+  hospitalizationTask: { create: jest.fn(), findFirst: jest.fn(), update: jest.fn() },
   hospitalizationPrescription: { create: jest.fn() },
   hospitalizationHandoff: { create: jest.fn() },
   surgeryCase: { create: jest.fn(), findFirst: jest.fn(), findMany: jest.fn() },
   surgeryBudgetVersion: { findFirst: jest.fn(), create: jest.fn() },
   surgeryConsent: { create: jest.fn() },
-  surgeryChecklistItem: { create: jest.fn(), update: jest.fn() },
-  surgeryInstruction: { create: jest.fn(), update: jest.fn() },
+  surgeryChecklistItem: { create: jest.fn(), findFirst: jest.fn(), update: jest.fn() },
+  surgeryInstruction: { create: jest.fn(), findFirst: jest.fn(), update: jest.fn() },
   $transaction: jest.fn(),
 };
 
@@ -30,6 +30,28 @@ describe('care records', () => {
     await expect(CareService.admit({ petId: 4, responsibleUserId: 3 })).rejects.toThrow('Contexto da clínica ausente');
     await expect(runWithClinic(7, () => CareService.admit({ petId: 4, responsibleUserId: 3 }))).resolves.toEqual({ id: 1 });
     expect(prismaMock.hospitalizationAdmission.create).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ clinicId: 7, petId: 4, responsibleUserId: 3 }) }));
+  });
+
+  it('rejects an admission appointment that belongs to another pet', async () => {
+    prismaMock.pet.findFirst.mockResolvedValue({ id: 4, tutorId: 20 });
+    prismaMock.user.findFirst.mockResolvedValue({ id: 3, active: true });
+    prismaMock.appointment.findFirst.mockResolvedValue(null);
+
+    await expect(runWithClinic(7, () => CareService.admit({ petId: 4, responsibleUserId: 3, appointmentId: 88 })))
+      .rejects.toThrow('Agendamento não pertence ao pet informado');
+    expect(prismaMock.hospitalizationAdmission.create).not.toHaveBeenCalled();
+    expect(prismaMock.appointment.findFirst).toHaveBeenCalledWith({ where: { id: 88, petId: 4 } });
+  });
+
+  it('rejects a surgery appointment that belongs to another pet', async () => {
+    prismaMock.pet.findFirst.mockResolvedValue({ id: 4, tutorId: 20 });
+    prismaMock.user.findFirst.mockResolvedValue({ id: 3, active: true });
+    prismaMock.appointment.findFirst.mockResolvedValue(null);
+
+    await expect(runWithClinic(7, () => CareService.createSurgery({ petId: 4, veterinarianId: 3, appointmentId: 88 })))
+      .rejects.toThrow('Agendamento não pertence ao pet informado');
+    expect(prismaMock.surgeryCase.create).not.toHaveBeenCalled();
+    expect(prismaMock.appointment.findFirst).toHaveBeenCalledWith({ where: { id: 88, petId: 4 } });
   });
 
   it('creates immutable surgery budget versions without inventing clinical content', async () => {
@@ -64,6 +86,32 @@ describe('care records', () => {
     prismaMock.surgeryBudgetVersion.findFirst.mockResolvedValue(null);
     await expect(runWithClinic(7, () => CareService.addConsent(9, { budgetVersionId: 77, recordedById: 3 }))).rejects.toThrow('Versão de orçamento não pertence à cirurgia autenticada');
     expect(prismaMock.surgeryConsent.create).not.toHaveBeenCalled();
+  });
+
+  it('rejects task execution when the task or executor is outside the authenticated clinic', async () => {
+    prismaMock.hospitalizationTask.findFirst.mockResolvedValue(null);
+    await expect(runWithClinic(7, () => CareService.recordTask(77, { executedById: 3 })))
+      .rejects.toThrow('Tarefa não pertence à clínica autenticada');
+    expect(prismaMock.hospitalizationTask.update).not.toHaveBeenCalled();
+
+    prismaMock.hospitalizationTask.findFirst.mockResolvedValue({ id: 77, admissionId: 11 });
+    prismaMock.hospitalizationAdmission.findFirst.mockResolvedValue({ id: 11 });
+    prismaMock.user.findFirst.mockResolvedValue(null);
+    await expect(runWithClinic(7, () => CareService.recordTask(77, { executedById: 3 })))
+      .rejects.toThrow('Usuário não pertence à clínica autenticada');
+    expect(prismaMock.hospitalizationTask.update).not.toHaveBeenCalled();
+  });
+
+  it('rejects checklist completion and instruction approval outside the authenticated clinic', async () => {
+    prismaMock.surgeryChecklistItem.findFirst.mockResolvedValue(null);
+    await expect(runWithClinic(7, () => CareService.completeChecklist(77, { userId: 3 })))
+      .rejects.toThrow('Checklist não pertence à clínica autenticada');
+    expect(prismaMock.surgeryChecklistItem.update).not.toHaveBeenCalled();
+
+    prismaMock.surgeryInstruction.findFirst.mockResolvedValue(null);
+    await expect(runWithClinic(7, () => CareService.approveInstruction(88, 3)))
+      .rejects.toThrow('Orientação não pertence à clínica autenticada');
+    expect(prismaMock.surgeryInstruction.update).not.toHaveBeenCalled();
   });
 
   it.each([

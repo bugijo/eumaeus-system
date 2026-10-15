@@ -6,9 +6,9 @@ export interface SurgeryCase { id: number; petId: number; veterinarianId: number
 
 export const careApi = {
   listAdmissions: async () => (await apiClient.get<Hospitalization[]>('/care/hospitalizations')).data,
-  admit: async (data: { petId: number; responsibleUserId: number; observations?: string }) => (await apiClient.post<Hospitalization>('/care/hospitalizations', data)).data,
+  admit: async (data: { petId: number; responsibleUserId: number; appointmentId?: number; observations?: string }) => (await apiClient.post<Hospitalization>('/care/hospitalizations', data)).data,
   listSurgeries: async () => (await apiClient.get<SurgeryCase[]>('/care/surgeries')).data,
-  createSurgery: async (data: { petId: number; veterinarianId: number; notes?: string }) => (await apiClient.post<SurgeryCase>('/care/surgeries', data)).data,
+  createSurgery: async (data: { petId: number; veterinarianId: number; appointmentId?: number; notes?: string }) => (await apiClient.post<SurgeryCase>('/care/surgeries', data)).data,
   addTask: async (id: number, data: { title: string; scheduledAt?: string; notes?: string }) => (await apiClient.post(`/care/hospitalizations/${id}/tasks`, data)).data,
   executeTask: async (id: number, data: { notes?: string }) => (await apiClient.patch(`/care/hospitalization-tasks/${id}/execute`, data)).data,
   addPrescription: async (id: number, data: { medication: string; instructions: string }) => {

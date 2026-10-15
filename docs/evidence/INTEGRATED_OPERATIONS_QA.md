@@ -1,6 +1,6 @@
 # Matriz de auditoria integrada — Escritório Dev
 
-Checkpoint: `6fe41eb`
+Checkpoint: `554dd2a` + continuidade local de cuidado (pendente de publicação)
 Branch: `codex/eumaeus-dev-office-20261012`
 Ambiente: PostgreSQL Docker local e dados sintéticos somente.
 
@@ -11,8 +11,8 @@ Ambiente: PostgreSQL Docker local e dados sintéticos somente.
 | Pacotes/contratos | Comprovado ponta a ponta | Contrato, vínculo tutor/pet/atendimento, consumo idempotente e estorno justificado | `/operacao` validada visualmente com seleção e reload | backend 167/167; frontend 46/46 suítes, 92/92; integração 7/7 | Contrato 24: 3/3→2/3→reload→estorno→3/3; sessão histórica visível | Clínica/pet protegidos; sessão sem InvoiceItem | Cobrança financeira permanece sem mutação não confirmada |
 | Agenda/atendimentos | Implementado | CRUD, status e especialista | `/agendamentos` disponível | Testes de domínio existentes | Parte validada visualmente em checkpoints anteriores | Conflitos e tenant cobertos parcialmente | Completar jornada pacote→sessão→cobrança |
 | Receitas/prontuário | Implementado | Versionamento, revisão, PDF e escopos | `/prontuario` e impressão | Testes de prescrição/PDF | API e impressão sintética validadas; fluxo clínico por clique parcial | Papéis e clínica cobertos | Validar telas completas sem inventar decisão clínica |
-| Internação | Implementado | Admissão, tarefas, prescrição, passagem e alta protegidas | `/assistencia` disponível | Regressão administrativa 22/22; negativas de cuidado cobertas | Controles visuais existem; mutações clínicas exigem confirmação específica | Papéis/tenant cobertos | Completar histórico/reload administrativo e evidência visual de cada transição |
-| Cirurgia | Implementado | Caso, orçamento, consentimento, checklist e orientações protegidos | `/assistencia` parcial | Regressão de cuidado 22/22; orçamento/versionamento cobertos | Ainda não há jornada visual completa | Papéis e clínica cobertos | Validar estados administrativos sem fabricar consentimento ou execução |
+| Internação | Implementado | Admissão, tarefas, prescrição, passagem e alta protegidas; atendimento só pode pertencer ao pet | `/assistencia` disponível com seleção de pet/atendimento | Regressão de cuidado 13/13; suíte backend 171/171 | Formulário inspecionado visualmente; mutações clínicas exigem confirmação específica | Registro-pai, usuário ativo e clínica revalidados | Adicionar seleção de responsável quando existir endpoint autenticado |
+| Cirurgia | Implementado | Caso, orçamento, consentimento, checklist e orientações protegidos; atendimento só pode pertencer ao pet | `/assistencia` com seleção de veterinária ativa | Regressão de cuidado 13/13; suíte backend 171/171 | Formulário inspecionado visualmente; não houve consentimento/execução sintéticos | Registro-pai, usuário ativo e clínica revalidados | Validar transições administrativas com confirmação específica |
 | Especialistas | Implementado | Perfil, disponibilidade e assignment | `/especialistas` disponível | Testes de associação/conflito | Consulta visual validada; integração de agenda parcial | Papéis/tenant cobertos | Integrar seleção e confirmação na agenda |
 | Estoque/medicamentos | Implementado | Lotes, movimentos, perdas, devoluções e idempotência | `/estoque` disponível | Testes de invariantes | UI inicial validada; consumo clínico parcial | Papel DONO e tenant cobertos | Completar operações visuais e vínculo autorizado ao atendimento |
 | Financeiro/contabilidade | Implementado | Decimal, períodos, centros, recebimentos, estornos e auditoria | `/financeiro` disponível | 166/166 backend; direcionado frontend 22/22 | Prévia/CSV/PDF e lembretes validados; share simulado coberto por teste | RBAC, tenant e negativos cobertos | Limitação legada: não há histórico temporal de mudança de centro |
@@ -45,6 +45,13 @@ As regressões administrativas `care.service`, `assistant.service`, `prescriptio
 - Defeito confirmado: `AppointmentService.getAllAppointments` descartava `id` e `catalogServiceId` dos serviços, deixando o seletor visual vazio. A projeção foi corrigida e coberta por regressão; antes da correção a reprodução visual e o teste falharam.
 - Relatórios: `backend-package-integration-fixed.json` (7/7 integração focal) e `frontend-package-final.json` (46 suítes/92 testes). O script local também registrou consumo e estorno sintéticos sem fatura ou pagamento.
 - Acesso entre pets: regressão negativa confirmou que contrato do pet A não consome atendimento do pet B mesmo com o mesmo serviço; saldo e sessão permanecem inalterados.
+
+## Cuidado: regressão e interface — 2026-10-15
+
+- A reprodução inicial demonstrou que um atendimento existente de outro pet era aceito por admissão/cirurgia; após a correção, a consulta usa `appointmentId + petId` e o tutor do pet, e a persistência é bloqueada antes do `create`.
+- A reprodução também demonstrou que `recordTask`, `completeChecklist` e `approveInstruction` atualizavam por ID sem revalidar o pai; agora cada operação exige registro-pai visível na clínica e usuário ativo.
+- O relatório completo é [`backend-care-full-20261015.json`](backend-care-full-20261015.json). Avisos de token fiscal ausente em testes não são falhas funcionais nem foram tratados como configuração de produção.
+- A inspeção visual em `/assistencia` comprovou navegação autenticada, estados vazios e formulário com seleção de pet, atendimento e veterinária. Não foram executados atos clínicos, consentimentos ou orientações sem confirmação específica.
 
 ## Limites
 
