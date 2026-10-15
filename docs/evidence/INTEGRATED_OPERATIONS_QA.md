@@ -1,6 +1,6 @@
 # Matriz de auditoria integrada — Escritório Dev
 
-Checkpoint: `f98fde93dba769600d1b304497ca7fa4e274514c`
+Checkpoint: `6fe41eb`
 Branch: `codex/eumaeus-dev-office-20261012`
 Ambiente: PostgreSQL Docker local e dados sintéticos somente.
 
