@@ -47,7 +47,7 @@ Hipóteses só serão classificadas como vulnerabilidades após reprodução loc
 - Migrations são executadas somente no PostgreSQL local isolado e não há deploy implícito.
 - A matriz integrada atual e o backlog executável estão em [`docs/evidence/INTEGRATED_OPERATIONS_QA.md`](evidence/INTEGRATED_OPERATIONS_QA.md).
 
-## Reconciliação do escritório — 2026-10-14 (continuidade)
+## Reconciliação do escritório — 2026-10-15 (continuidade)
 
 ### Base coordenadora confirmada
 
@@ -55,7 +55,7 @@ Hipóteses só serão classificadas como vulnerabilidades após reprodução loc
 - Branch: `codex/eumaeus-dev-office-20261012`.
 - HEAD de retomada informado: `bac14bf46c0426f32ab773be7674596064f4606d`; após esta continuidade, as alterações ainda estão no working tree até o commit de evidência abaixo.
 - `b738fe9bc80d175dcb2af34039751ba8a5f9e232` e `f615bd00cfa6123b2eb76e2aa6611d225cb78af8` permanecem ancestrais locais; nenhum avanço foi retrocedido.
-- A branch estava 50 commits à frente de `origin/main`; `origin/main` não foi usado como base de trabalho.
+- A branch está 55 commits à frente de `origin/main`; `origin/main` não foi usado como base de trabalho.
 
 Worktrees inventariadas e preservadas: `/media/giovanni/HD/Projetos/Eumaeus` em `51e6fb3`, `/media/giovanni/HD/Projetos/Eumaeus-autonomous` em `5983a6e`, e os worktrees detached em `870d873`, `4ddfb5c`, `a79802a` e `51e6fb3`. Nenhum apresentou alteração não commitada no inventário. As tarefas dos cinco auditores estavam ociosas; somente o coordenador deste documento permaneceu ativo. Nenhuma worktree foi removida.
 
@@ -90,4 +90,5 @@ Validação anterior: build backend e `prisma validate` passaram.
 - CSV visual inspecionado em `/home/giovanni/Downloads/eumaeus-contabil-2026-10-01-2026-10-15 (1).csv`: 6 linhas de detalhe mais cabeçalho; as vendas são `200,00`, `150,00`, `120,00` e as despesas `25,00`/`12,00`, coerentes com a prévia. PDF API inspecionado em `/tmp/eumaeus-accounting.pdf`: PDF 1.3, 14.391 bytes, assinatura `%PDF-1.3`.
 - Compartilhamento contábil backend foi preparado/enfileirado somente em simulação para `contador.qa@example.invalid`; `DocumentShare` id 1 ficou `QUEUED` com eventos `DRAFT→PREPARED→QUEUED`, sem transporte externo. A validação visual encontrou o defeito original: o navegador local não suporta `window.prompt`; a correção inline foi implementada e coberta por teste de interação, mantendo revisão do destinatário e fila simulada sem transporte.
 - Assistente visual: login QA foi comprovado separadamente por HTTP e pela interface; após reload o painel mostrou 3 pendências com origem `invoice:80/82/83`, histórico persistente e justificativas inline. O lembrete `1` foi adiado pela interface com `Validação visual local` e voltou como `SNOOZED` após a mutação; a API continua exigindo justificativa. A interface não usa mais `prompt()`/`confirm()` nativos.
-- Retomada integrada: as suítes antigas `ErrorBoundary`, `UpcomingAppointments`, `ReceitaPrintPage` e `loading-states` não chegaram à coleta nesta máquina mesmo com worker único e `TMPDIR` dedicado; `loading-states` atingiu timeout de 30 s com exit 124. Isso permanece diagnóstico de execução, não aprovação nem falha funcional confirmada; a reprodução e o backlog estão registrados na matriz integrada.
+- Retomada integrada: a causa das falhas de coleta/seletores múltiplos era ausência de `cleanup()` global do Testing Library entre testes; o shim `jest` já era compatível. Após adicionar o cleanup em `src/setupTests.ts`, as três áreas focalizadas passaram 37/37 e a suíte frontend completa passou 44 suítes/90 testes. O relatório persistido está em `docs/evidence/frontend-integrated-fixed.json`; a execução original permanece preservada em `/tmp/eumaeus-frontend-integrated-fixed.json`.
+- Build frontend (`npm run build`) e backend (`DATABASE_URL=... npm run build`) passaram após a correção; `prisma validate` também passou com a URL sintética local. O aviso de Browserslist desatualizado não interrompeu o build.

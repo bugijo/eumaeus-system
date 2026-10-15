@@ -1,6 +1,11 @@
 import '@testing-library/jest-dom';
-import { vi } from 'vitest';
+import { cleanup } from '@testing-library/react';
+import { afterEach, vi } from 'vitest';
 import { logger as appLogger } from './utils/logger';
+
+afterEach(() => {
+  cleanup();
+});
 
 vi.mock('@prisma/client', () => {
   const createModelMock = () => ({

@@ -21,7 +21,7 @@ Ambiente: PostgreSQL Docker local e dados sintéticos somente.
 
 ## Prioridade executável
 
-1. Corrigir/reproduzir a suíte frontend ampla quando o ambiente de execução deixar de bloquear a coleta; registrar cada falha por arquivo e causa, sem alterar expectativas artificialmente.
+1. Implementar e validar a jornada visual completa de pacote (tutor → pet → pacote → contrato → atendimento → consumo → saldo), substituindo IDs manuais por seleções carregadas quando as APIs existentes permitirem.
 2. Completar pacotes pela UI com seleção de tutor/pet/serviço, contrato, sessão e cobrança; manter confirmação para mutações financeiras.
 3. Completar matriz administrativa de internação e cirurgia com dados sintéticos já existentes, sem registrar novos fatos clínicos não autorizados.
 4. Validar receitas/prontuário por interface e reload, distinguindo escrita clínica autorizada de leitura/ impressão.
@@ -29,7 +29,7 @@ Ambiente: PostgreSQL Docker local e dados sintéticos somente.
 
 ## Diagnóstico frontend atual
 
-A suíte direcionada do checkpoint permanece versionada em `frontend-office-targeted-final.json`. A tentativa de reproduzir isoladamente `ErrorBoundary`, `UpcomingAppointments`, `ReceitaPrintPage` e `loading-states` nesta retomada chegou apenas ao estado `RUN` e não coletou testes dentro de 30–45 segundos, inclusive usando pool single-fork e `TMPDIR` dedicado. Não há processo persistente após o timeout; `/tmp` estava com 98% de uso. Isso é bloqueio de infraestrutura/execução, não aprovação nem falha funcional confirmada. As fontes foram inspecionadas e não serão alteradas até obter uma reprodução observável.
+A suíte direcionada do checkpoint permanece versionada em `frontend-office-targeted-final.json`. A causa das falhas de coleta/seletores múltiplos era ausência de `cleanup()` global do Testing Library entre testes. Após corrigir `src/setupTests.ts`, as áreas focalizadas passaram 37/37 e a suíte completa passou 44 suítes/90 testes. O relatório JSON versionado está em `frontend-integrated-fixed.json`; nenhuma expectativa foi alterada.
 
 ## Limites
 
