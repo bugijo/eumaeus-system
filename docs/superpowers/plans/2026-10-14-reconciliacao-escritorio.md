@@ -4,7 +4,7 @@
 
 **Objetivo:** corrigir na base coordenadora o cálculo histórico de exportação contábil sem portar versões antigas inteiras.
 
-**Arquitetura:** manter a implementação atual e separar semanticamente faturamento, recebimentos, estornos e saldo de contas. O período de entrada será interpretado no fuso operacional `America/Sao_Paulo`, usando os campos já existentes `Payment.receivedAt` e `Payment.reversedAt`; nenhuma migration é necessária.
+**Arquitetura:** manter a implementação atual e separar semanticamente faturamento, recebimentos, estornos e saldo de contas. O período de entrada será interpretado no fuso operacional `America/Sao_Paulo`, usando os campos `Payment.receivedAt` e `Payment.reversedAt`. A migration local de `Invoice.cancelledAt` registra cancelamentos futuros sem inventar datas para legados.
 
 **Stack:** TypeScript, Prisma, Jest, PostgreSQL local sintético.
 
@@ -31,7 +31,7 @@
 - Modificar: `backend/src/__tests__/financial.service.test.ts`
 
 - [x] Adicionar teste com fatura criada antes do período, recebimento dentro do período e estorno em outra data, verificando `received`, `reversed` e `pending` históricos.
-- [ ] Executar o teste focal: Jest instalado ficou sem saída antes da descoberta e foi interrompido por timeout; a verificação sintética do serviço compilado passou.
+- [x] Executar o teste focal: Jest com `--maxWorkers=1`, cache em `/tmp/eumaeus-jest-cache`, relatório em `/tmp/eumaeus-financial-jest-final.json`, 11/11 testes passou.
 
 ### Tarefa 2: cálculo histórico compatível
 
@@ -43,7 +43,10 @@
 - [x] Carregar faturas da clínica criadas até o fim do período, mantendo o filtro de centro de resultado.
 - [x] Calcular faturamento/descontos somente das faturas criadas no período; recebimentos e estornos pela data do respectivo evento; saldo pela posição no fim do período.
 - [x] Preservar auditoria transacional e contrato do relatório.
-- [ ] Executar teste focal e suíte backend: bloqueados pelo travamento do Jest; build e `prisma validate` passaram.
+- [x] Executar teste focal após a correção: 11/11 passou; `prisma validate`, `prisma generate` e `prisma migrate deploy` passaram no PostgreSQL local.
+- [x] Reproduzir no PostgreSQL local datas de recebimento/estorno distintas, recebimento posterior, filtro de centro e bordas do período; o filtro de centro corrigiu um defeito confirmado no saldo pendente.
+- [ ] Preservar histórico de centro de resultado: o schema legado não tem tabela/evento temporal; relatórios atuais refletem o centro mutável na data da consulta. Não foi inventado histórico retroativo.
+- [ ] Reconstituir cancelamentos legados: `cancelledAt` nulo em registros antigos não informa a data; esses registros continuam tratados como cancelados em qualquer corte. Operações futuras passam a gravar a data.
 
 ### Tarefa 3: registro da reconciliação
 

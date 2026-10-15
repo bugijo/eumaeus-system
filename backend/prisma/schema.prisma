@@ -408,6 +408,7 @@ model Invoice {
   id             Int      @id @default(autoincrement())
   totalAmount    Decimal  @db.Decimal(12, 2)
   status         String   @default("PENDING")
+  cancelledAt    DateTime?
   createdAt      DateTime @default(now())
   nfeId          String? // ID da NFS-e emitida (opcional)
   clinicId       Int?
