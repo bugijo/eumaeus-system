@@ -16,6 +16,7 @@ const auth = (requestBuilder: request.Test) => requestBuilder
 
 describe('mounted medical record routes', () => {
   beforeEach(() => {
+    prisma.user.findFirst.mockResolvedValue({ id: 20, clinicId: 1, roleName: 'DONO', active: true });
     prisma.$transaction.mockReset();
     prisma.medicalRecord.findMany.mockReset();
     prisma.medicalRecord.findUnique.mockReset();

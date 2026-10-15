@@ -45,6 +45,8 @@ export default function Financeiro() {
   const [accountingDraft, setAccountingDraft] = useState({ from: `${today.slice(0, 7)}-01`, to: today, centerIds: [] as string[] });
   const [accountingReport, setAccountingReport] = useState<Awaited<ReturnType<typeof financialApi.prepareAccountingExport>> | null>(null);
   const [accountingError, setAccountingError] = useState('');
+  const [accountingShareRecipient, setAccountingShareRecipient] = useState('');
+  const [accountingShare, setAccountingShare] = useState<{ id: number; recipient: string; status: string } | null>(null);
   const role = useAuthStore(state => state.user?.role);
   const canWriteFinancial = role === 'DONO' || role === 'FINANCEIRO';
   const canApplyDiscount = role === 'DONO' || role === 'FINANCEIRO';
@@ -137,9 +139,21 @@ export default function Financeiro() {
   };
   const prepareAccountingShare = async () => {
     if (!accountingReport) return;
-    const recipient = window.prompt('Destinatário do resumo contábil simulado:')?.trim();
-    if (!recipient) return;
-    try { const share = await financialApi.prepareAccountingShare({ from: accountingDraft.from, to: accountingDraft.to, resultCenterIds: accountingDraft.centerIds.map(Number), recipient }); if (window.confirm(`Prévia preparada para ${share.recipient}. Enfileirar no transporte simulado?`)) { await financialApi.queueAccountingShare(share.id); setAccountingError(`Compartilhamento ${share.id} enfileirado em simulação; histórico persistido.`); } } catch (error: any) { setAccountingError(error.response?.data?.error || 'Compartilhamento contábil indisponível.'); }
+    const recipient = accountingShareRecipient.trim();
+    if (!recipient) { setAccountingError('Informe o destinatário para preparar o compartilhamento simulado.'); return; }
+    try {
+      const share = await financialApi.prepareAccountingShare({ from: accountingDraft.from, to: accountingDraft.to, resultCenterIds: accountingDraft.centerIds.map(Number), recipient });
+      setAccountingShare({ id: share.id, recipient: share.recipient, status: share.status });
+      setAccountingError(`Prévia preparada para ${share.recipient}; revise antes de enfileirar. Nenhum transporte foi executado.`);
+    } catch (error: any) { setAccountingError(error.response?.data?.error || 'Compartilhamento contábil indisponível.'); }
+  };
+  const queuePreparedAccountingShare = async () => {
+    if (!accountingShare) return;
+    try {
+      const queued = await financialApi.queueAccountingShare(accountingShare.id);
+      setAccountingShare({ id: queued.id, recipient: queued.recipient, status: queued.status });
+      setAccountingError(`Compartilhamento ${queued.id} enfileirado em simulação; histórico persistido.`);
+    } catch (error: any) { setAccountingError(error.response?.data?.error || 'Não foi possível enfileirar o compartilhamento simulado.'); }
   };
 
   return (
@@ -186,7 +200,8 @@ export default function Financeiro() {
             <label className="text-sm">Até<input aria-label="Fim do período contábil" type="date" className="mt-1 w-full rounded-md border px-3 py-2" value={accountingDraft.to} onChange={event => setAccountingDraft({ ...accountingDraft, to: event.target.value })} /></label>
             <label className="text-sm md:col-span-2">Centros de resultado<select aria-label="Centros do relatório contábil" multiple className="mt-1 min-h-10 w-full rounded-md border px-3 py-2" value={accountingDraft.centerIds} onChange={event => setAccountingDraft({ ...accountingDraft, centerIds: Array.from(event.target.selectedOptions, option => option.value) })}>{resultCenters.map(center => <option key={center.id} value={center.id}>{center.code} · {center.name}</option>)}</select></label>
           </div>
-          <div className="flex flex-wrap gap-2"><Button type="button" onClick={prepareAccounting}>Preparar para o contador</Button>{accountingReport && <><Button type="button" variant="outline" onClick={downloadAccountingCsv}>Baixar CSV</Button><Button type="button" variant="outline" onClick={downloadAccountingPdf}>Baixar PDF verificável</Button><Button type="button" variant="outline" onClick={prepareAccountingShare}>Compartilhar simulado</Button><Button type="button" variant="outline" onClick={() => window.print()}>Imprimir resumo</Button></>}</div>
+          <div className="flex flex-wrap gap-2"><Button type="button" onClick={prepareAccounting}>Preparar para o contador</Button>{accountingReport && <><Button type="button" variant="outline" onClick={downloadAccountingCsv}>Baixar CSV</Button><Button type="button" variant="outline" onClick={downloadAccountingPdf}>Baixar PDF verificável</Button><Button type="button" variant="outline" onClick={() => setAccountingError('Informe o destinatário e prepare a prévia antes de enfileirar.')}>Compartilhar simulado</Button><Button type="button" variant="outline" onClick={() => window.print()}>Imprimir resumo</Button></>}</div>
+          {accountingReport && <div className="grid gap-2 md:grid-cols-[1fr_auto] items-end"><label className="text-sm">Destinatário do compartilhamento contábil<input aria-label="Destinatário do compartilhamento contábil" type="email" className="mt-1 w-full rounded-md border px-3 py-2" value={accountingShareRecipient} onChange={event => setAccountingShareRecipient(event.target.value)} placeholder="contador@example.invalid" /></label><div className="flex flex-wrap gap-2"><Button type="button" variant="outline" onClick={prepareAccountingShare}>Preparar compartilhamento</Button>{accountingShare && <Button type="button" variant="outline" onClick={queuePreparedAccountingShare} disabled={accountingShare.status === 'QUEUED' || accountingShare.status === 'SIMULATED'}>Enfileirar compartilhamento simulado</Button>}</div></div>}
           {accountingError && <p role="alert" className="text-sm text-red-600">{accountingError}</p>}
           {accountingReport && <div className="rounded-md border bg-muted/20 p-3 text-sm" aria-label="Prévia contábil"><p>Gerado em {new Date(accountingReport.generatedAt).toLocaleString('pt-BR')} · clínica {accountingReport.clinicId}</p><p>Vendas {formatBRL(accountingReport.totals.billed)} · Recebimentos {formatBRL(accountingReport.totals.received)} · Pendentes {formatBRL(accountingReport.totals.pending)} · Descontos {formatBRL(accountingReport.totals.discounts)} · Despesas {formatBRL(accountingReport.totals.expenses)}</p><p>Pendências: {accountingReport.pendencies.unclassifiedExpenses} despesas sem centro, {accountingReport.pendencies.missingFiscalDocuments} faturas sem documento fiscal.</p></div>}
         </CardContent>
