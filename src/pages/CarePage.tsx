@@ -4,14 +4,22 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { careApi, useAdmit, useAdmissions, useCreateSurgery, useSurgeries } from '@/api/careApi';
+import { usePets } from '@/api/petApi';
+import { useAppointments } from '@/api/appointmentApi';
+import { useSpecialists } from '@/api/specialistApi';
 
 export default function CarePage() {
   const admissions = useAdmissions();
   const surgeries = useSurgeries();
+  const pets = usePets({ page: 1, limit: 100 });
+  const appointments = useAppointments();
+  const specialists = useSpecialists();
   const admit = useAdmit();
   const createSurgery = useCreateSurgery();
   const [petId, setPetId] = useState('');
   const [userId, setUserId] = useState('');
+  const [appointmentId, setAppointmentId] = useState('');
+  const [veterinarianId, setVeterinarianId] = useState('');
   const [notes, setNotes] = useState('');
   const [surgeryNotes, setSurgeryNotes] = useState('');
   const [admissionId, setAdmissionId] = useState('');
@@ -34,8 +42,8 @@ export default function CarePage() {
   const requiredText = (value: string) => value.trim().length > 0;
   const numericId = (value: string) => requiredText(value) && /^\d+$/.test(value) && Number(value) > 0;
   const nonEmpty = (value: string) => value.trim().length > 0;
-  const submitAdmission = async () => { if (!numericId(petId) || !numericId(userId)) { setMessage('Informe IDs positivos do pet e do responsável autorizado.'); return; } try { setActionPending(true); await admit.mutateAsync({ petId: Number(petId), responsibleUserId: Number(userId), observations: notes.trim() || undefined }); setMessage('Admissão registrada.'); } catch (error) { setMessage(error instanceof Error ? error.message : 'Admissão recusada.'); } finally { setActionPending(false); } };
-  const submitSurgery = async () => { if (!numericId(petId) || !numericId(userId)) { setMessage('Informe IDs positivos do pet e da veterinária autorizada.'); return; } try { setActionPending(true); await createSurgery.mutateAsync({ petId: Number(petId), veterinarianId: Number(userId), notes: surgeryNotes.trim() || undefined }); setMessage('Cirurgia planejada.'); } catch (error) { setMessage(error instanceof Error ? error.message : 'Cirurgia recusada.'); } finally { setActionPending(false); } };
+  const submitAdmission = async () => { if (!numericId(petId) || !numericId(userId)) { setMessage('Informe o pet e o ID positivo do responsável autorizado.'); return; } try { setActionPending(true); await admit.mutateAsync({ petId: Number(petId), responsibleUserId: Number(userId), appointmentId: numericId(appointmentId) ? Number(appointmentId) : undefined, observations: notes.trim() || undefined }); setMessage('Admissão registrada.'); } catch (error) { setMessage(error instanceof Error ? error.message : 'Admissão recusada.'); } finally { setActionPending(false); } };
+  const submitSurgery = async () => { if (!numericId(petId) || !numericId(veterinarianId)) { setMessage('Selecione o pet e uma veterinária autorizada.'); return; } try { setActionPending(true); await createSurgery.mutateAsync({ petId: Number(petId), veterinarianId: Number(veterinarianId), appointmentId: numericId(appointmentId) ? Number(appointmentId) : undefined, notes: surgeryNotes.trim() || undefined }); setMessage('Cirurgia planejada.'); } catch (error) { setMessage(error instanceof Error ? error.message : 'Cirurgia recusada.'); } finally { setActionPending(false); } };
   const run = async (action: () => Promise<unknown>, success: string) => { try { setActionPending(true); await action(); setMessage(success); await Promise.all([admissions.refetch(), surgeries.refetch()]); } catch (error) { setMessage(error instanceof Error ? error.message : 'Operação recusada.'); } finally { setActionPending(false); } };
   const submitBudget = () => {
     const amount = Number(budgetAmount.replace(',', '.'));
@@ -56,16 +64,22 @@ export default function CarePage() {
   };
   const selectedAdmission = admissions.data?.find(item => String(item.id) === admissionId);
   const selectedSurgery = surgeries.data?.find(item => String(item.id) === surgeryId) as (typeof surgeries.data extends Array<infer T> ? T & { checklist?: Array<{ id: number; label: string; completedAt?: string | null }>; instructions?: Array<{ id: number; instruction: string; approvedAt?: string | null }> } : never) | undefined;
-  if (admissions.isLoading || surgeries.isLoading) return <div className="p-8"><LoadingSpinner size="lg" /></div>;
-  if (admissions.error || surgeries.error) return <div className="p-8 text-destructive">Não foi possível carregar os registros assistenciais.</div>;
+  if (admissions.isLoading || surgeries.isLoading || pets.isLoading || appointments.isLoading || specialists.isLoading) return <div className="p-8"><LoadingSpinner size="lg" /></div>;
+  if (admissions.error || surgeries.error || pets.error || appointments.error || specialists.error) return <div className="p-8 text-destructive">Não foi possível carregar os registros assistenciais.</div>;
+  const petOptions = pets.data?.data ?? [];
+  const appointmentOptions = (appointments.data ?? []).filter(item => !petId || item.petId === Number(petId));
+  const specialistOptions = (specialists.data ?? []).filter(item => item.active && item.user?.name);
   return <div className="space-y-6">
     <div><h1 className="text-2xl font-bold">Internação e cirurgia</h1><p className="text-muted-foreground">Registros operacionais persistentes; prescrições e orientações dependem da veterinária.</p></div>
-    <Card><CardHeader><CardTitle>Nova admissão ou planejamento</CardTitle></CardHeader><CardContent className="grid gap-3 md:grid-cols-4">
-      <Input aria-label="ID do pet" type="number" placeholder="ID do pet" value={petId} onChange={e => setPetId(e.target.value)} />
-      <Input aria-label="ID do responsável autorizado" type="number" min="1" placeholder="ID do responsável autorizado" value={userId} onChange={e => setUserId(e.target.value)} />
-      <Input aria-label="Observação" placeholder="Observação" value={notes} onChange={e => setNotes(e.target.value)} />
+    <Card><CardHeader><CardTitle>Nova admissão ou planejamento</CardTitle></CardHeader><CardContent className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+      <label className="grid min-w-0 gap-1 text-sm"><span>Pet</span><select aria-label="Pet" className="h-10 min-w-0 rounded-md border bg-background px-3" value={petId} onChange={e => { setPetId(e.target.value); setAppointmentId(''); }}><option value="">Selecione o pet</option>{petOptions.map(pet => <option key={pet.id} value={pet.id}>{pet.name} · #{pet.id}</option>)}</select></label>
+      <label className="grid min-w-0 gap-1 text-sm xl:col-span-2"><span>Atendimento vinculado (opcional)</span><select aria-label="Atendimento vinculado" className="h-10 min-w-0 rounded-md border bg-background px-3" value={appointmentId} onChange={e => setAppointmentId(e.target.value)}><option value="">Sem atendimento vinculado</option>{appointmentOptions.map(item => <option key={item.id} value={item.id}>#{item.id} · {new Date(item.appointmentDate).toLocaleString('pt-BR')} · {item.status}</option>)}</select></label>
+      <label className="grid min-w-0 gap-1 text-sm"><span>Responsável autorizado</span><Input aria-label="ID do responsável autorizado" type="number" min="1" placeholder="ID do usuário" value={userId} onChange={e => setUserId(e.target.value)} /></label>
+      <label className="grid min-w-0 gap-1 text-sm"><span>Observação</span><Input aria-label="Observação" placeholder="Observação" value={notes} onChange={e => setNotes(e.target.value)} /></label>
+      <label className="grid min-w-0 gap-1 text-sm xl:col-span-2"><span>Veterinária para cirurgia</span><select aria-label="Veterinária autorizada" className="h-10 min-w-0 rounded-md border bg-background px-3" value={veterinarianId} onChange={e => setVeterinarianId(e.target.value)}><option value="">Selecione a veterinária</option>{specialistOptions.map(item => <option key={item.userId} value={item.userId}>{item.user?.name} · {item.specialty}</option>)}</select></label>
       <div className="flex gap-2"><Button onClick={submitAdmission} disabled={actionPending}>Admitir</Button><Button variant="outline" onClick={submitSurgery} disabled={actionPending}>Planejar cirurgia</Button></div>
       <Input aria-label="Notas da cirurgia" className="md:col-span-4" placeholder="Notas informadas pela veterinária (opcional)" value={surgeryNotes} onChange={e => setSurgeryNotes(e.target.value)} />
+      <p className="text-xs text-muted-foreground md:col-span-4">A lista de pets, atendimentos e veterinárias vem da clínica atual. O responsável da internação exige o ID do usuário autorizado porque ainda não há endpoint de usuários para seleção.</p>
       {message && <p role="status" aria-live="polite" className="md:col-span-4 text-sm">{message}</p>}
     </CardContent></Card>
     <div className="grid gap-6 lg:grid-cols-2"><Card><CardHeader><CardTitle>Internações</CardTitle></CardHeader><CardContent>{admissions.data?.length ? admissions.data.map(item => <button type="button" key={item.id} onClick={() => setAdmissionId(String(item.id))} className={`block w-full border-b py-2 text-left ${admissionId === String(item.id) ? 'bg-muted' : ''}`}>#{item.id} · pet {item.pet?.name ?? item.petId} · {item.status}</button>) : <p className="text-muted-foreground">Nenhuma admissão.</p>}</CardContent></Card><Card><CardHeader><CardTitle>Cirurgias planejadas</CardTitle></CardHeader><CardContent>{surgeries.data?.length ? surgeries.data.map(item => <button type="button" key={item.id} onClick={() => setSurgeryId(String(item.id))} className={`block w-full border-b py-2 text-left ${surgeryId === String(item.id) ? 'bg-muted' : ''}`}>#{item.id} · pet {item.pet?.name ?? item.petId} · {item.status} · {item.budgets.length} orçamento(s)</button>) : <p className="text-muted-foreground">Nenhuma cirurgia.</p>}</CardContent></Card></div>
