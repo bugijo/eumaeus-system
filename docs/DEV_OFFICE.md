@@ -45,6 +45,7 @@ Hipóteses só serão classificadas como vulnerabilidades após reprodução loc
 - Comunicação permanece em simulação, com deduplicação, cancelamento, revalidação de preferências, retry limitado e histórico.
 - Telas têm estados de carregamento, erro, ausência e permissão; existência de endpoint não conta como fluxo visual.
 - Migrations são executadas somente no PostgreSQL local isolado e não há deploy implícito.
+- A matriz integrada atual e o backlog executável estão em [`docs/evidence/INTEGRATED_OPERATIONS_QA.md`](evidence/INTEGRATED_OPERATIONS_QA.md).
 
 ## Reconciliação do escritório — 2026-10-14 (continuidade)
 
@@ -89,3 +90,4 @@ Validação anterior: build backend e `prisma validate` passaram.
 - CSV visual inspecionado em `/home/giovanni/Downloads/eumaeus-contabil-2026-10-01-2026-10-15 (1).csv`: 6 linhas de detalhe mais cabeçalho; as vendas são `200,00`, `150,00`, `120,00` e as despesas `25,00`/`12,00`, coerentes com a prévia. PDF API inspecionado em `/tmp/eumaeus-accounting.pdf`: PDF 1.3, 14.391 bytes, assinatura `%PDF-1.3`.
 - Compartilhamento contábil backend foi preparado/enfileirado somente em simulação para `contador.qa@example.invalid`; `DocumentShare` id 1 ficou `QUEUED` com eventos `DRAFT→PREPARED→QUEUED`, sem transporte externo. A validação visual encontrou o defeito original: o navegador local não suporta `window.prompt`; a correção inline foi implementada e coberta por teste de interação, mantendo revisão do destinatário e fila simulada sem transporte.
 - Assistente visual: login QA foi comprovado separadamente por HTTP e pela interface; após reload o painel mostrou 3 pendências com origem `invoice:80/82/83`, histórico persistente e justificativas inline. O lembrete `1` foi adiado pela interface com `Validação visual local` e voltou como `SNOOZED` após a mutação; a API continua exigindo justificativa. A interface não usa mais `prompt()`/`confirm()` nativos.
+- Retomada integrada: as suítes antigas `ErrorBoundary`, `UpcomingAppointments`, `ReceitaPrintPage` e `loading-states` não chegaram à coleta nesta máquina mesmo com worker único e `TMPDIR` dedicado; `loading-states` atingiu timeout de 30 s com exit 124. Isso permanece diagnóstico de execução, não aprovação nem falha funcional confirmada; a reprodução e o backlog estão registrados na matriz integrada.
