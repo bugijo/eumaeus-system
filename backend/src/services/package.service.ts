@@ -42,6 +42,8 @@ export class PackageService {
       }
       const contract = await tx.packageContract.findFirst({ where: { id: contractId, status: 'ACTIVE', expiresAt: { gte: new Date() }, remainingSessions: { gt: 0 } }, include: { package: true } });
       if (!contract) throw new Error('Pacote sem saldo, expirado ou inativo');
+      const appointment = await tx.appointment.findFirst({ where: { id: appointmentId, tutorId: contract.tutorId, petId: contract.petId } });
+      if (!appointment) throw new Error('Atendimento não pertence ao pet do contrato');
       const service = await tx.service.findFirst({ where: { id: serviceId, appointmentId } });
       if (!service || !service.catalogServiceId || service.catalogServiceId !== contract.package.coveredCatalogServiceId) throw new Error('Serviço não é o serviço coberto pelo pacote neste atendimento');
       const decremented = await tx.packageContract.updateMany({ where: { id: contractId, status: 'ACTIVE', expiresAt: { gte: new Date() }, remainingSessions: { gt: 0 } }, data: { remainingSessions: { decrement: 1 } } });

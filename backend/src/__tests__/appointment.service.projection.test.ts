@@ -13,7 +13,7 @@ describe('AppointmentService response projection', () => {
       updatedAt: new Date('2026-10-13T00:00:00Z'),
       pet: { id: 40, name: 'Pet Sintético' },
       tutor: { id: 50, name: 'Tutor Sintético' },
-      services: [{ name: 'Banho QA Jornada', price: '45.90' }],
+      services: [{ id: 41, name: 'Banho QA Jornada', price: 45.9, catalogServiceId: 24 }],
     }]);
 
     const appointments = await AppointmentService.getAllAppointments();
@@ -22,6 +22,7 @@ describe('AppointmentService response projection', () => {
       id: 30,
       serviceType: 'Banho QA Jornada',
       status: 'SCHEDULED',
+      services: [{ id: 41, name: 'Banho QA Jornada', price: 45.9, catalogServiceId: 24 }],
     })]);
   });
 });

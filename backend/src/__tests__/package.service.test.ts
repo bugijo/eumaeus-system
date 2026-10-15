@@ -9,8 +9,9 @@ describe('package consumption and reversal invariants', () => {
   beforeEach(() => {
     db.packageSession.findFirst.mockResolvedValue(null);
     db.packageSession.create.mockResolvedValue({ id: 20, contractId: 5, appointmentId: 8, serviceId: 3 });
-    db.packageContract.findFirst.mockResolvedValue({ id: 5, status: 'ACTIVE', remainingSessions: 2, package: { coveredCatalogServiceId: 11 } });
+    db.packageContract.findFirst.mockResolvedValue({ id: 5, status: 'ACTIVE', remainingSessions: 2, tutorId: 10, petId: 20, package: { coveredCatalogServiceId: 11 } });
     db.packageContract.updateMany.mockResolvedValue({ count: 1 });
+    db.appointment.findFirst.mockResolvedValue({ id: 8, tutorId: 10, petId: 20 });
     db.service.findFirst.mockResolvedValue({ id: 3, appointmentId: 8, catalogServiceId: 11 });
   });
 
@@ -30,6 +31,14 @@ describe('package consumption and reversal invariants', () => {
   it('rejects a concurrent decrement when the conditional update affects no row', async () => {
     db.packageContract.updateMany.mockResolvedValue({ count: 0 });
     await expect(runWithClinic(1, () => PackageService.consume(5, 8, 3))).rejects.toThrow('Consumo concorrente recusado');
+    expect(db.packageSession.create).not.toHaveBeenCalled();
+  });
+
+  it('rejects an appointment belonging to another pet even when the service matches', async () => {
+    db.appointment.findFirst.mockResolvedValue(null);
+
+    await expect(runWithClinic(1, () => PackageService.consume(5, 8, 3))).rejects.toThrow('Atendimento não pertence ao pet do contrato');
+    expect(db.packageContract.updateMany).not.toHaveBeenCalled();
     expect(db.packageSession.create).not.toHaveBeenCalled();
   });
 
