@@ -63,6 +63,7 @@ export interface Service {
   name: string;
   price: number;
   appointmentId: number;
+  catalogServiceId?: number | null;
   appointment?: Appointment;
 }
 

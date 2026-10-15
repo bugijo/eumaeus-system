@@ -27,8 +27,10 @@ export class AppointmentService {
           },
           services: {
             select: {
+              id: true,
               name: true,
-              price: true
+              price: true,
+              catalogServiceId: true
             }
           }
         },
@@ -47,6 +49,7 @@ export class AppointmentService {
         time: appointment.appointmentDate.toTimeString().slice(0, 5),
         status: this.mapStatusForResponse(appointment.status),
         serviceType: appointment.services?.[0]?.name ?? null,
+        services: appointment.services?.map(service => ({ id: service.id, name: service.name, price: Number(service.price), catalogServiceId: service.catalogServiceId })),
         createdAt: appointment.createdAt,
         updatedAt: appointment.updatedAt
       }));
