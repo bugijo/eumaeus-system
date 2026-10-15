@@ -184,7 +184,7 @@ export class InvoiceService {
 
     return await prisma.invoice.update({
       where: { id: invoiceId },
-      data: { status },
+      data: { status, cancelledAt: status === 'CANCELLED' ? new Date() : null },
       include: {
         items: true,
         discounts: true,

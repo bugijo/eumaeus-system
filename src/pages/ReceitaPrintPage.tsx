@@ -73,7 +73,7 @@ export function ReceitaPrintPage() {
           <h2 className="mb-3 border-b pb-2 text-lg font-semibold">Prescrição</h2>
           <ol className="space-y-3">
             {prescription.items.map((item, index) => <li key={item.id || `${item.medication}-${index}`} className="rounded border p-4">
-              <p className="font-semibold">{index + 1}. {item.medication}</p>
+              <p className="font-semibold"><span>{index + 1}.</span> <span>{item.medication}</span></p>
               <p>Dosagem: {item.dosage} · Frequência: {item.frequency} · Duração: {item.duration}</p>
               {item.instructions && <p>Instruções: {item.instructions}</p>}
             </li>)}

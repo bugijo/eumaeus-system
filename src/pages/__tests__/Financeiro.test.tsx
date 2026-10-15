@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import Financeiro from '../Financeiro';
 import { useApplyInvoiceDiscount, useFinancialStats, useInvoices } from '../../api/invoiceApi';
 import { ACCOUNTS_PAYABLE_DATA_SOURCE } from '../../constants';
-import { useCreateExpense, useExpenses, useReceivePayment, useResultCenters, useReversePayment } from '../../api/financialApi';
+import { useCreateExpense, useCreateResultCenter, useExpenses, useReceivePayment, useResultCenters, useReversePayment } from '../../api/financialApi';
 import { useAuthStore } from '../../stores/authStore';
 
 vi.mock('../../stores/authStore', () => ({ useAuthStore: vi.fn() }));
@@ -20,6 +20,7 @@ vi.mock('../../api/financialApi', () => ({
   useExpenses: vi.fn(),
   useReceivePayment: vi.fn(),
   useReversePayment: vi.fn(),
+  useCreateResultCenter: vi.fn(),
   useResultCenters: vi.fn(),
 }));
 
@@ -30,6 +31,7 @@ describe('Financeiro', () => {
     vi.mocked(useReceivePayment).mockReturnValue({ mutate: vi.fn() } as any);
     vi.mocked(useReversePayment).mockReturnValue({ mutate: vi.fn() } as any);
     vi.mocked(useCreateExpense).mockReturnValue({ mutate: vi.fn(), isPending: false, isError: false } as any);
+    vi.mocked(useCreateResultCenter).mockReturnValue({ mutate: vi.fn(), isPending: false, isError: false } as any);
     vi.mocked(useExpenses).mockReturnValue({ data: [] } as any);
     vi.mocked(useResultCenters).mockReturnValue({ data: [] } as any);
     vi.mocked(useFinancialStats).mockReturnValue({
@@ -80,6 +82,7 @@ describe('Financeiro', () => {
     vi.mocked(useReceivePayment).mockReturnValue({ mutate: receive, isPending: false } as any);
     vi.mocked(useReversePayment).mockReturnValue({ mutate: vi.fn(), isPending: false } as any);
     vi.mocked(useCreateExpense).mockReturnValue({ mutate: vi.fn(), isPending: false, isError: false } as any);
+    vi.mocked(useCreateResultCenter).mockReturnValue({ mutate: vi.fn(), isPending: false, isError: false } as any);
     vi.mocked(useExpenses).mockReturnValue({ data: [] } as any);
     vi.mocked(useResultCenters).mockReturnValue({ data: [] } as any);
     vi.mocked(useFinancialStats).mockReturnValue({ data: { paid: { amount: 0, count: 0 }, pending: { amount: 5, count: 1 }, cancelled: { amount: 0, count: 0 } }, isLoading: false, error: null } as any);

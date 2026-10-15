@@ -79,7 +79,9 @@ describe('financial expense authorship and audit', () => {
     db.resultCenter.findMany.mockResolvedValue([{ id: 1, clinicId: 4, code: 'CLINICA', name: 'Clínica', active: true }]);
     const report = await runWithClinic(4, () => runWithUser(12, () => FinancialService.prepareAccountingExport({ from: '2026-10-01', to: '2026-10-31' })));
     expect(report.clinicId).toBe(4);
-    expect(report.totals).toMatchObject({ billed: '20.00', received: '5.00', pending: '20.00', discounts: '1.00', expenses: '3.50' });
+    // The partial receipt is effective before the cutoff, so the historical
+    // balance is the invoice total less that receipt.
+    expect(report.totals).toMatchObject({ billed: '20.00', received: '5.00', pending: '15.00', discounts: '1.00', expenses: '3.50' });
     expect(report.pendencies).toEqual({ unclassifiedExpenses: 1, missingFiscalDocuments: 1 });
     expect(db.financialAuditEvent.create).toHaveBeenCalledWith({ data: expect.objectContaining({ eventType: 'ACCOUNTING_EXPORT_GENERATED', actorUserId: 12, clinicId: 4 }) });
   });
@@ -111,5 +113,17 @@ describe('financial expense authorship and audit', () => {
     expect(report.totals).toMatchObject({ billed: '0.00', received: '55.00', reversed: '10.00', pending: '45.00' });
     expect(report.invoices).toEqual([]);
     expect(db.invoice.findMany).toHaveBeenCalledWith(expect.objectContaining({ where: expect.objectContaining({ createdAt: { lte: new Date('2026-11-01T02:59:59.999Z') } }) }));
+  });
+
+  it('applies result-center selection to the historical pending balance', async () => {
+    db.invoice.findMany.mockResolvedValue([
+      { id: 21, clinicId: 4, createdAt: new Date('2026-10-02T03:00:00Z'), status: 'PENDING', totalAmount: new Prisma.Decimal('10.00'), nfeId: 'nfe-21', payments: [], discounts: [], items: [], resultCenterId: 1, resultCenter: { id: 1, code: 'A', name: 'Centro A' } },
+      { id: 22, clinicId: 4, createdAt: new Date('2026-10-02T03:00:00Z'), status: 'PENDING', totalAmount: new Prisma.Decimal('20.00'), nfeId: 'nfe-22', payments: [], discounts: [], items: [], resultCenterId: 2, resultCenter: { id: 2, code: 'B', name: 'Centro B' } },
+    ]);
+    db.expense.findMany.mockResolvedValue([]);
+    db.resultCenter.findMany.mockResolvedValue([{ id: 1, clinicId: 4, code: 'A', name: 'Centro A', active: true }]);
+    const report = await runWithClinic(4, () => runWithUser(12, () => FinancialService.prepareAccountingExport({ from: '2026-10-01', to: '2026-10-31', resultCenterIds: [1] })));
+    expect(report.totals).toMatchObject({ billed: '10.00', pending: '10.00' });
+    expect(report.invoices.map((invoice: any) => invoice.id)).toEqual([21]);
   });
 });

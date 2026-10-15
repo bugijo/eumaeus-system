@@ -36,15 +36,15 @@ Hipóteses só serão classificadas como vulnerabilidades após reprodução loc
 - Telas têm estados de carregamento, erro, ausência e permissão; existência de endpoint não conta como fluxo visual.
 - Migrations são executadas somente no PostgreSQL local isolado e não há deploy implícito.
 
-## Reconciliação do escritório — 2026-10-14
+## Reconciliação do escritório — 2026-10-14 (continuidade)
 
 ### Base coordenadora confirmada
 
 - Worktree: `/media/giovanni/HD/Projetos/Eumaeus-dev`.
 - Branch: `codex/eumaeus-dev-office-20261012`.
-- HEAD real: `f615bd00cfa6123b2eb76e2aa6611d225cb78af8` (`test(local): add protected synthetic QA provisioner`).
-- `b738fe9bc80d175dcb2af34039751ba8a5f9e232` é o pai imediato e não foi sobrescrito.
-- A branch está 49 commits à frente de `origin/main`; a base local atual foi preservada.
+- HEAD de retomada informado: `bac14bf46c0426f32ab773be7674596064f4606d`; após esta continuidade, as alterações ainda estão no working tree até o commit de evidência abaixo.
+- `b738fe9bc80d175dcb2af34039751ba8a5f9e232` e `f615bd00cfa6123b2eb76e2aa6611d225cb78af8` permanecem ancestrais locais; nenhum avanço foi retrocedido.
+- A branch estava 50 commits à frente de `origin/main`; `origin/main` não foi usado como base de trabalho.
 
 Worktrees inventariadas e preservadas: `/media/giovanni/HD/Projetos/Eumaeus` em `51e6fb3`, `/media/giovanni/HD/Projetos/Eumaeus-autonomous` em `5983a6e`, e os worktrees detached em `870d873`, `4ddfb5c`, `a79802a` e `51e6fb3`. Nenhum apresentou alteração não commitada no inventário. As tarefas dos cinco auditores estavam ociosas; somente o coordenador deste documento permaneceu ativo. Nenhuma worktree foi removida.
 
@@ -60,4 +60,17 @@ Worktrees inventariadas e preservadas: `/media/giovanni/HD/Projetos/Eumaeus` em 
 
 `FinancialService.prepareAccountingExport` agora interpreta datas de entrada no fuso operacional `America/Sao_Paulo`, consulta faturas até o fim do período, atribui recebimentos a `Payment.receivedAt`, estornos a `Payment.reversedAt` e calcula o saldo na posição histórica do corte. Faturamento e descontos continuam restritos às faturas criadas no período, preservando clínica, centro de resultado e auditoria transacional. O teste sintético cobre fatura anterior, recebimento no período, recebimento posterior e estorno posterior.
 
-Validação: build backend passou com autorização de escrita local; `prisma validate` passou com URL sintética; Jest focal e descoberta da suíte ficaram sem saída no volume montado e foram interrompidos por timeout, portanto não são classificados como falha funcional. Nenhuma migration foi aplicada.
+Validação anterior: build backend e `prisma validate` passaram.
+
+### Evidência contábil da continuidade
+
+- Comando/diretório/configuração: `npm test -- --maxWorkers=1 --runTestsByPath src/__tests__/financial.service.test.ts --cacheDirectory=/tmp/eumaeus-jest-cache --json --outputFile=/tmp/eumaeus-financial-jest-final.json --detectOpenHandles --verbose`, executado em `/media/giovanni/HD/Projetos/Eumaeus-dev/backend`, usando `backend/jest.config.js` e `src/__tests__/setup.ts`.
+- A primeira execução identificou uma expectativa antiga (`pending=20`), não uma falha de cálculo: recebimento parcial de 5,00 sobre total 20,00 implica saldo histórico 15,00. A expectativa foi corrigida com comentário explicativo; a execução final passou 11/11 em 12,085 s, com relatório persistido e sem handles abertos.
+- PostgreSQL local: container `eumaeus-postgres-local`, imagem PostgreSQL 16, URL `127.0.0.1:55432/eumaeus_local`; 29 migrations encontradas e aplicadas, incluindo `20261014120000_add_invoice_cancellation_history`. A fixture sintética foi limpa por IDs próprios após execução.
+- Prova local: fatura anterior com recebimento no período, fatura do período com recebimento posterior, parcial, estorno posterior, borda do dia operacional e filtro por centro. A execução por centro retornou somente os IDs do centro selecionado (`billed=100.00`, `received=45.00`, `reversed=40.00`, `pending=195.00`); a execução anterior sem centro confirmou o conjunto completo (`billed=230.00`, `received=65.00`, `reversed=40.00`, `pending=305.00`).
+- Defeito confirmado e corrigido: o saldo `pending` podia ignorar `resultCenterIds`; agora o subconjunto é reforçado também em memória e há regressão unitária dedicada.
+- Descontos: `InvoiceDiscount.createdAt` permite recompor, para operações futuras, descontos lançados depois do corte; registros legados sem histórico adicional não permitem reconstruir mutações manuais do total. Cancelamentos futuros gravam `Invoice.cancelledAt`; cancelamentos legados com `NULL` permanecem limitados ao tratamento conservador como cancelados em qualquer corte.
+- Centro de resultado: não há histórico temporal legado de alterações de `Invoice.resultCenterId`/`InvoiceItem.resultCenterId`; portanto uma alteração posterior do centro pode alterar relatórios anteriores. Essa é uma limitação documentada, não foi mascarada com valor inventado.
+- API, prévia, PDF e compartilhamento contábil chamam o mesmo `prepareAccountingExport`; a reconciliação completa do CSV visual e das jornadas de interface continua pendente de validação visual local.
+- Backend completo: 32 suítes / 166 testes, 156 passaram e 10 ficaram em `medicalRecord.routes.integration.test.ts` e `tutors.test.ts` por fixtures Jest sem identidade/retornos de tutor coerentes; não foram tratados como defeito funcional nem mascarados. A suíte financeira focal passou 11/11.
+- Frontend: lint sem erros (17 warnings existentes), build Vite passou em 6m14s e Vitest completo passou 13 arquivos / 87 testes. Os dois testes de Financeiro e os dois de impressão de receita também passaram isoladamente após alinhar mocks e seletor de conteúdo persistido.
