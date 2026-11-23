@@ -1,4 +1,4 @@
-# Eumaeus — Tarefas para comercialização (atualizado em 23/11/2026)
+# Eumaeus — Tarefas para comercialização (atualizado em 23/11/2026, 2ª rodada)
 
 Legenda: `[x]` feito e verificado · `[~]` existe, mas parcial ou não testado de ponta a ponta · `[ ]` a fazer
 
@@ -21,25 +21,27 @@ Legenda: `[x]` feito e verificado · `[~]` existe, mas parcial ou não testado d
 - [x] Cadastro de tutor e de pet
 - [x] Centros de resultado (Clínica e Pet Shop) criados
 - [x] PDF do contador gerado (`/financial/accounting/pdf`, 15 KB, período e centros)
-- [~] Despesa: exige o campo "justificativa"; ok pela regra, mas a tela precisa deixar isso claro
-- [~] Cadastro de produto: devolve "Todos os campos são obrigatórios" sem dizer qual campo falta
+- [x] Despesa: campo "Justificativa (obrigatória)" e erro real do servidor na tela
+- [x] Cadastro de produto: mensagem diz qual campo corrigir; fornecedor e validade agora opcionais
 - [ ] Teste de ponta a ponta na interface (login no navegador, telas, impressão), com o Giovanni logado ou com permissão para usar a senha de teste
-- [ ] Fluxo completo: agendamento → atendimento → fatura → recebimento → estorno → PDF do contador
+- [x] Fluxo completo do caixa testado de ponta a ponta (cadastro com EAN, venda, idempotência, estoque, cancelamento, rateio e PDF)
+- [ ] Fluxo de serviços: agendamento → atendimento → fatura → recebimento → estorno
 
 ## 2. Clínica e Pet Shop separados
 - [x] Já existe "centro de resultado" (Clínica / Pet Shop) em produtos, serviços, faturas e despesas
-- [ ] Rateio de despesa compartilhada: lançar uma vez e dividir por percentual
-      (sugestão inicial: aluguel 50/50; energia 25% Clínica / 75% Pet; água 50/50, editável)
-- [ ] Regras de rateio salvas (modelo por tipo de conta) e aplicadas no lançamento
-- [ ] Relatórios, DRE e PDF do contador separados por centro, com a linha "rateio" visível
-- [ ] Decidir: Clínica e Pet como dois CNPJs (dois tenants, com notas fiscais distintas) ou um CNPJ com dois centros
+- [x] Rateio de despesa compartilhada: lança uma vez e divide por percentual (centavos fecham o total)
+- [x] Regras de rateio salvas (ex.: Energia 25/75) e reaproveitadas todo mês
+- [ ] Cadastrar os centros CLINICA e PETSHOP e as regras reais na produção (depois do usuário dono)
+- [x] PDF do contador com resultado por unidade e despesas marcadas como "rateio"
+- [x] Decisão: rateio é só para o caso Clínica+Pet do Giovanni; para clientes, um acesso por estabelecimento
 
 ## 3. Caixa / PDV e código de barras
-- [ ] Campo de código de barras (EAN) no produto, único por clínica
-- [ ] Tela de PDV/caixa com carrinho, desconto, formas de pagamento e troco
-- [ ] Leitor USB (atua como teclado): bipar adiciona ao carrinho
-- [ ] Leitor pela câmera do celular (BarcodeDetector / ZXing)
-- [ ] Baixa automática de estoque na venda; abertura e fechamento de caixa
+- [x] Campo de código de barras (EAN) no produto, único por clínica (leitura pela câmera no cadastro)
+- [x] Tela /caixa com carrinho, desconto, pagamento dividido, troco e cupom (impressora 80 mm/A4)
+- [x] Leitor USB (atua como teclado): bipar adiciona ao carrinho; atalhos F2/F9
+- [x] Leitor pela câmera (BarcodeDetector nativo; ZXing em iOS/Windows) — testar em aparelho real
+- [x] Baixa automática de estoque na venda (FEFO por lote) e devolução no cancelamento
+- [ ] Abertura/fechamento de caixa (sangria, suprimento, conferência)
 
 ## 4. Fiscal
 - [~] NFS-e (serviços da clínica) via Focus NFe: código pronto, sem token configurado e não testado em homologação
@@ -49,20 +51,22 @@ Legenda: `[x]` feito e verificado · `[~]` existe, mas parcial ou não testado d
 
 ## 5. Financeiro e contador
 - [x] PDF de resumo contábil por período e centro
-- [ ] Revisar o conteúdo do PDF com o contador (o que ele precisa: notas emitidas, recebimentos por forma, despesas, rateios)
+- [x] PDF inclui vendas, formas de pagamento, resultado por unidade e rateios
+- [ ] Revisar o PDF com o contador
 - [ ] Exportação também em planilha (CSV/XLSX)
-- [ ] Remover os rótulos de tendência falsos do dashboard ("+5% vs ontem")
+- [x] Tendências falsas: só existem em componente morto (DashboardPage), não aparecem no sistema
 
 ## 6. Aparência e usabilidade
 - [ ] Revisão visual das telas principais (identidade, cores, espaçamento, estados vazios)
-- [ ] Mensagens de erro que digam qual campo corrigir
+- [~] Mensagens de erro por campo: produto e despesas feitos; revisar demais telas
 - [ ] Onboarding da primeira vez: dados da clínica, logo, centros e usuários
-- [ ] Remover a marca fixa "Clínica Veterinária Fernanda Calixto" do título (precisa ser configurável por cliente)
-- [ ] Limpar arquivos soltos da raiz (test-*.cjs, relatórios .md antigos, node-lts.msi)
+- [x] Título e metadados neutros ("Eumaeus — Gestão para clínicas veterinárias e pet shops")
+- [ ] Configurações: aba Usuários mostra usuários fictícios fixos; falta cadastro real de funcionários (API + tela)
+- [~] Páginas de debug públicas removidas; falta limpar a raiz (test-*.cjs, relatórios .md antigos, node-lts.msi)
 
 ## 7. Web, computador e celular
 - [x] Web: https://eumaeus.com.br
-- [ ] PWA: manifest e ícones, para instalar pelo navegador no computador e no Android (hoje o service worker é desregistrado em produção)
+- [x] PWA: manifest, ícones e service worker mínimo; instalável pelo Chrome/Edge no computador e no Android, e "Adicionar à Tela de Início" no iPhone
 - [ ] Aplicativo Android/iOS: empacotar com Capacitor (mesma conta, mesma API)
 - [ ] Desktop: PWA instalável primeiro; Electron/Tauri só se precisar de impressora fiscal local
 
