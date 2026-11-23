@@ -15,7 +15,7 @@ class ClinicSettingsController {
    */
   static async getSettings(req: Request, res: Response) {
     try {
-      const clinicId = this.getClinicId(req);
+      const clinicId = ClinicSettingsController.getClinicId(req);
       if (!clinicId) return res.status(403).json({ success: false, message: 'Contexto da clínica ausente' });
       
       console.log(`🔍 Buscando configurações da clínica ${clinicId}...`);
@@ -44,7 +44,7 @@ class ClinicSettingsController {
    */
   static async updateSettings(req: Request, res: Response) {
     try {
-      const clinicId = this.getClinicId(req);
+      const clinicId = ClinicSettingsController.getClinicId(req);
       if (!clinicId) return res.status(403).json({ success: false, message: 'Contexto da clínica ausente' });
       const ALLOWED: Array<keyof UpdateClinicSettingsRequest> = ['appointmentRemindersEnabled', 'appointmentReminderTemplate', 'vaccineRemindersEnabled', 'vaccineReminderTemplate', 'emailFromName', 'emailFromAddress', 'clinicName', 'clinicPhone', 'clinicAddress', 'clinicLegalName', 'clinicDocument', 'clinicEmail', 'businessHours', 'reminderSendTime', 'vaccineReminderDaysBefore'];
       const updateData: UpdateClinicSettingsRequest = {};
@@ -129,7 +129,7 @@ class ClinicSettingsController {
    */
   static async testEmailSettings(req: Request, res: Response) {
     try {
-      const clinicId = this.getClinicId(req);
+      const clinicId = ClinicSettingsController.getClinicId(req);
       if (!clinicId) return res.status(403).json({ success: false, message: 'Contexto da clínica ausente' });
       
       console.log(`🧪 Testando configurações de e-mail da clínica ${clinicId}...`);
@@ -156,7 +156,7 @@ class ClinicSettingsController {
    */
   static async resetToDefaults(req: Request, res: Response) {
     try {
-      const clinicId = this.getClinicId(req);
+      const clinicId = ClinicSettingsController.getClinicId(req);
       if (!clinicId) return res.status(403).json({ success: false, message: 'Contexto da clínica ausente' });
       
       console.log(`🔄 Resetando configurações da clínica ${clinicId} para padrão...`);
@@ -186,7 +186,7 @@ class ClinicSettingsController {
    */
   static async getReminderStats(req: Request, res: Response) {
     try {
-      const clinicId = this.getClinicId(req);
+      const clinicId = ClinicSettingsController.getClinicId(req);
       if (!clinicId) return res.status(403).json({ success: false, message: 'Contexto da clínica ausente' });
       
       console.log(`📊 Buscando estatísticas de lembretes da clínica ${clinicId}...`);
