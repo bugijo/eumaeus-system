@@ -57,11 +57,11 @@ Legenda: `[x]` feito e verificado · `[~]` existe, mas parcial ou não testado d
 - [x] Tendências falsas: só existem em componente morto (DashboardPage), não aparecem no sistema
 
 ## 6. Aparência e usabilidade
-- [ ] Revisão visual das telas principais (identidade, cores, espaçamento, estados vazios)
+- [~] Revisão visual: login com painel de apresentação, menu em seções (Dia a dia / Atendimento / Gestão), início com saudação e ações rápidas; busca e sino falsos do topo removidos. Falta: telas internas (agenda, prontuário, estoque) e estados vazios
 - [~] Mensagens de erro por campo: produto e despesas feitos; revisar demais telas
 - [ ] Onboarding da primeira vez: dados da clínica, logo, centros e usuários
 - [x] Título e metadados neutros ("Eumaeus — Gestão para clínicas veterinárias e pet shops")
-- [ ] Configurações: aba Usuários mostra usuários fictícios fixos; falta cadastro real de funcionários (API + tela)
+- [x] Configurações sem dados fictícios: Estabelecimento (razão social, CNPJ/CPF, e-mail, horário), Equipe e acessos (criar, cargo, ativar/desativar, redefinir senha), Minha conta (trocar senha). API /api/users só para DONO; garante um DONO ativo; desativar derruba a sessão (c69056f, em produção)
 - [~] Páginas de debug públicas removidas; falta limpar a raiz (test-*.cjs, relatórios .md antigos, node-lts.msi)
 
 ## 7. Web, computador e celular
