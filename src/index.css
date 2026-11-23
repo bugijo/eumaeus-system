@@ -197,13 +197,64 @@
   @page { margin: 4mm; }
 }
 
-/* Entrada da página de venda (curta, uma vez). Respeita reduced-motion. */
-@keyframes landing-rise {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+/* ===== Página de venda (/) =====
+   Movimento: entrada única no carregamento e respostas ao toque. Nada aparece com a rolagem.
+   Curvas e tempos seguem Emil Kowalski: ease-out forte, interações abaixo de 300 ms. */
+.lp {
+  --lp-ease: cubic-bezier(0.23, 1, 0.32, 1);
+  font-feature-settings: "ss01", "cv11";
 }
-.landing-enter { animation: landing-rise 260ms cubic-bezier(0.23, 1, 0.32, 1) both; }
-.landing-enter-delay { animation-delay: 80ms; }
+.lp-wrap { width: 100%; max-width: 76rem; margin-inline: auto; padding-inline: 1.25rem; }
+@media (min-width: 640px) { .lp-wrap { padding-inline: 2rem; } }
+.lp-h1, .lp-h2 { letter-spacing: -0.03em; text-wrap: balance; }
+.lp p { text-wrap: pretty; }
+.lp ::selection { background: hsl(var(--primary) / 0.18); color: inherit; }
+.lp #rateio ::selection, .lp .bg-primary ::selection { background: rgb(255 255 255 / 0.25); }
+.lp :focus-visible { outline: 2px solid hsl(var(--primary)); outline-offset: 3px; border-radius: 10px; }
+.lp #rateio :focus-visible, .lp .bg-primary :focus-visible { outline-color: #fff; }
+.lp section[id] { scroll-margin-top: 5rem; }
+
+.lp-frame {
+  box-shadow: 0 1px 2px rgb(0 40 80 / 0.06), 0 32px 64px -28px rgb(0 40 80 / 0.38);
+}
+
+.lp-press { transition: transform 160ms var(--lp-ease), background-color 160ms ease, box-shadow 160ms ease; }
+.lp-press:active { transform: scale(0.97); }
+.lp-link { transition: color 160ms ease, background-color 160ms ease; }
+@media (hover: hover) and (pointer: fine) {
+  .lp-link:hover { color: hsl(var(--foreground)); background-color: hsl(var(--muted)); }
+}
+
+@keyframes lp-rise {
+  from { opacity: 0; transform: translateY(12px); filter: blur(4px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+.lp-enter { animation: lp-rise 600ms var(--lp-ease) both; }
+.lp-enter-2 { animation-delay: 120ms; }
+
+@keyframes lp-row {
+  from { opacity: 0; transform: translateY(-4px); background-color: hsl(var(--secondary) / 0.14); }
+  60% { background-color: hsl(var(--secondary) / 0.10); }
+  to { opacity: 1; transform: none; background-color: transparent; }
+}
+.lp-row-in { animation: lp-row 700ms var(--lp-ease) both; }
+
+@keyframes lp-blink { 50% { opacity: 0; } }
+.lp-caret { animation: lp-blink 1.1s steps(1) infinite; }
+
+.lp-bar { transform-origin: left center; transition: transform 220ms var(--lp-ease); }
+.lp-range { accent-color: hsl(var(--primary)); height: 1.75rem; cursor: pointer; }
+
+.lp-plus::before, .lp-plus::after {
+  content: ""; position: absolute; left: 0; top: 50%; width: 100%; height: 1.5px;
+  background: currentColor; transition: transform 200ms var(--lp-ease);
+}
+.lp-plus::after { transform: rotate(90deg); }
+.lp-faq[open] .lp-plus::after { transform: rotate(0deg); }
+.lp-faq summary::-webkit-details-marker { display: none; }
+
 @media (prefers-reduced-motion: reduce) {
-  .landing-enter { animation: none; }
+  .lp-enter, .lp-row-in, .lp-caret { animation: none; }
+  .lp-press, .lp-bar, .lp-plus::before, .lp-plus::after { transition: none; }
+  .lp-press:active { transform: none; }
 }
