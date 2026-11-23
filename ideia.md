@@ -1,3 +1,26 @@
+# Eumaeus — Visão de produto (atualizada em 23/11/2026)
+
+## Objetivo
+Vender o Eumaeus como sistema por assinatura para clínicas veterinárias e pet shops, a começar pela operação própria (clínica + pet shop no mesmo endereço) como cliente piloto.
+
+## Princípios
+- Uma conta, três formas de uso: web (eumaeus.com.br), app instalável no computador e app no celular (Android/iOS), todos na mesma API e no mesmo login.
+- Clínica e Pet Shop como unidades separadas: cada uma com receitas, despesas, estoque e notas próprias; contas compartilhadas (aluguel, energia, água) lançadas uma vez e rateadas por percentual configurável.
+- Caixa rápido: código de barras (leitor USB ou câmera do celular) adiciona ao carrinho e o fechamento já gera a nota.
+- Fiscal completo: NFS-e para serviços da clínica e NFC-e para produtos do pet shop, com impressão térmica e A4.
+- Contador sem retrabalho: um PDF (e uma planilha) por período e unidade, com tudo o que ele precisa.
+- Aparência profissional e cadastro simples: é isso que vende.
+
+## Decisões em aberto
+- Dois CNPJs (dois tenants) ou um CNPJ com dois centros de resultado?
+- Percentuais de rateio padrão (sugestão: aluguel 50/50, energia 25/75, água 50/50).
+- Provedor fiscal: manter Focus NFe ou avaliar outro.
+- App mobile: Capacitor (reaproveita o React atual) é a opção recomendada.
+
+---
+
+# Visão original (2025)
+
 # Eumaeus System - Documento de Visão do Produto
 
 ## 1. Visão Geral

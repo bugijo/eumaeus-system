@@ -1,3 +1,81 @@
+# Eumaeus — Tarefas para comercialização (atualizado em 23/11/2026)
+
+Legenda: `[x]` feito e verificado · `[~]` existe, mas parcial ou não testado de ponta a ponta · `[ ]` a fazer
+
+## 0. Infraestrutura
+- [x] Pastas duplicadas removidas; um único repositório
+- [x] Migrations corrigidas para banco novo; testes locais verdes
+- [x] Stack de produção (Postgres + API + Caddy) em VPS Hostinger (189.24.8.181)
+- [x] DNS do registro.br apontado para a VPS; HTTPS do Let's Encrypt emitido (validade até 21/02/2027, renovação automática)
+- [x] Firewall, fail2ban, SSH só por chave e backup diário (03:15, 30 dias)
+- [x] Ambiente local de testes (docker, porta 8088) com conta DONO de teste (credencial: ver cofre-claude/eumaeus-local-teste.env)
+- [ ] Criar o usuário DONO de produção (nome e e-mail do Giovanni; senha digitada por ele)
+- [ ] Remover o domínio do projeto antigo na Vercel e desligar os serviços do Render
+- [ ] Push do branch para o GitHub e merge na main (precisa de autorização)
+- [ ] Cópia dos backups para fora da VPS (ex.: Google Drive)
+- [ ] Corrigir o drift do schema Prisma (nomes de índices e FKs)
+
+## 1. Verificar se tudo funciona (smoke test na API local)
+- [x] Login do DONO
+- [x] Dashboard, tutores, pets, agendamentos, produtos, faturas, serviços, especialistas, receitas e pacotes: as listagens respondem 200
+- [x] Cadastro de tutor e de pet
+- [x] Centros de resultado (Clínica e Pet Shop) criados
+- [x] PDF do contador gerado (`/financial/accounting/pdf`, 15 KB, período e centros)
+- [~] Despesa: exige o campo "justificativa"; ok pela regra, mas a tela precisa deixar isso claro
+- [~] Cadastro de produto: devolve "Todos os campos são obrigatórios" sem dizer qual campo falta
+- [ ] Teste de ponta a ponta na interface (login no navegador, telas, impressão), com o Giovanni logado ou com permissão para usar a senha de teste
+- [ ] Fluxo completo: agendamento → atendimento → fatura → recebimento → estorno → PDF do contador
+
+## 2. Clínica e Pet Shop separados
+- [x] Já existe "centro de resultado" (Clínica / Pet Shop) em produtos, serviços, faturas e despesas
+- [ ] Rateio de despesa compartilhada: lançar uma vez e dividir por percentual
+      (sugestão inicial: aluguel 50/50; energia 25% Clínica / 75% Pet; água 50/50, editável)
+- [ ] Regras de rateio salvas (modelo por tipo de conta) e aplicadas no lançamento
+- [ ] Relatórios, DRE e PDF do contador separados por centro, com a linha "rateio" visível
+- [ ] Decidir: Clínica e Pet como dois CNPJs (dois tenants, com notas fiscais distintas) ou um CNPJ com dois centros
+
+## 3. Caixa / PDV e código de barras
+- [ ] Campo de código de barras (EAN) no produto, único por clínica
+- [ ] Tela de PDV/caixa com carrinho, desconto, formas de pagamento e troco
+- [ ] Leitor USB (atua como teclado): bipar adiciona ao carrinho
+- [ ] Leitor pela câmera do celular (BarcodeDetector / ZXing)
+- [ ] Baixa automática de estoque na venda; abertura e fechamento de caixa
+
+## 4. Fiscal
+- [~] NFS-e (serviços da clínica) via Focus NFe: código pronto, sem token configurado e não testado em homologação
+- [ ] NFC-e (venda de produtos do Pet Shop): não existe; necessária para o PDV
+- [ ] Impressão: DANFE/NFC-e em impressora térmica de 80 mm e A4
+- [ ] Certificado digital A1 por empresa, CSC da NFC-e e regime tributário (definir com o contador)
+
+## 5. Financeiro e contador
+- [x] PDF de resumo contábil por período e centro
+- [ ] Revisar o conteúdo do PDF com o contador (o que ele precisa: notas emitidas, recebimentos por forma, despesas, rateios)
+- [ ] Exportação também em planilha (CSV/XLSX)
+- [ ] Remover os rótulos de tendência falsos do dashboard ("+5% vs ontem")
+
+## 6. Aparência e usabilidade
+- [ ] Revisão visual das telas principais (identidade, cores, espaçamento, estados vazios)
+- [ ] Mensagens de erro que digam qual campo corrigir
+- [ ] Onboarding da primeira vez: dados da clínica, logo, centros e usuários
+- [ ] Remover a marca fixa "Clínica Veterinária Fernanda Calixto" do título (precisa ser configurável por cliente)
+- [ ] Limpar arquivos soltos da raiz (test-*.cjs, relatórios .md antigos, node-lts.msi)
+
+## 7. Web, computador e celular
+- [x] Web: https://eumaeus.com.br
+- [ ] PWA: manifest e ícones, para instalar pelo navegador no computador e no Android (hoje o service worker é desregistrado em produção)
+- [ ] Aplicativo Android/iOS: empacotar com Capacitor (mesma conta, mesma API)
+- [ ] Desktop: PWA instalável primeiro; Electron/Tauri só se precisar de impressora fiscal local
+
+## 8. Para vender (SaaS)
+- [ ] Multi-empresa real: cadastro de nova clínica (tenant) e isolamento verificado
+- [ ] Planos e cobrança recorrente
+- [ ] Termos de uso, política de privacidade e LGPD
+- [ ] Página de vendas
+
+---
+
+# Histórico anterior (roadmap 2025, mantido como referência)
+
 # Eumaeus System - Roadmap Estratégico de Desenvolvimento
 
 ## Legenda de Status
