@@ -14,7 +14,9 @@ fi
 REV=$(git rev-parse --short HEAD)
 echo "Publicando $REV em $HOST..."
 
-git archive --format=tar HEAD | "${SSH[@]}" "mkdir -p /opt/eumaeus && tar -x -C /opt/eumaeus && echo $REV > /opt/eumaeus/REVISION"
+# Limpa a versão anterior (preservando deploy/.env) para que arquivos removidos do git não sobrem no servidor.
+"${SSH[@]}" "mkdir -p /opt/eumaeus && cd /opt/eumaeus && find . -mindepth 1 -maxdepth 1 ! -name deploy -exec rm -rf {} + && { [ -d deploy ] && find deploy -mindepth 1 ! -name .env -exec rm -rf {} + || true; }"
+git archive --format=tar HEAD | "${SSH[@]}" "tar -x -C /opt/eumaeus && echo $REV > /opt/eumaeus/REVISION"
 "${SSH[@]}" "test -f /opt/eumaeus/deploy/.env || { echo 'Falta /opt/eumaeus/deploy/.env na VPS' >&2; exit 1; }"
 "${SSH[@]}" "cd /opt/eumaeus && chmod +x deploy/*.sh && docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env up -d --build --remove-orphans && docker image prune -f >/dev/null"
 "${SSH[@]}" "cd /opt/eumaeus && docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env ps"
