@@ -32,9 +32,14 @@ function parseMetadata(description?: string | null): ProductMetadata {
 function buildDescription(metadata: ProductMetadata): string {
   return JSON.stringify({
     supplier: metadata.supplier || 'Não informado',
-    expirationDate: metadata.expirationDate || '2099-12-31',
+    expirationDate: metadata.expirationDate || '',
   });
 }
+
+const normalizeBarcode = (value?: string | null) => {
+  const code = String(value ?? '').replace(/\s+/g, '');
+  return code ? code : null;
+};
 
 function inferCategory(name: string): string {
   return /vacina/i.test(name) ? 'Vacina' : 'Estoque';
@@ -46,6 +51,10 @@ function mapPrismaProductToLegacy(product: {
   quantity: number;
   price: Prisma.Decimal | number;
   description: string | null;
+  salePrice?: Prisma.Decimal | number | null;
+  barcode?: string | null;
+  category?: string | null;
+  resultCenterId?: number | null;
 }): Product {
   const metadata = parseMetadata(product.description);
 
@@ -55,7 +64,11 @@ function mapPrismaProductToLegacy(product: {
     supplier: metadata.supplier || 'Não informado',
     quantity: product.quantity,
     costPrice: Number(product.price),
-    expirationDate: metadata.expirationDate || '2099-12-31',
+    salePrice: product.salePrice === null || product.salePrice === undefined ? null : Number(product.salePrice),
+    barcode: product.barcode ?? null,
+    category: product.category ?? null,
+    resultCenterId: product.resultCenterId ?? null,
+    expirationDate: metadata.expirationDate && metadata.expirationDate !== '2099-12-31' ? metadata.expirationDate : '',
   };
 }
 
@@ -86,8 +99,11 @@ export class ProductService {
         }),
         quantity: productData.quantity,
         price: productData.costPrice,
-        category: inferCategory(productData.name),
-      },
+        salePrice: productData.salePrice ?? null,
+        barcode: normalizeBarcode(productData.barcode),
+        resultCenterId: productData.resultCenterId ?? null,
+        category: productData.category?.trim() || inferCategory(productData.name),
+      } as any,
     });
 
     return mapPrismaProductToLegacy(created);
@@ -115,8 +131,11 @@ export class ProductService {
         quantity: updateData.quantity ?? current.quantity,
         price: updateData.costPrice ?? current.price,
         description: buildDescription(mergedMetadata),
-        category: inferCategory(updateData.name ?? current.name),
-      },
+        ...(updateData.salePrice !== undefined ? { salePrice: updateData.salePrice } : {}),
+        ...(updateData.barcode !== undefined ? { barcode: normalizeBarcode(updateData.barcode) } : {}),
+        ...(updateData.resultCenterId !== undefined ? { resultCenterId: updateData.resultCenterId } : {}),
+        category: updateData.category !== undefined ? (updateData.category?.trim() || inferCategory(updateData.name ?? current.name)) : (current.category ?? inferCategory(updateData.name ?? current.name)),
+      } as any,
     });
 
     return mapPrismaProductToLegacy(updated);
@@ -146,6 +165,7 @@ export class ProductService {
     thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
 
     const expiringSoon = products.filter((product) => {
+      if (!product.expirationDate) return false;
       const expirationDate = new Date(product.expirationDate);
       return expirationDate >= today && expirationDate <= thirtyDaysFromNow;
     }).length;

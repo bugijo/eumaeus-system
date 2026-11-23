@@ -157,22 +157,27 @@ model MedicalRecordProduct {
 
 // 4.2. Modelo para Produtos/Estoque
 model Product {
-  id             Int      @id @default(autoincrement())
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id             Int        @id @default(autoincrement())
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
   name           String
   description    String?
-  quantity       Int      @default(0)
-  price          Decimal  @db.Decimal(12, 2)
+  quantity       Int        @default(0)
+  price          Decimal    @db.Decimal(12, 2)
   category       String? // Ex: "Medicamento", "Vacina", "Material"
   clinicId       Int?
   resultCenterId Int?
+  barcode        String? // EAN/GTIN ou código interno lido no PDV
+  salePrice      Decimal?   @db.Decimal(12, 2) // preço de venda no caixa (price = custo legado)
+  saleItems      SaleItem[]
 
   // Relacionamento: Many-to-many com prontuários
   medicalRecords MedicalRecordProduct[]
   lots           ProductLot[]
   stockMovements StockMovement[]
   resultCenter   ResultCenter?          @relation(fields: [resultCenterId], references: [id], onDelete: SetNull)
+
+  @@unique([clinicId, barcode])
 }
 
 model ProductLot {
@@ -405,11 +410,11 @@ model Permission {
 
 // 6. Modelo para Faturas
 model Invoice {
-  id             Int      @id @default(autoincrement())
-  totalAmount    Decimal  @db.Decimal(12, 2)
-  status         String   @default("PENDING")
+  id             Int       @id @default(autoincrement())
+  totalAmount    Decimal   @db.Decimal(12, 2)
+  status         String    @default("PENDING")
   cancelledAt    DateTime?
-  createdAt      DateTime @default(now())
+  createdAt      DateTime  @default(now())
   nfeId          String? // ID da NFS-e emitida (opcional)
   clinicId       Int?
   resultCenterId Int?
@@ -456,6 +461,7 @@ model ResultCenter {
   invoices     Invoice[]
   invoiceItems InvoiceItem[]
   expenses     Expense[]
+  sales        Sale[]
 
   @@unique([clinicId, code])
   @@index([clinicId, active])
@@ -483,20 +489,91 @@ model Payment {
 }
 
 model Expense {
-  id             Int                   @id @default(autoincrement())
-  createdAt      DateTime              @default(now())
-  clinicId       Int
-  description    String
-  amount         Decimal               @db.Decimal(12, 2)
-  resultCenterId Int?
-  incurredAt     DateTime              @default(now())
-  reason         String?
-  createdById    Int?
-  resultCenter   ResultCenter?         @relation(fields: [resultCenterId], references: [id], onDelete: SetNull)
-  createdBy      User?                 @relation("ExpenseAuthor", fields: [createdById], references: [id], onDelete: SetNull)
-  auditEvents    FinancialAuditEvent[]
+  id                Int                   @id @default(autoincrement())
+  createdAt         DateTime              @default(now())
+  clinicId          Int
+  description       String
+  amount            Decimal               @db.Decimal(12, 2)
+  resultCenterId    Int?
+  incurredAt        DateTime              @default(now())
+  reason            String?
+  createdById       Int?
+  allocationGroup   String? // linhas do mesmo rateio compartilham o grupo
+  allocationPercent Decimal?              @db.Decimal(5, 2)
+  allocationTotal   Decimal?              @db.Decimal(12, 2) // valor total da conta antes do rateio
+  resultCenter      ResultCenter?         @relation(fields: [resultCenterId], references: [id], onDelete: SetNull)
+  createdBy         User?                 @relation("ExpenseAuthor", fields: [createdById], references: [id], onDelete: SetNull)
+  auditEvents       FinancialAuditEvent[]
 
   @@index([clinicId, resultCenterId, incurredAt])
+  @@index([clinicId, allocationGroup])
+}
+
+// Regra de rateio de contas compartilhadas (ex.: energia 25% clínica / 75% pet shop)
+model AllocationRule {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  clinicId  Int
+  name      String
+  shares    Json // [{ resultCenterId: number, percent: number }], soma = 100
+  active    Boolean  @default(true)
+
+  @@unique([clinicId, name])
+}
+
+// Venda de balcão (PDV / caixa)
+model Sale {
+  id               Int           @id @default(autoincrement())
+  createdAt        DateTime      @default(now())
+  clinicId         Int
+  number           Int
+  status           String        @default("COMPLETED") // COMPLETED | CANCELLED
+  subtotal         Decimal       @db.Decimal(12, 2)
+  discount         Decimal       @default(0) @db.Decimal(12, 2)
+  total            Decimal       @db.Decimal(12, 2)
+  change           Decimal       @default(0) @db.Decimal(12, 2)
+  resultCenterId   Int?
+  tutorId          Int?
+  soldByUserId     Int?
+  idempotencyKey   String
+  cancelledAt      DateTime?
+  cancelReason     String?
+  fiscalDocumentId String?
+  items            SaleItem[]
+  payments         SalePayment[]
+  resultCenter     ResultCenter? @relation(fields: [resultCenterId], references: [id], onDelete: SetNull)
+
+  @@unique([clinicId, idempotencyKey])
+  @@unique([clinicId, number])
+  @@index([clinicId, createdAt])
+}
+
+model SaleItem {
+  id          Int      @id @default(autoincrement())
+  clinicId    Int
+  saleId      Int
+  productId   Int?
+  description String
+  barcode     String?
+  quantity    Int
+  unitPrice   Decimal  @db.Decimal(12, 2)
+  total       Decimal  @db.Decimal(12, 2)
+  sale        Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  product     Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([clinicId, saleId])
+}
+
+model SalePayment {
+  id       Int     @id @default(autoincrement())
+  clinicId Int
+  saleId   Int
+  method   String // DINHEIRO | PIX | DEBITO | CREDITO | OUTRO
+  amount   Decimal @db.Decimal(12, 2)
+  sale     Sale    @relation(fields: [saleId], references: [id], onDelete: Cascade)
+
+  @@index([clinicId, saleId])
 }
 
 model FinancialAuditEvent {

@@ -19,23 +19,41 @@ const render = (write: (doc: any) => void): Promise<Buffer> => new Promise((reso
 
 export class PdfService {
   static accounting(report: any) {
+    const labels: Record<string, string> = {
+      billed: 'Faturado (serviços)', sales: 'Vendas no caixa (produtos)', received: 'Recebido de faturas', reversed: 'Estornado',
+      pending: 'A receber', discounts: 'Descontos concedidos', expenses: 'Despesas',
+    };
+    const methodLabels: Record<string, string> = { DINHEIRO: 'Dinheiro', PIX: 'PIX', DEBITO: 'Cartão de débito', CREDITO: 'Cartão de crédito', OUTRO: 'Outro' };
+    const day = (value: unknown) => (value instanceof Date ? value.toISOString() : String(value)).slice(0, 10).split('-').reverse().join('/');
+    const section = (doc: any, title: string) => { doc.moveDown(0.8).fontSize(13).fillColor('#0f766e').text(title).fillColor('#000000'); doc.moveDown(0.2).fontSize(9); };
     return render((doc) => {
-      doc.fontSize(18).text('Resumo contábil Eumaeus');
-      doc.moveDown(0.4).fontSize(10).text(`Clínica ${report.clinicId} · Período ${report.period.from} a ${report.period.to}`);
-      doc.text(`Gerado em ${new Date(report.generatedAt).toLocaleString('pt-BR')}`);
-      doc.moveDown().fontSize(13).text('Totais');
+      doc.fontSize(18).text(report.clinicName ? `Resumo contábil — ${report.clinicName}` : 'Resumo contábil');
+      doc.moveDown(0.3).fontSize(10).text(`Período: ${day(report.period.from)} a ${day(report.period.to)}`);
+      doc.text(`Gerado em ${new Date(report.generatedAt).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}`);
+      section(doc, 'Totais do período');
       doc.fontSize(10);
-      for (const [label, value] of Object.entries(report.totals)) doc.text(`${label}: ${money(String(value))}`);
-      doc.moveDown().fontSize(13).text('Pendências e contagem');
-      doc.fontSize(10).text(`Faturas: ${report.counts.invoices} · Pagamentos: ${report.counts.payments} · Despesas: ${report.counts.expenses}`);
-      doc.text(`Despesas sem classificação: ${report.pendencies.unclassifiedExpenses}`);
-      doc.text(`Faturas sem documento fiscal: ${report.pendencies.missingFiscalDocuments}`);
-      doc.moveDown().fontSize(13).text('Faturas');
-      doc.fontSize(9);
-      report.invoices.forEach((invoice: any) => doc.text(`#${invoice.id} · ${invoice.createdAt instanceof Date ? invoice.createdAt.toISOString().slice(0, 10) : String(invoice.createdAt).slice(0, 10)} · ${invoice.status} · total ${money(invoice.totalAmount)} · recebido ${money(invoice.received)} · desconto ${money(invoice.discount)}`));
-      doc.moveDown().fontSize(13).text('Despesas');
-      doc.fontSize(9);
-      report.expenses.forEach((expense: any) => doc.text(`#${expense.id} · ${String(expense.incurredAt).slice(0, 10)} · ${expense.description} · ${money(expense.amount)} · centro ${expense.resultCenter?.code || 'SEM_CLASSIFICACAO'}`));
+      for (const [key, value] of Object.entries(report.totals || {})) doc.text(`${labels[key] || key}: ${money(String(value))}`);
+      if (report.salesByMethod && Object.keys(report.salesByMethod).length) {
+        section(doc, 'Vendas do caixa por forma de pagamento');
+        for (const [method, value] of Object.entries(report.salesByMethod)) doc.text(`${methodLabels[method] || method}: ${money(String(value))}`);
+      }
+      if (Array.isArray(report.byCenter) && report.byCenter.length) {
+        section(doc, 'Resultado por unidade / centro');
+        report.byCenter.forEach((row: any) => doc.text(`${row.name} (${row.code}) · serviços ${money(row.billed)} · vendas ${money(row.sales)} · despesas ${money(row.expenses)} · resultado ${money(row.result)}`));
+      }
+      section(doc, 'Pendências');
+      doc.text(`Vendas: ${report.counts?.sales ?? 0} · Faturas: ${report.counts?.invoices ?? 0} · Pagamentos: ${report.counts?.payments ?? 0} · Despesas: ${report.counts?.expenses ?? 0}`);
+      doc.text(`Despesas sem centro: ${report.pendencies?.unclassifiedExpenses ?? 0} · Faturas sem nota fiscal: ${report.pendencies?.missingFiscalDocuments ?? 0}`);
+      if (Array.isArray(report.sales) && report.sales.length) {
+        section(doc, 'Vendas do caixa');
+        report.sales.forEach((sale: any) => doc.text(`Venda ${sale.number} · ${day(sale.createdAt)} · ${sale.status === 'CANCELLED' ? 'CANCELADA' : 'concluída'} · ${money(sale.total)} · ${sale.methods || '-'} · ${sale.resultCenter?.code || 'SEM_CENTRO'}${sale.fiscalDocument ? ` · NF ${sale.fiscalDocument}` : ''}`));
+      }
+      section(doc, 'Faturas de serviços');
+      if (!report.invoices?.length) doc.text('Nenhuma fatura no período.');
+      (report.invoices || []).forEach((invoice: any) => doc.text(`Fatura ${invoice.id} · ${day(invoice.createdAt)} · ${invoice.status} · total ${money(invoice.totalAmount)} · recebido ${money(invoice.received)} · desconto ${money(invoice.discount)}${invoice.fiscalDocument ? ` · NFS-e ${invoice.fiscalDocument.id}` : ''}`));
+      section(doc, 'Despesas');
+      if (!report.expenses?.length) doc.text('Nenhuma despesa no período.');
+      (report.expenses || []).forEach((expense: any) => doc.text(`${day(expense.incurredAt)} · ${expense.description} · ${money(expense.amount)} · ${expense.resultCenter?.name || 'Sem centro'}${expense.allocationGroup ? ' · rateio' : ''}`));
     });
   }
 
