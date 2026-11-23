@@ -15,8 +15,8 @@
  *
  * Example:
  *   DATABASE_URL='postgresql://eumaeus:eumaeus_local_only@127.0.0.1:55432/eumaeus_local' \
- *   JWT_SECRET='local-http-proof-secret' \
- *   REFRESH_TOKEN_SECRET='local-http-proof-refresh' \
+ *   JWT_SECRET='<segredo-local-de-teste>' \
+ *   REFRESH_TOKEN_SECRET='<outro-segredo-local-de-teste>' \
  *   NODE_ENV=test PORT=3334 node backend/dist/src/bootstrap.js
  *   node backend/scripts/real-local/http-concurrency-authenticated.mjs
  */

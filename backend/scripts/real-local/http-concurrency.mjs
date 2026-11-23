@@ -24,7 +24,7 @@ const clinicA = 9401;
 const clinicB = 9402;
 const marker = `http-concurrency-${Date.now()}-${randomBytes(4).toString('hex')}`;
 const jwtSecret = randomBytes(32).toString('hex');
-const refreshSecret = randomBytes(32).toString('hex');
+const refreshKey = randomBytes(32).toString('hex');
 
 const docker = (args, input = '') => new Promise((resolvePromise, reject) => {
   const child = spawn('docker', args, { stdio: ['pipe', 'pipe', 'pipe'] });
@@ -155,7 +155,7 @@ async function startBackend(port) {
       PORT: String(port),
       DATABASE_URL: `postgresql://${dbUser}:${dbPassword}@127.0.0.1:55432/${database}`,
       JWT_SECRET: jwtSecret,
-      REFRESH_TOKEN_SECRET: refreshSecret,
+      REFRESH_TOKEN_SECRET: refreshKey,
       RATE_LIMIT_API_MAX_REQUESTS: '1000',
     },
     stdio: ['ignore', 'pipe', 'pipe'],

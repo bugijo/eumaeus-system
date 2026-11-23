@@ -3,6 +3,18 @@ import { runWithClinic, runWithUser } from '../tenantContext';
 import { AssistantReminderService } from '../services/assistantReminder.service';
 
 describe('AssistantReminderService', () => {
+  // As datas do cenário são fixas; congela apenas o relógio (Date) para o teste não expirar com o calendário.
+  beforeEach(() => {
+    jest.useFakeTimers({
+      now: new Date('2026-10-15T12:00:00Z'),
+      doNotFake: ['nextTick', 'setImmediate', 'setTimeout', 'setInterval', 'queueMicrotask'],
+    });
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
   it('deduplica ocorrências, registra ações, reativa adiamentos e mantém o escopo da clínica', async () => {
     const reminder = { id: 10, clinicId: 4, reminderKey: 'invoice:12', status: 'ACTIVE', snoozedUntil: null };
     (prisma as any).assistantReminder.findUnique.mockResolvedValue(reminder);

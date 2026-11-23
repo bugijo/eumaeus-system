@@ -67,8 +67,8 @@ backend local iniciado com `DATABASE_URL`, `JWT_SECRET` e
 ```bash
 npm --prefix backend run build
 DATABASE_URL='postgresql://eumaeus:eumaeus_local_only@127.0.0.1:55432/eumaeus_local' \
-JWT_SECRET='(segredo local com pelo menos 32 caracteres)' \
-REFRESH_TOKEN_SECRET='(outro segredo local com pelo menos 32 caracteres)' \
+JWT_SECRET='<segredo local com pelo menos 32 caracteres>' \
+REFRESH_TOKEN_SECRET='<outro segredo local com pelo menos 32 caracteres>' \
 NODE_ENV=test PORT=3334 node backend/dist/src/bootstrap.js
 node backend/scripts/real-local/http-concurrency-authenticated.mjs
 ```

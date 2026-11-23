@@ -47,7 +47,7 @@ export function AppointmentForm({ appointment, onSuccess, onCancel }: Appointmen
     handleSubmit,
     formState: { errors, isSubmitting },
     reset
-  } = useForm<AppointmentFormData>({
+  } = useForm<z.input<typeof appointmentSchema>, unknown, AppointmentFormData>({
     resolver: zodResolver(appointmentSchema),
     defaultValues: appointment ? {
       petId: appointment.petId?.toString() || '',

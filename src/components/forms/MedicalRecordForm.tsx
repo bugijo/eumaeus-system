@@ -213,7 +213,7 @@ export function MedicalRecordForm({ petId, petName, onSuccess, onCancel }: Medic
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
-  } = useForm<MedicalRecordFormData>({
+  } = useForm<z.input<typeof medicalRecordSchema>, unknown, MedicalRecordFormData>({
     resolver: zodResolver(medicalRecordSchema),
     defaultValues: {
       petId,
