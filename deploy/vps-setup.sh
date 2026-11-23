@@ -42,8 +42,10 @@ ufw allow 443/udp
 ufw --force enable
 
 # SSH somente por chave (a chave do deploy já está instalada acima)
-sed -i -E 's/^#?PasswordAuthentication .*/PasswordAuthentication no/' /etc/ssh/sshd_config
-sed -i -E 's/^#?PermitRootLogin .*/PermitRootLogin prohibit-password/' /etc/ssh/sshd_config
+# Drop-in com prefixo 00 para vencer o 50-cloud-init.conf (primeira ocorrência vale no sshd).
+printf "PasswordAuthentication no\nKbdInteractiveAuthentication no\nPermitRootLogin prohibit-password\n" \
+  > /etc/ssh/sshd_config.d/00-eumaeus-hardening.conf
+sshd -t
 systemctl reload ssh || systemctl reload sshd
 
 systemctl enable --now fail2ban
