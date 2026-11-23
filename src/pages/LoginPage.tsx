@@ -6,6 +6,7 @@ import { authApi } from '../api/authApi';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { DownloadsSection } from "@/components/downloads/DownloadsSection";
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -124,6 +125,10 @@ export default function LoginPage() {
               {loading ? 'Entrando...' : 'Entrar'}
             </Button>
           </form>
+          <details className="mt-8 rounded-lg border bg-card p-4 text-sm">
+            <summary className="cursor-pointer font-medium">Baixar aplicativo ou instalar no celular</summary>
+            <div className="mt-4"><DownloadsSection /></div>
+          </details>
           <p className="mt-8 text-center text-xs text-muted-foreground">Esqueceu a senha? Peça ao dono do estabelecimento para redefinir em Configurações › Equipe e acessos.</p>
         </div>
       </main>

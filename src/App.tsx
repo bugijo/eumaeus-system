@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
+import { useAuthStore } from "./stores/authStore";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { logger } from "./utils/logger";
 // import { webVitalsMonitor } from "./utils/webVitals"; // Temporariamente comentado
@@ -20,6 +21,7 @@ const Financeiro = React.lazy(() => import("./pages/Financeiro"));
 const Estoque = React.lazy(() => import("./pages/Estoque"));
 const Pets = React.lazy(() => import("./pages/Pets"));
 const LoginPage = React.lazy(() => import("./pages/LoginPage"));
+const LandingPage = React.lazy(() => import("./pages/LandingPage"));
 const NotFound = React.lazy(() => import("./pages/NotFound"));
 const TutorListPage = React.lazy(() => import("./pages/TutorListPage"));
 const TutorFormPage = React.lazy(() => import("./pages/TutorFormPage"));
@@ -57,6 +59,12 @@ const PageLoader = () => {
       </div>
     </div>
   );
+};
+
+/** "/" mostra a página de venda para visitantes e o painel para quem já entrou. */
+const RootPage = () => {
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated());
+  return isAuthenticated ? <Layout><Dashboard /></Layout> : <LandingPage />;
 };
 
 function App() {
@@ -117,10 +125,9 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             
             {/* Rotas protegidas */}
+            <Route path="/" element={<RootPage />} />
+
             <Route element={<ProtectedRoute />}>
-              <Route path="/" element={
-                <Layout><Dashboard /></Layout>
-              } />
               <Route path="/agendamentos" element={
                 <Layout><Agendamentos /></Layout>
               } />

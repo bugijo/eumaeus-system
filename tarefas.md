@@ -247,3 +247,28 @@ Legenda: `[x]` feito e verificado · `[~]` existe, mas parcial ou não testado d
 - **Escalabilidade:** Base sólida para crescimento futuro
 
 **Status Final:** 🎉 V2.0 APROVADA E EM PRODUÇÃO COM SUCESSO!
+## 7. Venda, downloads e lojas (rodada 23/11/2026)
+- [x] Página de venda em `/` para visitantes (recursos, como começar, botão Entrar); quem já entrou continua vendo o painel
+- [x] Seção "Aplicativos" na landing e um bloco recolhível "Baixar aplicativo" na tela de login
+- [x] Downloads só mostram o que já funciona (navegador e instalação pelo navegador). Os demais aparecem como "Em breve", sem link quebrado
+- [ ] Preços e planos da página de venda: aguardando definição sua (não inventei valores)
+- [ ] Contato comercial na página de venda: aguardando o e-mail ou WhatsApp público que você quer usar
+- [ ] Depoimentos e prints reais: a prévia da página usa exemplos genéricos
+- [ ] Instalador Windows (.exe), macOS (.dmg) e Linux (AppImage): empacotar com Electron ou Tauri, com build em CI (macOS exige máquina Mac ou runner no GitHub)
+- [ ] APK Android: empacotar com Capacitor e publicar o arquivo na própria página
+- [ ] iPhone/iPad: exige conta Apple Developer. Sem ela não há distribuição pública fora da App Store
+- [ ] Publicação na Google Play e na App Store
+
+### Custos (fontes oficiais consultadas em 23/11/2026)
+| Item | Custo | Observação |
+|---|---|---|
+| Apple Developer Program | US$ 99 por ano | Necessário para App Store, TestFlight e assinatura/notarização do macOS. Fonte: developer.apple.com |
+| Google Play Console | US$ 25 uma vez | Registro único. Fonte: support.google.com/googleplay |
+| Apple Developer Enterprise | US$ 299 por ano | Não serve para venda pública; não recomendado |
+| Certificado de assinatura de código Windows | Estimativa: valor anual variável | Sem ele o Windows mostra alerta do SmartScreen. Cotar antes de comprar |
+| Hospedagem dos APK e instaladores | Sem custo adicional previsto | Ficam no próprio servidor, junto com o site |
+
+### Decisões que dependem de você
+- Confirmar que a Apple Developer (US$ 99/ano) e a Google Play (US$ 25) podem ser contratadas no nome do responsável legal.
+- Aprovar o gasto com certificado Windows, depois de ver a cotação.
+- Escolher: publicar iOS só pela App Store (recomendado) ou manter só o atalho do Safari por enquanto.
