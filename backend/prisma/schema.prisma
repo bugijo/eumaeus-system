@@ -856,9 +856,13 @@ model ClinicSettings {
   emailFromAddress String @default("contato@eumaeus.com.br")
 
   // Configurações da Clínica
-  clinicName    String @default("Eumaeus Clínica Veterinária")
-  clinicPhone   String @default("(11) 99999-9999")
-  clinicAddress String @default("Rua das Flores, 123 - São Paulo, SP")
+  clinicName      String  @default("Eumaeus Clínica Veterinária")
+  clinicPhone     String  @default("(11) 99999-9999")
+  clinicAddress   String  @default("Rua das Flores, 123 - São Paulo, SP")
+  clinicLegalName String? // razão social
+  clinicDocument  String? // CNPJ ou CPF
+  clinicEmail     String?
+  businessHours   String? // ex.: "Seg a sex 8h-18h · Sáb 8h-12h"
 
   // Configurações de Horário
   reminderSendTime          String @default("08:00") // Formato HH:MM

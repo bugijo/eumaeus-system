@@ -13,6 +13,10 @@ export interface ClinicSettings {
   clinicName: string;
   clinicPhone: string;
   clinicAddress: string;
+  clinicLegalName?: string | null;
+  clinicDocument?: string | null;
+  clinicEmail?: string | null;
+  businessHours?: string | null;
   reminderSendTime: string;
   vaccineReminderDaysBefore: number;
   clinicId: number;
@@ -30,6 +34,10 @@ export interface UpdateClinicSettingsRequest {
   clinicName?: string;
   clinicPhone?: string;
   clinicAddress?: string;
+  clinicLegalName?: string | null;
+  clinicDocument?: string | null;
+  clinicEmail?: string | null;
+  businessHours?: string | null;
   reminderSendTime?: string;
   vaccineReminderDaysBefore?: number;
 }

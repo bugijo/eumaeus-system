@@ -61,7 +61,7 @@ describe('Layout Component', () => {
   it('deve renderizar o layout corretamente', () => {
     renderLayout();
     
-    expect(screen.getByText('Eumaeus System')).toBeInTheDocument();
+    expect(screen.getByText('Eumaeus')).toBeInTheDocument();
     expect(screen.getByText('João Silva')).toBeInTheDocument();
     expect(screen.getByText('Test Content')).toBeInTheDocument();
   });
@@ -94,7 +94,7 @@ describe('Layout Component', () => {
     renderLayout();
     
     // Verificar se os principais links estão presentes
-    expect(screen.getByText('Dashboard')).toBeInTheDocument();
+    expect(screen.getByText('Início')).toBeInTheDocument();
     expect(screen.getByText('Agendamentos')).toBeInTheDocument();
     expect(screen.getByText('Tutores')).toBeInTheDocument();
     expect(screen.getByText('Pets')).toBeInTheDocument();
@@ -180,7 +180,7 @@ describe('Layout Component', () => {
     fireEvent.click(menuButton);
     
     // Clicar em um link de navegação
-    const dashboardLink = screen.getByLabelText(/navegar para dashboard/i);
+    const dashboardLink = screen.getByLabelText(/navegar para início/i);
     fireEvent.click(dashboardLink);
     
     // Verificar se o sidebar foi fechado (aria-expanded deve ser false)

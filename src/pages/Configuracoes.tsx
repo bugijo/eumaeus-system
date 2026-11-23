@@ -1,30 +1,33 @@
 
 import React, { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { UserPlus, Edit, Trash2, Save, Settings, Bell, Mail, Clock, TestTube, RotateCcw, Info } from 'lucide-react';
+import { Save, Settings, Bell, Mail, Clock, TestTube, RotateCcw, Info } from 'lucide-react';
 import { useClinicSettings, useUpdateClinicSettings, useTestEmailSettings, useResetClinicSettings, useTemplateVariables } from '@/api/clinicSettingsApi';
 import { toast } from 'sonner';
 import { serviceApi, ServiceType } from '@/api/serviceApi';
+import { useAuthStore } from '@/stores/authStore';
+import EstablishmentSettings from '@/components/settings/EstablishmentSettings';
+import StaffUsersSettings from '@/components/settings/StaffUsersSettings';
+import MyAccountSettings from '@/components/settings/MyAccountSettings';
 
 export default function Configuracoes() {
+  const authUser = useAuthStore((state) => state.user);
+  const isOwner = authUser?.role === 'DONO';
+  const [searchParams] = useSearchParams();
+  const initialTab = searchParams.get('aba') || 'estabelecimento';
   const [catalogServices, setCatalogServices] = useState<ServiceType[]>([]);
   const [catalogLoading, setCatalogLoading] = useState(false);
   const [catalogSaving, setCatalogSaving] = useState(false);
   const [catalogForm, setCatalogForm] = useState({ name: '', description: '', duration: '60', price: '', category: 'CLINICA' });
-  const [emailReminders, setEmailReminders] = useState(true);
-  const [whatsappReminders, setWhatsappReminders] = useState(false);
-  const [emailHealthAlerts, setEmailHealthAlerts] = useState(true);
-  const [whatsappHealthAlerts, setWhatsappHealthAlerts] = useState(true);
-  const [satisfactionSurvey, setSatisfactionSurvey] = useState(false);
 
   // Hooks para o sistema de automação
   const { data: settings, isLoading: settingsLoading, error: settingsError } = useClinicSettings();
@@ -115,174 +118,34 @@ export default function Configuracoes() {
     }
   };
 
-  const users = [
-    {
-      nome: "Dra. Fernanda Calixto",
-      email: "fernanda.calixto@vet.com",
-      cargo: "Admin",
-      color: "bg-primary"
-    },
-    {
-      nome: "Dr. João Silva",
-      email: "joao.silva@vet.com",
-      cargo: "Veterinário",
-      color: "bg-blue-500"
-    },
-    {
-      nome: "Maria Santos",
-      email: "maria.santos@vet.com",
-      cargo: "Recepção",
-      color: "bg-green-500"
-    }
-  ];
-
   return (
     <div className="!bg-background p-6 space-y-6">
       <div className="flex items-center space-x-3">
         <Settings className="h-8 w-8 text-primary" />
-        <h1 className="text-2xl font-bold text-text-dark mb-6">Configurações do Sistema</h1>
+        <h1 className="text-2xl font-bold text-text-dark">Configurações</h1>
       </div>
 
-      <Tabs defaultValue="geral" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="geral">Geral</TabsTrigger>
-          <TabsTrigger value="usuarios">Usuários</TabsTrigger>
-          <TabsTrigger value="notificacoes">Notificações</TabsTrigger>
-          <TabsTrigger value="empresa">Dados da Empresa</TabsTrigger>
+      <Tabs key={initialTab} defaultValue={initialTab} className="space-y-6">
+        <TabsList className="flex h-auto w-full flex-wrap justify-start gap-1">
+          <TabsTrigger value="estabelecimento">Estabelecimento</TabsTrigger>
+          {isOwner && <TabsTrigger value="usuarios">Equipe e acessos</TabsTrigger>}
+          <TabsTrigger value="conta">Minha conta</TabsTrigger>
+          <TabsTrigger value="notificacoes">Lembretes</TabsTrigger>
           <TabsTrigger value="servicos">Serviços</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="geral" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Informações da Clínica</CardTitle>
-              <CardDescription>Configure os dados básicos da sua clínica veterinária</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="clinicName">Nome da Clínica</Label>
-                  <Input 
-                    id="clinicName" 
-                    defaultValue="Clínica Veterinária Fernanda Calixto" 
-                    placeholder="Digite o nome da clínica"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Telefone Principal</Label>
-                  <Input 
-                    id="phone" 
-                    defaultValue="(11) 99999-9999" 
-                    placeholder="(XX) XXXXX-XXXX"
-                  />
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="address">Endereço Completo</Label>
-                <Input 
-                  id="address" 
-                  defaultValue="Rua das Flores, 123 - Centro - São Paulo/SP - CEP: 01234-567" 
-                  placeholder="Endereço completo da clínica"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="email">Email de Contato</Label>
-                <Input 
-                  id="email" 
-                  type="email"
-                  defaultValue="contato@vetcalixto.com.br" 
-                  placeholder="email@clinica.com.br"
-                />
-              </div>
-
-              <div className="space-y-4">
-                <Label className="text-base font-medium">Horário de Funcionamento</Label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="weekdays">Segunda a Sexta</Label>
-                    <Input 
-                      id="weekdays" 
-                      defaultValue="08:00 - 19:00" 
-                      placeholder="HH:MM - HH:MM"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="saturday">Sábados</Label>
-                    <Input 
-                      id="saturday" 
-                      defaultValue="09:00 - 13:00" 
-                      placeholder="HH:MM - HH:MM"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="sunday">Domingos</Label>
-                    <Input 
-                      id="sunday" 
-                      defaultValue="Fechado" 
-                      placeholder="Fechado ou HH:MM - HH:MM"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <Button className="w-full md:w-auto">
-                <Save className="mr-2 h-4 w-4" />
-                Salvar Alterações
-              </Button>
-            </CardContent>
-          </Card>
+        <TabsContent value="estabelecimento" className="space-y-6">
+          <EstablishmentSettings canEdit={isOwner} />
         </TabsContent>
 
-        <TabsContent value="usuarios" className="space-y-6">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>Gerenciar Usuários</CardTitle>
-                <CardDescription>Controle o acesso ao sistema e permissões dos usuários</CardDescription>
-              </div>
-              <Button>
-                <UserPlus className="mr-2 h-4 w-4" />
-                Convidar Novo Usuário
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nome</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Cargo</TableHead>
-                    <TableHead className="text-center">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {users.map((user, index) => (
-                    <TableRow key={index}>
-                      <TableCell className="font-medium">{user.nome}</TableCell>
-                      <TableCell>{user.email}</TableCell>
-                      <TableCell>
-                        <Badge className={`${user.color} text-white`}>
-                          {user.cargo}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex justify-center space-x-2">
-                          <Button size="sm" variant="outline">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button size="sm" variant="outline">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+        {isOwner && (
+          <TabsContent value="usuarios" className="space-y-6">
+            <StaffUsersSettings currentUserId={authUser?.id} currentEmail={authUser?.email} />
+          </TabsContent>
+        )}
+
+        <TabsContent value="conta" className="space-y-6">
+          <MyAccountSettings name={authUser?.name} email={authUser?.email} role={authUser?.role} />
         </TabsContent>
 
         <TabsContent value="notificacoes" className="space-y-6">
@@ -567,50 +430,6 @@ export default function Configuracoes() {
           </div>
         </TabsContent>
 
-        <TabsContent value="empresa" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Dados Fiscais da Empresa</CardTitle>
-              <CardDescription>Informações necessárias para emissão de notas fiscais e documentos</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="razaoSocial">Razão Social</Label>
-                  <Input 
-                    id="razaoSocial" 
-                    defaultValue="Fernanda Calixto Clínica Veterinária Ltda" 
-                    placeholder="Razão social da empresa"
-                  />
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="cnpj">CNPJ</Label>
-                    <Input 
-                      id="cnpj" 
-                      defaultValue="12.345.678/0001-90" 
-                      placeholder="XX.XXX.XXX/XXXX-XX"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="inscricaoEstadual">Inscrição Estadual</Label>
-                    <Input 
-                      id="inscricaoEstadual" 
-                      defaultValue="123.456.789.123" 
-                      placeholder="Número da inscrição estadual"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <Button className="w-full md:w-auto">
-                <Save className="mr-2 h-4 w-4" />
-                Salvar Dados Fiscais
-              </Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
 
         <TabsContent value="servicos" className="space-y-6">
           <Card>

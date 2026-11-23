@@ -45,32 +45,39 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex bg-background">
-      {/* PAINEL DA ESQUERDA - IMAGEM (só aparece em telas grandes) */}
-      <div className="hidden lg:flex flex-1 items-center justify-center bg-muted relative">
-        {/* Logo como uma marca d'água sutil no fundo */}
-        <img src="/logo.png" alt="Eumaeus Logo" className="w-2/3 opacity-20" />
-      </div>
+      <aside className="relative hidden flex-1 overflow-hidden bg-gradient-to-br from-primary via-primary/90 to-emerald-700 text-primary-foreground lg:flex lg:flex-col lg:justify-between lg:p-12">
+        <div aria-hidden className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-white/10" />
+        <div aria-hidden className="pointer-events-none absolute -bottom-32 -left-20 h-80 w-80 rounded-full bg-white/5" />
+        <div className="relative flex items-center gap-3">
+          <span className="rounded-2xl bg-white p-2 shadow-lg"><img src="/logo.png" alt="" className="h-12 w-12 object-contain" /></span>
+          <span className="text-2xl font-semibold tracking-tight">Eumaeus</span>
+        </div>
+        <div className="relative max-w-md space-y-6">
+          <h1 className="text-4xl font-bold leading-tight">Clínica veterinária e pet shop no mesmo sistema.</h1>
+          <ul className="space-y-3 text-base text-primary-foreground/90">
+            {['Agenda, prontuário e receitas', 'Caixa com leitor de código de barras', 'Estoque, financeiro e relatório para o contador', 'No computador, no celular e no tablet'].map((item) => (
+              <li key={item} className="flex items-start gap-3"><span aria-hidden className="mt-2 h-2 w-2 shrink-0 rounded-full bg-white" />{item}</li>
+            ))}
+          </ul>
+        </div>
+        <p className="relative text-sm text-primary-foreground/70">© {new Date().getFullYear()} Eumaeus</p>
+      </aside>
 
-      {/* PAINEL DA DIREITA - FORMULÁRIO */}
-      <div className="flex-1 flex flex-col justify-center items-center p-8">
+      <main className="flex flex-1 flex-col items-center justify-center p-6 sm:p-8">
         <div className="w-full max-w-sm">
-          {/* Logo principal, menor, acima do formulário */}
-          <img src="/logo.png" alt="Eumaeus System" className="mx-auto h-12 w-auto mb-8" />
+          <img src="/logo.png" alt="Eumaeus" className="mx-auto mb-6 h-20 w-auto lg:hidden" />
 
-          <h2 className="text-center text-2xl font-bold text-foreground mb-2">
-            Faça login na sua conta
-          </h2>
-          <p className="text-center text-muted-foreground mb-8">
-            Bem-vindo(a) ao Eumaeus System!
-          </p>
+          <h2 className="mb-2 text-center text-2xl font-bold text-foreground lg:text-left">Entrar</h2>
+          <p className="mb-8 text-center text-muted-foreground lg:text-left">Use o e-mail e a senha cadastrados pelo responsável do estabelecimento.</p>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Campo de Email */}
             <div>
-              <Label htmlFor="email" className="text-foreground">Email</Label>
+              <Label htmlFor="email" className="text-foreground">E-mail</Label>
               <Input
                 id="email"
                 type="email"
+                autoComplete="username"
                 placeholder="seu@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -86,6 +93,7 @@ export default function LoginPage() {
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
+                  autoComplete="current-password"
                   placeholder="Sua senha"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -105,19 +113,20 @@ export default function LoginPage() {
             </div>
 
             {/* Exibição de Erro */}
-            {error && <p className="text-sm text-destructive text-center">{error}</p>}
+            {error && <p role="alert" className="rounded-md bg-destructive/10 px-3 py-2 text-center text-sm text-destructive">{error}</p>}
 
             {/* Botão de Submit */}
             <Button 
               type="submit" 
-              className="w-full"
+              className="h-11 w-full text-base"
               disabled={loading}
             >
               {loading ? 'Entrando...' : 'Entrar'}
             </Button>
           </form>
+          <p className="mt-8 text-center text-xs text-muted-foreground">Esqueceu a senha? Peça ao dono do estabelecimento para redefinir em Configurações › Equipe e acessos.</p>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

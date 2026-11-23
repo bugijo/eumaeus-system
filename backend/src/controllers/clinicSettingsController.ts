@@ -46,10 +46,17 @@ class ClinicSettingsController {
     try {
       const clinicId = this.getClinicId(req);
       if (!clinicId) return res.status(403).json({ success: false, message: 'Contexto da clínica ausente' });
-      const updateData: UpdateClinicSettingsRequest = req.body;
+      const ALLOWED: Array<keyof UpdateClinicSettingsRequest> = ['appointmentRemindersEnabled', 'appointmentReminderTemplate', 'vaccineRemindersEnabled', 'vaccineReminderTemplate', 'emailFromName', 'emailFromAddress', 'clinicName', 'clinicPhone', 'clinicAddress', 'clinicLegalName', 'clinicDocument', 'clinicEmail', 'businessHours', 'reminderSendTime', 'vaccineReminderDaysBefore'];
+      const updateData: UpdateClinicSettingsRequest = {};
+      for (const key of ALLOWED) if (req.body?.[key] !== undefined) (updateData as any)[key] = typeof req.body[key] === 'string' ? req.body[key].trim() : req.body[key];
+      if (updateData.clinicName !== undefined && !String(updateData.clinicName).trim()) return res.status(400).json({ success: false, message: 'Informe o nome do estabelecimento' });
+      if (updateData.clinicDocument) {
+        const digits = String(updateData.clinicDocument).replace(/\D/g, '');
+        if (digits.length !== 11 && digits.length !== 14) return res.status(400).json({ success: false, message: 'CNPJ ou CPF inválido' });
+      }
+      if (updateData.clinicEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(updateData.clinicEmail))) return res.status(400).json({ success: false, message: 'E-mail do estabelecimento inválido' });
       
       console.log(`🔧 Atualizando configurações da clínica ${clinicId}...`);
-      console.log('📝 Dados recebidos:', updateData);
       
       // Validações
       if (updateData.reminderSendTime && !clinicSettingsService.validateTimeFormat(updateData.reminderSendTime)) {
