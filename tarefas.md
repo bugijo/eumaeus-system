@@ -9,7 +9,7 @@ Legenda: `[x]` feito e verificado · `[~]` existe, mas parcial ou não testado d
 - [x] DNS do registro.br apontado para a VPS; HTTPS do Let's Encrypt emitido (validade até 21/02/2027, renovação automática)
 - [x] Firewall, fail2ban, SSH só por chave e backup diário (03:15, 30 dias)
 - [x] Ambiente local de testes (docker, porta 8088) com conta DONO de teste (credencial: ver cofre-claude/eumaeus-local-teste.env)
-- [ ] Criar o usuário DONO de produção (nome e e-mail do Giovanni; senha digitada por ele)
+- [x] Criar o usuário DONO de produção (senha digitada pelo próprio dono; login confirmado)
 - [ ] Remover o domínio do projeto antigo na Vercel e desligar os serviços do Render
 - [ ] Push do branch para o GitHub e merge na main (precisa de autorização)
 - [ ] Cópia dos backups para fora da VPS (ex.: Google Drive)
@@ -31,7 +31,7 @@ Legenda: `[x]` feito e verificado · `[~]` existe, mas parcial ou não testado d
 - [x] Já existe "centro de resultado" (Clínica / Pet Shop) em produtos, serviços, faturas e despesas
 - [x] Rateio de despesa compartilhada: lança uma vez e divide por percentual (centavos fecham o total)
 - [x] Regras de rateio salvas (ex.: Energia 25/75) e reaproveitadas todo mês
-- [ ] Cadastrar os centros CLINICA e PETSHOP e as regras reais na produção (depois do usuário dono)
+- [x] Centros CLINICA e PETSHOP, regras Aluguel 50/50, Energia 25/75 e Agua 50/50, e aluguel de R$ 3.000 lançado (energia e água pendentes de valor)
 - [x] PDF do contador com resultado por unidade e despesas marcadas como "rateio"
 - [x] Decisão: rateio é só para o caso Clínica+Pet do Giovanni; para clientes, um acesso por estabelecimento
 
