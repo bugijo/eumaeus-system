@@ -56,7 +56,6 @@ services:
       SITE_ADDRESS: ${SITE_ADDRESS:-eumaeus.com.br}
       WWW_ADDRESS: ${WWW_ADDRESS:-www.eumaeus.com.br}
       PRIMARY_HOST: ${PRIMARY_HOST:-eumaeus.com.br}
-      ACME_EMAIL: ${ACME_EMAIL:?defina ACME_EMAIL}
     ports:
       - "${HTTP_PORT:-80}:80"
       - "${HTTPS_PORT:-443}:443"
