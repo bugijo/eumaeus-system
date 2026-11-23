@@ -7,24 +7,26 @@ export interface Product {
   supplier: string;
   quantity: number;
   costPrice: number;
+  salePrice?: number | null;
+  barcode?: string | null;
+  category?: string | null;
+  resultCenterId?: number | null;
   expirationDate: string;
 }
 
 export interface CreateProductData {
   name: string;
-  supplier: string;
+  supplier?: string;
   quantity: number;
   costPrice: number;
-  expirationDate: string;
-}
-
-export interface UpdateProductData {
-  name?: string;
-  supplier?: string;
-  quantity?: number;
-  costPrice?: number;
+  salePrice?: number | null;
+  barcode?: string | null;
+  category?: string | null;
+  resultCenterId?: number | null;
   expirationDate?: string;
 }
+
+export type UpdateProductData = Partial<CreateProductData>;
 
 export interface StockStats {
   totalItems: number;

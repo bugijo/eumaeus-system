@@ -81,7 +81,7 @@ export class SaleService {
       if (duplicate) return duplicate;
 
       const productIds = [...grouped.keys()];
-      await tx.$queryRaw`SELECT "id" FROM "Product" WHERE "id" IN (${Prisma.join(productIds)}) AND "clinicId" = ${clinicId} FOR UPDATE`;
+      // A baixa usa updateMany condicional (quantity >= pedido) + transação serializável: não há venda acima do saldo.
       const products = await tx.product.findMany({ where: { id: { in: productIds } } });
       const byId = new Map<number, any>(products.map((product: any) => [product.id, product]));
 

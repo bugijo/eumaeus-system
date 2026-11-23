@@ -188,3 +188,11 @@
     font-family: 'Poppins', sans-serif;
   }
 }
+
+/* Impressão do comprovante do caixa (impressora térmica 80 mm ou A4) */
+@media print {
+  body * { visibility: hidden !important; }
+  #cupom, #cupom * { visibility: visible !important; }
+  #cupom { position: absolute; left: 0; top: 0; width: 72mm; color: #000; }
+  @page { margin: 4mm; }
+}

@@ -2,7 +2,12 @@ import PDFDocument from 'pdfkit';
 import fs from 'node:fs';
 import path from 'node:path';
 
-const money = (value: string) => `R$ ${value.replace('.', ',')}`;
+const money = (value: string) => {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return `R$ ${String(value).replace('.', ',')}`;
+  const [int, cents] = Math.abs(number).toFixed(2).split('.');
+  return `${number < 0 ? '-' : ''}R$ ${int.replace(/\B(?=(\d{3})+(?!\d))/g, '.')},${cents}`;
+};
 
 const render = (write: (doc: any) => void): Promise<Buffer> => new Promise((resolve, reject) => {
   const doc = new PDFDocument({ size: 'A4', margin: 48, info: { Producer: 'Eumaeus local' } });

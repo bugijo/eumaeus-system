@@ -1,0 +1,25 @@
+{
+  "name": "Eumaeus — Gestão veterinária e pet shop",
+  "short_name": "Eumaeus",
+  "description": "Agenda, prontuário, caixa com código de barras, estoque e financeiro para clínicas veterinárias e pet shops.",
+  "id": "/",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "orientation": "any",
+  "background_color": "#ffffff",
+  "theme_color": "#00529b",
+  "lang": "pt-BR",
+  "categories": ["business", "medical", "productivity"],
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Caixa", "url": "/caixa", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Agendamentos", "url": "/agendamentos", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] }
+  ]
+}

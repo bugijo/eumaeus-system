@@ -37,7 +37,8 @@ const ProductListPage: React.FC = () => {
   // Filtrar produtos baseado no termo de busca
   const filteredProducts = products.filter(product =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.supplier.toLowerCase().includes(searchTerm.toLowerCase())
+    product.supplier.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (product.barcode || '').includes(searchTerm.trim())
   );
 
   // Função para verificar se o produto está com estoque baixo
@@ -45,6 +46,7 @@ const ProductListPage: React.FC = () => {
 
   // Função para verificar se o produto está próximo do vencimento
   const isExpiringSoon = (expirationDate: string) => {
+    if (!expirationDate) return false;
     const today = new Date();
     const expDate = new Date(expirationDate);
     const diffTime = expDate.getTime() - today.getTime();
@@ -54,7 +56,8 @@ const ProductListPage: React.FC = () => {
 
   // Função para formatar data
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pt-BR');
+    if (!dateString) return '—';
+    return new Date(`${dateString.slice(0, 10)}T12:00:00`).toLocaleDateString('pt-BR');
   };
 
   // Função para formatar preço
@@ -229,8 +232,8 @@ const ProductListPage: React.FC = () => {
                   <TableHead>Produto</TableHead>
                   <TableHead>Fornecedor</TableHead>
                   <TableHead>Quantidade</TableHead>
-                  <TableHead>Preço de Custo</TableHead>
-                  <TableHead>Vencimento</TableHead>
+                  <TableHead>Preço</TableHead>
+                  <TableHead>Validade</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
@@ -250,14 +253,14 @@ const ProductListPage: React.FC = () => {
                 ) : (
                   filteredProducts.map((product) => (
                     <TableRow key={product.id}>
-                      <TableCell className="font-medium">{product.name}</TableCell>
+                      <TableCell className="font-medium">{product.name}{product.barcode && <span className="block font-mono text-xs text-muted-foreground">{product.barcode}</span>}</TableCell>
                       <TableCell>{product.supplier}</TableCell>
                       <TableCell>
                         <span className={isLowStock(product.quantity) ? 'text-warning-muted-foreground font-semibold' : ''}>
                           {product.quantity}
                         </span>
                       </TableCell>
-                      <TableCell>{formatPrice(product.costPrice)}</TableCell>
+                      <TableCell>{formatPrice(product.salePrice ?? product.costPrice)}{product.salePrice != null && <span className="block text-xs text-muted-foreground">custo {formatPrice(product.costPrice)}</span>}</TableCell>
                       <TableCell>
                         <span className={isExpiringSoon(product.expirationDate) ? 'text-destructive font-semibold' : ''}>
                           {formatDate(product.expirationDate)}

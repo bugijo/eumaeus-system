@@ -1,17 +1,22 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ArrowLeft, Save, Package } from 'lucide-react';
+import { ArrowLeft, Camera, Package, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useProduct, useCreateProduct, useUpdateProduct } from '@/api/productApi';
+import { useResultCenters } from '@/api/financialApi';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import { useToast } from '@/components/ui/use-toast';
+import CameraBarcodeScanner from '@/components/barcode/CameraBarcodeScanner';
 import { productSchema, type CreateProductData } from '@/schemas/productSchema';
+
+const CATEGORIES = ['Ração', 'Petisco', 'Higiene', 'Acessório', 'Brinquedo', 'Medicamento', 'Vacina', 'Material clínico', 'Outro'];
+const numberOrNull = (value: string) => (value === '' ? null : Number(value.replace(',', '.')));
 
 const ProductFormPage: React.FC = () => {
   const navigate = useNavigate();
@@ -19,259 +24,170 @@ const ProductFormPage: React.FC = () => {
   const { toast } = useToast();
   const isEditing = !!id;
   const productId = id ? parseInt(id, 10) : undefined;
+  const [cameraOpen, setCameraOpen] = useState(false);
 
-  // Queries e Mutations
   const { data: product, isLoading: isLoadingProduct } = useProduct(productId!);
+  const { data: centers = [] } = useResultCenters();
   const createMutation = useCreateProduct();
   const updateMutation = useUpdateProduct();
 
-  // Form setup
   const form = useForm<CreateProductData>({
     resolver: zodResolver(productSchema),
-    defaultValues: {
-      name: '',
-      supplier: '',
-      quantity: 0,
-      costPrice: 0,
-      expirationDate: '',
-    },
+    defaultValues: { name: '', barcode: '', category: '', supplier: '', quantity: 0, costPrice: 0, salePrice: null, resultCenterId: null, expirationDate: '' },
   });
 
-  // Preencher formulário quando editando
   useEffect(() => {
     if (isEditing && product) {
       form.reset({
         name: product.name,
-        supplier: product.supplier,
+        barcode: product.barcode || '',
+        category: product.category || '',
+        supplier: product.supplier === 'Não informado' ? '' : product.supplier,
         quantity: product.quantity,
         costPrice: product.costPrice,
-        expirationDate: product.expirationDate.split('T')[0], // Formato YYYY-MM-DD para input date
+        salePrice: product.salePrice ?? null,
+        resultCenterId: product.resultCenterId ?? null,
+        expirationDate: product.expirationDate ? product.expirationDate.split('T')[0] : '',
       });
     }
   }, [product, isEditing, form]);
 
-  // Função para submeter o formulário
   const onSubmit = async (data: CreateProductData) => {
+    const payload = { ...data, barcode: data.barcode || null, category: data.category || null };
     try {
       if (isEditing && productId) {
-        await updateMutation.mutateAsync({
-          id: productId,
-          data,
-        });
-        toast({
-          title: 'Produto atualizado',
-          description: 'O produto foi atualizado com sucesso.',
-        });
+        await updateMutation.mutateAsync({ id: productId, data: payload });
+        toast({ title: 'Produto atualizado' });
       } else {
-        await createMutation.mutateAsync(data);
-        toast({
-          title: 'Produto criado',
-          description: 'O produto foi criado com sucesso.',
-        });
+        await createMutation.mutateAsync(payload);
+        toast({ title: 'Produto cadastrado' });
       }
       navigate('/estoque');
     } catch (error) {
-      toast({
-        title: 'Erro ao salvar produto',
-        description: 'Ocorreu um erro ao salvar o produto. Tente novamente.',
-        variant: 'destructive',
-      });
+      const message = (error as any)?.response?.data?.error || 'Não foi possível salvar. Confira os campos e tente novamente.';
+      toast({ title: 'Erro ao salvar produto', description: message, variant: 'destructive' });
     }
   };
 
-  // Loading state para edição
   if (isEditing && isLoadingProduct) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <LoadingSpinner size="lg" />
-      </div>
-    );
+    return <div className="flex min-h-[400px] items-center justify-center"><LoadingSpinner size="lg" /></div>;
   }
 
-  // Produto não encontrado
   if (isEditing && !isLoadingProduct && !product) {
     return (
       <div className="p-8 text-center">
-        <h2 className="text-xl text-red-600 mb-2">Produto não encontrado</h2>
-        <p className="text-gray-600 mb-4">O produto que você está tentando editar não foi encontrado.</p>
-        <Button onClick={() => navigate('/estoque')} variant="outline">
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Voltar para Estoque
-        </Button>
+        <h2 className="mb-2 text-xl text-red-600">Produto não encontrado</h2>
+        <Button onClick={() => navigate('/estoque')} variant="outline"><ArrowLeft className="mr-2 h-4 w-4" />Voltar para Estoque</Button>
       </div>
     );
   }
 
   const isSubmitting = createMutation.isPending || updateMutation.isPending;
+  const cost = form.watch('costPrice');
+  const sale = form.watch('salePrice');
+  const margin = sale && cost > 0 ? ((sale - cost) / cost) * 100 : null;
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
+    <div className="space-y-6 p-4 md:p-6">
       <div className="flex items-center gap-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => navigate('/estoque')}
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
+        <Button variant="outline" size="sm" onClick={() => navigate('/estoque')} aria-label="Voltar"><ArrowLeft className="h-4 w-4" /></Button>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            {isEditing ? 'Editar Produto' : 'Novo Produto'}
-          </h1>
-          <p className="text-muted-foreground">
-            {isEditing
-              ? 'Atualize as informações do produto'
-              : 'Adicione um novo produto ao estoque'
-            }
-          </p>
+          <h1 className="text-2xl font-bold tracking-tight md:text-3xl">{isEditing ? 'Editar produto' : 'Novo produto'}</h1>
+          <p className="text-muted-foreground">Campos com * são obrigatórios.</p>
         </div>
       </div>
 
-      {/* Formulário */}
-      <Card className="max-w-2xl">
+      <Card className="max-w-3xl">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Package className="h-5 w-5" />
-            Informações do Produto
-          </CardTitle>
-          <CardDescription>
-            Preencha os dados do produto para {isEditing ? 'atualizar' : 'adicionar ao'} estoque
-          </CardDescription>
+          <CardTitle className="flex items-center gap-2"><Package className="h-5 w-5" />Dados do produto</CardTitle>
+          <CardDescription>Com o código de barras cadastrado, o produto entra no carrinho do caixa só de bipar.</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              {/* Nome do Produto */}
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+              <FormField control={form.control} name="name" render={({ field }) => (
+                <FormItem><FormLabel>Nome do produto *</FormLabel><FormControl><Input placeholder="Ex.: Ração Premium Cães Adultos 15 kg" {...field} /></FormControl><FormMessage /></FormItem>
+              )} />
+
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <FormField control={form.control} name="barcode" render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nome do Produto *</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Ex: Ração Premium para Cães"
-                        {...field}
-                      />
-                    </FormControl>
+                    <FormLabel>Código de barras</FormLabel>
+                    <div className="flex gap-2">
+                      <FormControl><Input placeholder="Bipe ou digite o EAN" inputMode="numeric" {...field} value={field.value ?? ''} onKeyDown={(event) => { if (event.key === 'Enter') event.preventDefault(); }} /></FormControl>
+                      <Button type="button" variant="outline" size="icon" onClick={() => setCameraOpen(true)} aria-label="Ler código com a câmera"><Camera className="h-4 w-4" /></Button>
+                    </div>
+                    <FormDescription>Clique no campo e use o leitor, ou a câmera.</FormDescription>
                     <FormMessage />
                   </FormItem>
-                )}
-              />
+                )} />
 
-              {/* Fornecedor */}
-              <FormField
-                control={form.control}
-                name="supplier"
-                render={({ field }) => (
+                <FormField control={form.control} name="category" render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Fornecedor *</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Ex: Pet Shop Distribuidor Ltda"
-                        {...field}
-                      />
-                    </FormControl>
+                    <FormLabel>Categoria</FormLabel>
+                    <Select value={field.value || ''} onValueChange={field.onChange}>
+                      <FormControl><SelectTrigger><SelectValue placeholder="Escolha uma categoria" /></SelectTrigger></FormControl>
+                      <SelectContent>{CATEGORIES.map((category) => <SelectItem key={category} value={category}>{category}</SelectItem>)}</SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
-                )}
-              />
-
-              {/* Grid para Quantidade e Preço */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Quantidade */}
-                <FormField
-                  control={form.control}
-                  name="quantity"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Quantidade *</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          min="0"
-                          placeholder="0"
-                          {...field}
-                          onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Preço de Custo */}
-                <FormField
-                  control={form.control}
-                  name="costPrice"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Preço de Custo *</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          placeholder="0.00"
-                          {...field}
-                          onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                )} />
               </div>
 
-              {/* Data de Vencimento */}
-              <FormField
-                control={form.control}
-                name="expirationDate"
-                render={({ field }) => (
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                <FormField control={form.control} name="quantity" render={({ field }) => (
+                  <FormItem><FormLabel>Quantidade em estoque *</FormLabel><FormControl><Input type="number" min="0" step="1" {...field} onChange={(event) => field.onChange(event.target.value === '' ? 0 : parseInt(event.target.value, 10))} /></FormControl><FormMessage /></FormItem>
+                )} />
+                <FormField control={form.control} name="costPrice" render={({ field }) => (
+                  <FormItem><FormLabel>Preço de custo (R$) *</FormLabel><FormControl><Input type="number" min="0" step="0.01" {...field} onChange={(event) => field.onChange(event.target.value === '' ? 0 : parseFloat(event.target.value))} /></FormControl><FormMessage /></FormItem>
+                )} />
+                <FormField control={form.control} name="salePrice" render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Data de Vencimento *</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="date"
-                        {...field}
-                      />
-                    </FormControl>
+                    <FormLabel>Preço de venda (R$)</FormLabel>
+                    <FormControl><Input type="number" min="0" step="0.01" placeholder="Igual ao custo" value={field.value ?? ''} onChange={(event) => field.onChange(numberOrNull(event.target.value))} /></FormControl>
+                    {margin !== null && <FormDescription>Margem: {margin.toFixed(1)}%</FormDescription>}
                     <FormMessage />
                   </FormItem>
-                )}
-              />
+                )} />
+              </div>
 
-              {/* Botões de Ação */}
-              <div className="flex items-center gap-4 pt-4">
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="flex items-center gap-2"
-                >
-                  {isSubmitting ? (
-                    <LoadingSpinner size="sm" />
-                  ) : (
-                    <Save className="h-4 w-4" />
-                  )}
-                  {isSubmitting
-                    ? (isEditing ? 'Atualizando...' : 'Criando...')
-                    : (isEditing ? 'Atualizar Produto' : 'Criar Produto')
-                  }
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                <FormField control={form.control} name="supplier" render={({ field }) => (
+                  <FormItem><FormLabel>Fornecedor</FormLabel><FormControl><Input placeholder="Opcional" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                )} />
+                <FormField control={form.control} name="expirationDate" render={({ field }) => (
+                  <FormItem><FormLabel>Validade</FormLabel><FormControl><Input type="date" {...field} value={field.value ?? ''} /></FormControl><FormDescription>Deixe vazio se não vence.</FormDescription><FormMessage /></FormItem>
+                )} />
+                {centers.length > 0 && (
+                  <FormField control={form.control} name="resultCenterId" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Unidade / centro</FormLabel>
+                      <Select value={field.value ? String(field.value) : 'none'} onValueChange={(value) => field.onChange(value === 'none' ? null : Number(value))}>
+                        <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                        <SelectContent>
+                          <SelectItem value="none">Não definido</SelectItem>
+                          {centers.map((center) => <SelectItem key={center.id} value={String(center.id)}>{center.name}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                )}
+              </div>
+
+              <div className="flex items-center gap-3 pt-2">
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? <LoadingSpinner size="sm" /> : <Save className="mr-2 h-4 w-4" />}
+                  {isEditing ? 'Salvar alterações' : 'Cadastrar produto'}
                 </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => navigate('/estoque')}
-                  disabled={isSubmitting}
-                >
-                  Cancelar
-                </Button>
+                <Button type="button" variant="outline" onClick={() => navigate('/estoque')} disabled={isSubmitting}>Cancelar</Button>
               </div>
             </form>
           </Form>
         </CardContent>
       </Card>
+
+      <CameraBarcodeScanner open={cameraOpen} onClose={() => setCameraOpen(false)} onDetected={(code) => form.setValue('barcode', code, { shouldDirty: true, shouldValidate: true })} />
     </div>
   );
 };

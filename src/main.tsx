@@ -10,23 +10,17 @@ if (typeof window !== 'undefined') {
   (window as any).React = React
 }
 
-// Desativa service workers antigos para evitar cache de chunks quebrados em producao.
+// Service worker v3: só para instalar o app (PWA). Remove caches das versões antigas.
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
   window.addEventListener('load', async () => {
     try {
-      const registrations = await navigator.serviceWorker.getRegistrations()
-      await Promise.all(registrations.map((registration) => registration.unregister()))
-
       if ('caches' in window) {
         const cacheKeys = await caches.keys()
-        await Promise.all(
-          cacheKeys
-            .filter((key) => key.startsWith('eumaeus-'))
-            .map((key) => caches.delete(key))
-        )
+        await Promise.all(cacheKeys.filter((key) => key.startsWith('eumaeus-') && key !== 'eumaeus-v3').map((key) => caches.delete(key)))
       }
+      await navigator.serviceWorker.register('/sw.js', { scope: '/' })
     } catch (error) {
-      console.warn('[SW] Cleanup failed:', error)
+      console.warn('[SW] Falha ao registrar:', error)
     }
   })
 }

@@ -20,7 +20,8 @@ import {
   Archive,
   Dog,
   Stethoscope,
-  Workflow
+  Workflow,
+  ShoppingCart,
 } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 import { authApi } from '../api/authApi';
@@ -69,6 +70,7 @@ const Layout = ({ children }: LayoutProps) => {
     { icon: Users, label: 'Tutores', path: '/tutores' },
     { icon: Dog, label: 'Pets', path: '/pets' },
     { icon: Stethoscope, label: 'Prontuários', path: '/prontuario' },
+    { icon: ShoppingCart, label: 'Caixa', path: '/caixa' },
     { icon: Archive, label: 'Estoque', path: '/estoque' },
     { icon: DollarSign, label: 'Financeiro', path: '/financeiro' },
     { icon: Workflow, label: 'Operação', path: '/operacao' },
