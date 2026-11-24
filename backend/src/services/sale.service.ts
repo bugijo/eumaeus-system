@@ -100,6 +100,17 @@ export class SaleService {
       });
 
       const totals = computeSaleTotals(lines, Number(input.discount || 0), input.payments);
+      // FKs vindas do cliente: o proxy de tenant não confere ids escalares, então cada um é buscado no estabelecimento.
+      if (input.resultCenterId !== undefined) {
+        if (!Number.isInteger(input.resultCenterId)) throw new Error('Centro de resultado inválido');
+        const center = await tx.resultCenter.findFirst({ where: { id: input.resultCenterId }, select: { id: true } });
+        if (!center) throw new Error('Centro de resultado não encontrado');
+      }
+      if (input.tutorId !== undefined) {
+        if (!Number.isInteger(input.tutorId)) throw new Error('Tutor inválido');
+        const tutor = await tx.tutor.findFirst({ where: { id: input.tutorId, deletedAt: null }, select: { id: true } });
+        if (!tutor) throw new Error('Tutor não encontrado');
+      }
       const resultCenterId = input.resultCenterId ?? lines[0].product.resultCenterId ?? null;
       const last = await tx.sale.findFirst({ orderBy: { number: 'desc' }, select: { number: true } });
 

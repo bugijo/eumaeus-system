@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { prisma } from '../lib/prisma';
+import { getCurrentClinicId } from '../tenantContext';
 import { AssistantService } from '../services/assistant.service';
 import { AssistantReminderService } from '../services/assistantReminder.service';
 
@@ -9,10 +10,12 @@ const APPOINTMENT_STATUS_LABEL: Record<string, string> = {
 };
 const INVOICE_STATUS_LABEL: Record<string, string> = { PENDING: 'pendente', PAID: 'paga', PARTIALLY_PAID: 'paga em parte', CANCELLED: 'cancelada' };
 
-// Cache simples para estatisticas (5 minutos)
-let statsCache: any = null;
-let statsCacheTime = 0;
+// Cache de estatisticas por estabelecimento (5 minutos). A chave precisa ser o clinicId:
+// um cache unico devolvia os numeros de um estabelecimento para outro.
 const CACHE_DURATION = 5 * 60 * 1000;
+const STATS_CACHE_MAX = 1000;
+const statsCache = new Map<number, { value: unknown; at: number }>();
+export const clearDashboardStatsCache = () => statsCache.clear();
 
 export const dashboardController = {
   async getAssistantSummary(_req: Request, res: Response): Promise<Response | void> {
@@ -40,8 +43,10 @@ export const dashboardController = {
   async getStats(_req: Request, res: Response): Promise<Response | void> {
     try {
       const now = Date.now();
-      if (statsCache && now - statsCacheTime < CACHE_DURATION) {
-        return res.json(statsCache);
+      const clinicId = getCurrentClinicId();
+      const cached = clinicId ? statsCache.get(clinicId) : undefined;
+      if (cached && now - cached.at < CACHE_DURATION) {
+        return res.json(cached.value);
       }
 
       const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
@@ -67,8 +72,10 @@ export const dashboardController = {
         monthlyRevenue: Number(monthlyRevenue._sum?.totalAmount || 0) + Number(monthlySales._sum?.total || 0),
       };
 
-      statsCache = stats;
-      statsCacheTime = now;
+      if (clinicId) {
+        if (statsCache.size >= STATS_CACHE_MAX) statsCache.clear();
+        statsCache.set(clinicId, { value: stats, at: now });
+      }
 
       return res.json(stats);
     } catch (error) {
