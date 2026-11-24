@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useAuthStore } from '@/stores/authStore';
+import { canWriteClinical } from '@/lib/access';
 import { useParams, useNavigate } from 'react-router-dom';
 import { MedicalRecordForm } from '../components/forms/MedicalRecordForm';
 import { usePet } from '../api/petApi';
@@ -9,6 +11,7 @@ import { toast } from 'sonner';
 import { petAgeLabel } from '@/lib/utils';
 
 export function MedicalRecordPage() {
+  const clinicalWriter = canWriteClinical(useAuthStore((state) => state.user?.role));
   const { petId } = useParams<{ petId: string }>();
   const navigate = useNavigate();
   const [isFormVisible, setIsFormVisible] = useState(false);
@@ -133,13 +136,15 @@ export function MedicalRecordPage() {
             
             {/* Ações */}
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button
-                onClick={() => setIsFormVisible(true)}
-                className="flex items-center gap-2"
-              >
-                <FileText className="h-4 w-4" />
-                Criar Novo Prontuário
-              </Button>
+              {clinicalWriter && (
+                <Button
+                  onClick={() => setIsFormVisible(true)}
+                  className="flex items-center gap-2"
+                >
+                  <FileText className="h-4 w-4" />
+                  Criar Novo Prontuário
+                </Button>
+              )}
               
               <Button
                 variant="outline"

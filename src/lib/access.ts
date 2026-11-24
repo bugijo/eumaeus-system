@@ -47,3 +47,12 @@ export function canAccessPath(path: string, permissions: readonly PermissionKey[
 
 export const hasPermission = (access: MyAccess | undefined, key: PermissionKey) =>
   Boolean(access?.permissions.includes(key));
+
+/**
+ * Atos clínicos (prontuário, receita, vacina, internação e cirurgia) são exclusivos de DONO e VETERINARIO
+ * na API (requireRolesStrict), mesmo quando o módulo está liberado. A tela segue a mesma regra
+ * para não mostrar botões que terminariam em 403.
+ */
+export const CLINICAL_WRITER_ROLES = ['DONO', 'VETERINARIO'] as const;
+export const canWriteClinical = (role: string | undefined | null) =>
+  CLINICAL_WRITER_ROLES.includes(String(role || '').toUpperCase() as (typeof CLINICAL_WRITER_ROLES)[number]);

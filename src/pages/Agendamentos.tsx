@@ -1,4 +1,6 @@
 
+import { useAuthStore } from '@/stores/authStore';
+import { canWriteClinical } from '@/lib/access';
 import React, { useState, useEffect, useMemo } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
@@ -17,6 +19,7 @@ import { useAssignSpecialist, useConfirmSpecialistAssignment, useSpecialists } f
 import '../styles/calendar.css';
 
 export default function Agendamentos() {
+  const clinicalWriter = canWriteClinical(useAuthStore((state) => state.user?.role));
   const { data: appointments = [], isLoading, isError } = useAppointments();
   
 
@@ -289,12 +292,14 @@ export default function Agendamentos() {
                   Cancelar Agendamento
                 </Button>
                 
+                {clinicalWriter && (
                 <Button 
                    onClick={handleCreateMedicalRecord}
                    className="bg-purple-500 hover:bg-purple-600"
                  >
                    Criar Prontuário
                  </Button>
+                )}
                  
                  <Button 
                    onClick={handleEditAppointment}
