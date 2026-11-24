@@ -1,3 +1,4 @@
+import { hashRefreshToken } from '../controllers/authController';
 import request from 'supertest';
 import jwt from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
@@ -46,7 +47,7 @@ describe('POST /api/auth/logout', () => {
     expect(response.status).toBe(204);
     expect(response.body).toEqual({});
     expect(prisma.authProfile.updateMany).toHaveBeenCalledWith({
-      where: { id: 10, refreshToken },
+      where: { id: 10, refreshToken: { in: [hashRefreshToken(refreshToken), refreshToken] } },
       data: { refreshToken: null },
     });
   });

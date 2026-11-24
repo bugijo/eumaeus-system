@@ -1,6 +1,7 @@
 // Em /src/controllers/authController.ts
 import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
+import { createHash } from 'node:crypto';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import { config } from '../config/env';
 import { prisma } from '../lib/prisma';
@@ -13,6 +14,17 @@ const isRefreshTokenPayload = (
   Number.isInteger(payload.authProfileId) &&
   payload.authProfileId > 0
 );
+
+/**
+ * Refresh token guardado só como hash: quem lê o banco (ou um dump de backup) não ganha sessões.
+ * Tokens antigos, gravados em texto antes desta mudança, continuam aceitos até a próxima rotação.
+ */
+export const hashRefreshToken = (token: string): string => `sha256:${createHash('sha256').update(token).digest('hex')}`;
+const storedRefreshMatches = (token: string) => ({ in: [hashRefreshToken(token), token] });
+
+// Hash de custo igual ao das senhas reais: e-mail inexistente leva o mesmo tempo que senha errada.
+// Hash de 32 bytes aleatórios descartados (nenhuma senha corresponde a ele).
+const DUMMY_PASSWORD_HASH = '$2b$12$dDN3F8b.0Q8IiadtDAM4n.UAMcsghKW1gO0EmaOz5KS.3sR3lNm6m';
 
 export const shouldRejectProductionPassword = (
   password: unknown,
@@ -49,13 +61,9 @@ export default {
         },
       });
 
-      if (!authProfile) {
-        return res.status(401).json({ message: 'Credenciais inválidas' });
-      }
-
-      const isPasswordValid = await bcrypt.compare(password, authProfile.password);
-
-      if (!isPasswordValid) {
+      // Sempre roda o bcrypt: sem isso, e-mail inexistente respondia em microssegundos e revelava quem tem conta.
+      const isPasswordValid = await bcrypt.compare(password, authProfile?.password || DUMMY_PASSWORD_HASH);
+      if (!authProfile || !isPasswordValid) {
         return res.status(401).json({ message: 'Credenciais inválidas' });
       }
 
@@ -70,7 +78,7 @@ export default {
         const userRole = authProfile.user.role?.name || 'FUNCIONARIO';
         tokenPayload = { id: authProfile.user.id, type: 'user', role: userRole, clinicId: authProfile.user.clinicId };
         userPayload = { id: authProfile.user.id, name: authProfile.user.name, email: authProfile.email, role: userRole, type: 'user', clinicId: authProfile.user.clinicId };
-      } else if (authProfile.tutor) {
+      } else if (authProfile.tutor && !(authProfile.tutor as any).deletedAt) {
         tokenPayload = { id: authProfile.tutor.id, type: 'tutor', role: 'ADMIN', clinicId: authProfile.tutor.clinicId };
         userPayload = { id: authProfile.tutor.id, name: authProfile.tutor.name, email: authProfile.email, role: 'ADMIN', type: 'tutor', clinicId: authProfile.tutor.clinicId };
       } else {
@@ -88,7 +96,7 @@ export default {
 
       await prisma.authProfile.update({
         where: { id: authProfile.id },
-        data: { refreshToken },
+        data: { refreshToken: hashRefreshToken(refreshToken) },
       });
 
       return res.status(200).json({ accessToken, refreshToken, user: userPayload });
@@ -127,7 +135,7 @@ export default {
       const authProfile = await prisma.authProfile.findFirst({
         where: {
           id: decoded.authProfileId,
-          refreshToken: refreshToken,
+          refreshToken: storedRefreshMatches(refreshToken),
         },
         include: {
           user: { include: { role: true } },
@@ -162,10 +170,15 @@ export default {
       });
 
       // 6. Atualizar o refresh token no banco
-      await prisma.authProfile.update({
-        where: { id: authProfile.id },
-        data: { refreshToken: newRefreshToken },
+      // Rotação atômica: só troca se o token apresentado ainda for o atual. Duas renovações
+      // simultâneas com o mesmo token não geram duas sessões; a segunda recebe 401.
+      const rotated = await prisma.authProfile.updateMany({
+        where: { id: authProfile.id, refreshToken: storedRefreshMatches(refreshToken) },
+        data: { refreshToken: hashRefreshToken(newRefreshToken) },
       });
+      if (rotated.count !== 1) {
+        return res.status(401).json({ message: 'Refresh token não encontrado' });
+      }
 
       // 7. Enviar os novos tokens
       return res.status(200).json({
@@ -205,7 +218,7 @@ export default {
       const authProfile = await prisma.authProfile.findFirst({
         where: {
           id: decoded.authProfileId,
-          refreshToken,
+          refreshToken: storedRefreshMatches(refreshToken),
         },
         include: {
           user: true,
@@ -224,7 +237,7 @@ export default {
       await prisma.authProfile.updateMany({
         where: {
           id: authProfile.id,
-          refreshToken,
+          refreshToken: storedRefreshMatches(refreshToken),
         },
         data: { refreshToken: null },
       });

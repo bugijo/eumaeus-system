@@ -1,3 +1,4 @@
+import { hashRefreshToken } from '../controllers/authController';
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
@@ -135,7 +136,7 @@ describe('auth controller token security', () => {
     await authController.logout(request, response);
 
     expect(prisma.authProfile.updateMany).toHaveBeenCalledWith({
-      where: { id: 10, refreshToken },
+      where: { id: 10, refreshToken: { in: [hashRefreshToken(refreshToken), refreshToken] } },
       data: { refreshToken: null },
     });
     expect(response.status).toHaveBeenCalledWith(204);
