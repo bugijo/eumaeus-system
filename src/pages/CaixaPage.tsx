@@ -13,6 +13,8 @@ import { useResultCenters } from '@/api/financialApi';
 import { useMyAccess } from '@/api/userApi';
 import { saleApi, useCancelSale, useCreateSale, useSales, type Sale, type SalePaymentMethod } from '@/api/saleApi';
 import CameraBarcodeScanner from '@/components/barcode/CameraBarcodeScanner';
+import { useCurrentCash, type CashSession } from '@/api/cashApi';
+import { CashSessionBar, ClosedCashDialog, OpenCashCard } from '@/components/cash/CashSessionPanel';
 
 type CartLine = { product: Product; quantity: number; unitPrice: number };
 type PaymentLine = { method: SalePaymentMethod; amount: string };
@@ -40,6 +42,9 @@ export default function CaixaPage() {
   const unitsSplit = !access || (access.plan === 'CLINICA_PETSHOP' && access.separateUnits);
   const { data: salesToday = [] } = useSales({ from: today(), to: today() });
   const createSale = useCreateSale();
+  const cash = useCurrentCash();
+  const [closedCash, setClosedCash] = useState<CashSession | null>(null);
+  const cashSession = cash.data;
   const cancelSale = useCancelSale();
 
   const [cart, setCart] = useState<CartLine[]>([]);
@@ -167,6 +172,12 @@ export default function CaixaPage() {
         </div>
       </div>
 
+      <ClosedCashDialog closed={closedCash} onDone={() => setClosedCash(null)} />
+      {cash.isLoading ? <p className="text-sm text-muted-foreground">Carregando o caixa…</p>
+        : cash.isError ? <p role="alert" className="text-sm text-destructive">Não foi possível carregar o caixa. Recarregue a página.</p>
+        : !cashSession ? <OpenCashCard />
+        : (<>
+      <CashSessionBar session={cashSession} onClosed={setClosedCash} />
       <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
         <div className="space-y-4">
           <Card>
@@ -304,6 +315,8 @@ export default function CaixaPage() {
           )}
         </CardContent>
       </Card>
+
+      </>)}
 
       <CameraBarcodeScanner open={cameraOpen} continuous onClose={() => { setCameraOpen(false); focusScan(); }} onDetected={handleCode} />
 

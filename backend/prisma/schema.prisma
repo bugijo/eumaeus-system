@@ -542,13 +542,51 @@ model Sale {
   cancelledAt      DateTime?
   cancelReason     String?
   fiscalDocumentId String?
+  cashSessionId    Int?
   items            SaleItem[]
   payments         SalePayment[]
   resultCenter     ResultCenter? @relation(fields: [resultCenterId], references: [id], onDelete: SetNull)
+  cashSession      CashSession?  @relation(fields: [cashSessionId], references: [id], onDelete: SetNull)
 
   @@unique([clinicId, idempotencyKey])
   @@unique([clinicId, number])
   @@index([clinicId, createdAt])
+}
+
+/// Sessão de caixa: abertura com troco inicial, sangrias/suprimentos e fechamento com conferência.
+/// Só uma sessão OPEN por estabelecimento (índice único parcial na migração).
+model CashSession {
+  id            Int            @id @default(autoincrement())
+  clinicId      Int
+  status        String         @default("OPEN") // OPEN | CLOSED
+  openedAt      DateTime       @default(now())
+  openedById    Int
+  openingAmount Decimal        @db.Decimal(12, 2)
+  closedAt      DateTime?
+  closedById    Int?
+  expectedCash  Decimal?       @db.Decimal(12, 2)
+  countedCash   Decimal?       @db.Decimal(12, 2)
+  difference    Decimal?       @db.Decimal(12, 2)
+  closingNote   String?
+  summary       Json?
+  sales         Sale[]
+  movements     CashMovement[]
+
+  @@index([clinicId, openedAt])
+}
+
+model CashMovement {
+  id          Int         @id @default(autoincrement())
+  clinicId    Int
+  sessionId   Int
+  type        String // SANGRIA | SUPRIMENTO
+  amount      Decimal     @db.Decimal(12, 2)
+  reason      String
+  createdById Int
+  createdAt   DateTime    @default(now())
+  session     CashSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([clinicId, sessionId])
 }
 
 model SaleItem {

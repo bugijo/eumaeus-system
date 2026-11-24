@@ -27,9 +27,9 @@ export const saleApi = {
 export const useSales = (params: { from?: string; to?: string } = {}) => useQuery({ queryKey: ['sales', params], queryFn: () => saleApi.list(params) });
 export const useCreateSale = () => {
   const client = useQueryClient();
-  return useMutation({ mutationFn: saleApi.create, onSuccess: () => { client.invalidateQueries({ queryKey: ['sales'] }); client.invalidateQueries({ queryKey: ['products'] }); } });
+  return useMutation({ mutationFn: saleApi.create, onSuccess: () => { client.invalidateQueries({ queryKey: ['sales'] }); client.invalidateQueries({ queryKey: ['products'] }); client.invalidateQueries({ queryKey: ['cash'] }); } });
 };
 export const useCancelSale = () => {
   const client = useQueryClient();
-  return useMutation({ mutationFn: ({ id, reason }: { id: number; reason: string }) => saleApi.cancel(id, reason), onSuccess: () => { client.invalidateQueries({ queryKey: ['sales'] }); client.invalidateQueries({ queryKey: ['products'] }); } });
+  return useMutation({ mutationFn: ({ id, reason }: { id: number; reason: string }) => saleApi.cancel(id, reason), onSuccess: () => { client.invalidateQueries({ queryKey: ['sales'] }); client.invalidateQueries({ queryKey: ['products'] }); client.invalidateQueries({ queryKey: ['cash'] }); } });
 };

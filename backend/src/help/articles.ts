@@ -61,7 +61,7 @@ O envio automático por WhatsApp ainda não está disponível. Quando estiver, s
     category: 'Dia a dia',
     paths: ['/caixa'],
     keywords: ['venda', 'pdv', 'caixa', 'vender', 'código de barras', 'bipar', 'pagamento', 'troco', 'pix', 'cartão', 'dinheiro', 'finalizar venda'],
-    body: `1. Abra Caixa no menu.
+    body: `1. Abra Caixa no menu. Se o caixa estiver fechado, informe o troco inicial da gaveta e clique em Abrir caixa. Sem caixa aberto não é possível vender.
 2. Bipe o código de barras do produto, digite o código ou busque pelo nome. Pelo celular, use o botão da câmera para ler o código.
 3. Ajuste a quantidade e, se precisar, o desconto.
 4. Em Pagamento, escolha a forma: Dinheiro, PIX, Débito ou Crédito. Dá para combinar mais de uma forma na mesma venda.
@@ -79,7 +79,25 @@ O comprovante não tem valor fiscal. A emissão de nota fiscal ainda não está 
     keywords: ['cancelar', 'estornar', 'devolver', 'venda errada', 'desfazer'],
     body: `Na lista de vendas do dia, no Caixa, clique em Cancelar na venda desejada e informe o motivo.
 
-O estoque dos itens volta automaticamente. A venda continua no histórico, marcada como cancelada, para manter o registro de quem fez o quê.`,
+O estoque dos itens volta automaticamente. A venda continua no histórico, marcada como cancelada, para manter o registro de quem fez o quê.
+
+Só dá para cancelar enquanto o caixa daquela venda está aberto. Depois do fechamento, registre a devolução como despesa no Financeiro: assim o fechamento já conferido não muda.`,
+  },
+  {
+    id: 'caixa-abrir-fechar',
+    title: 'Abrir e fechar o caixa, sangria e suprimento',
+    category: 'Dia a dia',
+    paths: ['/caixa'],
+    keywords: ['abrir caixa', 'fechar caixa', 'fechamento', 'abertura', 'sangria', 'suprimento', 'troco inicial', 'conferência', 'diferença', 'quebra de caixa', 'gaveta'],
+    body: `Abertura: no Caixa, informe quanto dinheiro há na gaveta (troco inicial) e clique em Abrir caixa. Só existe um caixa aberto por vez no estabelecimento.
+
+Suprimento: dinheiro que entra na gaveta sem ser venda (por exemplo, mais troco). Clique em Suprimento, informe o valor e o motivo.
+
+Sangria: dinheiro retirado da gaveta (por exemplo, levar ao banco). Clique em Sangria, informe o valor e o motivo. Não é possível tirar mais do que o dinheiro esperado na gaveta.
+
+Fechamento: clique em Fechar caixa, conte o dinheiro da gaveta e digite o valor. O sistema mostra o esperado (troco inicial + vendas em dinheiro − troco devolvido + suprimentos − sangrias) e a diferença. Se não bater, a observação é obrigatória. O resumo mostra o total por forma de pagamento e pode ser impresso.
+
+PIX e cartão aparecem no resumo, mas não entram na conta da gaveta. Os últimos fechamentos ficam listados na tela de abertura.`,
   },
   {
     id: 'tutores-pets',

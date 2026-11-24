@@ -1,4 +1,5 @@
 import { withSerializableRetry } from '../lib/serializableRetry';
+import { lockClinicCash } from './cash.service';
 import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { getCurrentClinicId, getCurrentUserId } from '../tenantContext';
@@ -16,9 +17,6 @@ export interface CreateSaleInput {
   tutorId?: number;
   idempotencyKey: string;
 }
-
-/** Primeiro número da trava por estabelecimento (pg_advisory_xact_lock(int, int)). */
-const SALE_LOCK_NAMESPACE = 41001;
 
 const toCents = (value: number) => Math.round(Number(value) * 100);
 const fromCents = (cents: number) => (cents / 100).toFixed(2);
@@ -82,9 +80,11 @@ export class SaleService {
 
     return withSerializableRetry(() => prisma.$transaction(async (tx: any) => {
       // Vendas do mesmo estabelecimento entram em fila: evita disputa pelo número da venda e pelo estoque.
-      await tx.$queryRaw`SELECT pg_advisory_xact_lock(${SALE_LOCK_NAMESPACE}::int, ${clinicId}::int) IS NULL AS "locked"`;
+      await lockClinicCash(tx, clinicId);
       const duplicate = await tx.sale.findFirst({ where: { idempotencyKey: key }, include: { items: true, payments: true } });
       if (duplicate) return duplicate;
+      const cashSession = await tx.cashSession.findFirst({ where: { status: 'OPEN' }, select: { id: true } });
+      if (!cashSession) throw new Error('Abra o caixa antes de vender');
 
       const productIds = [...grouped.keys()];
       // A baixa usa updateMany condicional (quantity >= pedido), reavaliado sob trava de linha: não há venda acima do saldo.
@@ -114,6 +114,7 @@ export class SaleService {
           tutorId: input.tutorId ?? null,
           soldByUserId: userId,
           idempotencyKey: key,
+          cashSessionId: cashSession.id,
           items: {
             create: lines.map((line, index) => ({
               clinicId,
@@ -159,10 +160,15 @@ export class SaleService {
     const userId = getCurrentUserId();
     if (!userId) throw new Error('Autoria autenticada obrigatória');
     if (!reason?.trim()) throw new Error('Informe o motivo do cancelamento');
+    const clinicId = getCurrentClinicId();
+    if (!clinicId) throw new Error('Autoria autenticada obrigatória');
     return prisma.$transaction(async (tx: any) => {
-      const sale = await tx.sale.findFirst({ where: { id: saleId }, include: { items: true } });
+      // Na fila do estabelecimento: dois cliques em Cancelar não devolvem o estoque em dobro.
+      await lockClinicCash(tx, clinicId);
+      const sale = await tx.sale.findFirst({ where: { id: saleId }, include: { items: true, cashSession: { select: { status: true } } } });
       if (!sale) throw new Error('Venda não encontrada');
       if (sale.status === 'CANCELLED') return sale;
+      if (sale.cashSession?.status === 'CLOSED') throw new Error('O caixa desta venda já foi fechado. Registre a devolução como despesa no Financeiro.');
       for (const item of sale.items) {
         if (item.productId) await tx.product.updateMany({ where: { id: item.productId }, data: { quantity: { increment: item.quantity } } });
       }

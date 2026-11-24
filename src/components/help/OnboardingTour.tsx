@@ -9,7 +9,7 @@ export const TOUR_STEPS: TourStep[] = [
   { title: 'Bem-vindo ao Eumaeus', text: 'Em menos de um minuto você conhece onde fica cada coisa. Dá para pular agora e rever depois pelo botão de ajuda.' },
   { target: 'nav-/', title: 'Início', text: 'O resumo do dia: próximos agendamentos, vendas e alertas de estoque.' },
   { target: 'nav-/agendamentos', title: 'Agendamentos', text: 'Marque consultas, vacinas, banhos e tosas. Os serviços vêm de Configurações, aba Serviços.' },
-  { target: 'nav-/caixa', title: 'Caixa', text: 'Venda bipando o código de barras ou buscando pelo nome. O estoque baixa sozinho.' },
+  { target: 'nav-/caixa', title: 'Caixa', text: 'Abra o caixa com o troco do dia e venda bipando o código de barras ou buscando pelo nome. O estoque baixa sozinho. No fim do dia, feche o caixa e confira a gaveta.' },
   { target: 'nav-/tutores', title: 'Tutores', text: 'Cadastre os clientes e os pets de cada um.' },
   { target: 'nav-/prontuario', title: 'Prontuários', text: 'Registre atendimentos e os produtos usados. Tudo fica no histórico do pet.' },
   { target: 'nav-/estoque', title: 'Estoque', text: 'Cadastre produtos. Para medicamentos, use a busca no catálogo para preencher mais rápido.' },

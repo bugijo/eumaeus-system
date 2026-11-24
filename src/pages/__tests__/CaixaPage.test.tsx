@@ -12,6 +12,16 @@ vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 vi.mock('@/components/barcode/CameraBarcodeScanner', () => ({ default: () => null }));
 vi.mock('../../api/productApi', () => ({ useProducts: vi.fn() }));
 vi.mock('../../api/financialApi', () => ({ useResultCenters: vi.fn() }));
+const cashState: { data: any } = { data: null };
+const OPEN_SESSION = { id: 1, status: 'OPEN', openedAt: new Date().toISOString(), openedBy: 'Ana', closedAt: null, closedBy: null, countedCash: null, difference: null, closingNote: null, movements: [],
+  summary: { salesCount: 0, cancelledCount: 0, salesTotal: '0.00', byMethod: {}, suprimentos: '0.00', sangrias: '0.00', opening: '100.00', expectedCash: '100.00' } };
+vi.mock('@/api/cashApi', () => ({
+  useCurrentCash: () => ({ data: cashState.data, isLoading: false, isError: false }),
+  useCashHistory: () => ({ data: [] }),
+  useOpenCash: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useCashMovement: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useCloseCash: () => ({ mutateAsync: vi.fn(), isPending: false }),
+}));
 vi.mock('../../api/saleApi', () => ({
   saleApi: { byBarcode: vi.fn() },
   useSales: vi.fn(),
@@ -27,6 +37,7 @@ describe('Caixa (PDV)', () => {
 
   beforeEach(() => {
     vi.mocked(useProducts).mockReturnValue({ data: [racao, petisco], isLoading: false } as any);
+    cashState.data = OPEN_SESSION;
     vi.mocked(useResultCenters).mockReturnValue({ data: [] } as any);
     vi.mocked(useSales).mockReturnValue({ data: [] } as any);
     vi.mocked(useCancelSale).mockReturnValue({ mutateAsync: vi.fn(), isPending: false } as any);
@@ -70,5 +81,17 @@ describe('Caixa (PDV)', () => {
       payments: [{ method: 'DINHEIRO', amount: 50 }],
       idempotencyKey: expect.any(String),
     }));
+  });
+  it('sem caixa aberto, pede a abertura e esconde a venda', () => {
+    cashState.data = null;
+    render(<CaixaPage />);
+    expect(screen.getByLabelText('Troco inicial (R$)')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Código de barras ou nome do produto')).not.toBeInTheDocument();
+  });
+
+  it('com caixa aberto, mostra quem abriu e o dinheiro esperado', () => {
+    render(<CaixaPage />);
+    expect(screen.getByText(/por Ana/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Fechar caixa/ })).toBeInTheDocument();
   });
 });

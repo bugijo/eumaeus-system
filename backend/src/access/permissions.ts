@@ -125,6 +125,7 @@ export const ROUTE_RULES: Rule[] = [
   { pattern: /^\/(products|inventory)(\/|$)/, read: STOCK_READERS, write: any('estoque_movimentar') },
   { pattern: /^\/sales\/[^/]+\/cancel$/, read: any('caixa_cancelar'), write: any('caixa_cancelar') },
   { pattern: /^\/sales(\/|$)/, read: any('caixa', 'financeiro'), write: any('caixa') },
+  { pattern: /^\/cash(\/|$)/, read: any('caixa', 'financeiro'), write: any('caixa') },
   { pattern: /^\/financial\/centers$/, read: any('financeiro', 'caixa', 'estoque_movimentar'), write: any('financeiro') },
   { pattern: /^\/(financial|invoices)(\/|$)/, read: any('financeiro'), write: any('financeiro') },
   { pattern: /^\/packages(\/|$)/, read: any('pacotes', 'agenda'), write: any('pacotes') },
