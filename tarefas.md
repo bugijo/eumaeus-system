@@ -272,3 +272,13 @@ Legenda: `[x]` feito e verificado · `[~]` existe, mas parcial ou não testado d
 - Confirmar que a Apple Developer (US$ 99/ano) e a Google Play (US$ 25) podem ser contratadas no nome do responsável legal.
 - Aprovar o gasto com certificado Windows, depois de ver a cotação.
 - Escolher: publicar iOS só pela App Store (recomendado) ou manter só o atalho do Safari por enquanto.
+
+## 7. Planos e acessos (commit 2da0862, falta publicar)
+- [x] Planos Clínica / Pet Shop / Clínica + Pet Shop, com contas separadas ou juntas
+- [x] Dono escolhe o que cada funcionário acessa; cargo Banho e tosa
+- [x] Catálogo inicial de medicamentos, vacinas e materiais no cadastro de produto
+- [x] Landing com telas reais e seção de planos
+- [ ] Aprovar os preços dos planos (proposta: R$ 99 / 149 / 199)
+- [ ] Canal de contato comercial para quem ainda não é cliente
+- [ ] Veterinária revisar o catálogo de medicamentos (apresentações e concentrações)
+- [ ] Contratação/troca de plano pelo próprio cliente (hoje o plano é definido em deploy/criar-dono.sh)
