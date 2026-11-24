@@ -2,6 +2,11 @@ import { InvoiceWithRelations } from '../types';
 import { prisma } from '../lib/prisma';
 import { Prisma } from '@prisma/client';
 
+const postedTotal = (payments: Array<{ status?: string; amount: unknown }>): Prisma.Decimal =>
+  payments
+    .filter((payment) => payment.status === 'POSTED')
+    .reduce((sum: Prisma.Decimal, payment) => sum.plus(new Prisma.Decimal(payment.amount as any)), new Prisma.Decimal(0));
+
 export class InvoiceService {
   // Criar fatura a partir de um agendamento
   async createFromAppointment(appointmentId: number) {
@@ -166,55 +171,70 @@ export class InvoiceService {
   }
 
   // Atualizar status da fatura
+  // Sob trava da linha (mesma do recebimento): a checagem de pagamentos e a gravação não podem
+  // ser intercaladas por um recebimento concorrente.
   async updateStatus(invoiceId: number, status: 'PENDING' | 'PAID' | 'CANCELLED'): Promise<InvoiceWithRelations> {
-    const invoice = await prisma.invoice.findUnique({
-      where: { id: invoiceId },
-      include: { payments: true }
-    });
-
-    if (!invoice) {
-      throw new Error('Fatura não encontrada');
-    }
     if (status === 'PAID') {
       throw new Error('Fatura só pode ser marcada como paga por recebimentos POSTED');
     }
-    if (status === 'CANCELLED' && invoice.payments.some((payment: any) => payment.status === 'POSTED')) {
-      throw new Error('Fatura com recebimentos POSTED não pode ser cancelada');
-    }
+    return prisma.$transaction(async (tx: any) => {
+      await tx.$queryRaw`SELECT "id" FROM "Invoice" WHERE "id" = ${invoiceId} FOR UPDATE`;
+      const invoice = await tx.invoice.findUnique({
+        where: { id: invoiceId },
+        include: { payments: true }
+      });
 
-    return await prisma.invoice.update({
-      where: { id: invoiceId },
-      data: { status, cancelledAt: status === 'CANCELLED' ? new Date() : null },
-      include: {
-        items: true,
-        discounts: true,
-        payments: true,
-        appointment: {
-          include: {
-            pet: {
-              include: {
-                tutor: true
+      if (!invoice) {
+        throw new Error('Fatura não encontrada');
+      }
+      const posted = postedTotal(invoice.payments);
+      if (status === 'CANCELLED' && posted.greaterThan(0)) {
+        throw new Error('Fatura com recebimentos POSTED não pode ser cancelada');
+      }
+      if (status === 'PENDING' && posted.greaterThan(0) && posted.greaterThanOrEqualTo(new Prisma.Decimal(invoice.totalAmount ?? 0))) {
+        throw new Error('Fatura quitada pelos recebimentos não pode voltar a pendente');
+      }
+
+      return await tx.invoice.update({
+        where: { id: invoiceId },
+        data: { status, cancelledAt: status === 'CANCELLED' ? new Date() : null },
+        include: {
+          items: true,
+          discounts: true,
+          payments: true,
+          appointment: {
+            include: {
+              pet: {
+                include: {
+                  tutor: true
+                }
               }
             }
           }
         }
-      }
+      });
     });
   }
 
   async applyDiscount(invoiceId: number, amount: number, reason: string, authorizedByUserId: number): Promise<InvoiceWithRelations> {
     if (!Number.isFinite(amount) || amount <= 0 || !reason?.trim()) throw new Error('Valor e justificativa do desconto são obrigatórios');
-    return prisma.$transaction(async (tx) => {
-      const invoice = await tx.invoice.findUnique({ where: { id: invoiceId }, include: { items: true, discounts: true } });
+    return prisma.$transaction(async (tx: any) => {
+      // Mesma trava do recebimento: dois descontos simultâneos não somam além do subtotal.
+      await tx.$queryRaw`SELECT "id" FROM "Invoice" WHERE "id" = ${invoiceId} FOR UPDATE`;
+      const invoice = await tx.invoice.findUnique({ where: { id: invoiceId }, include: { items: true, discounts: true, payments: true } });
       if (!invoice) throw new Error('Fatura não encontrada');
       if (invoice.status !== 'PENDING') throw new Error('Só é possível aplicar desconto em fatura pendente');
-      const subtotal = invoice.items.reduce((sum, item) => sum.plus(item.totalPrice), new Prisma.Decimal(0));
-      const existing = invoice.discounts.reduce((sum, discount) => sum.plus(discount.amount), new Prisma.Decimal(0));
+      const subtotal = invoice.items.reduce((sum: Prisma.Decimal, item: any) => sum.plus(item.totalPrice), new Prisma.Decimal(0));
+      const existing = invoice.discounts.reduce((sum: Prisma.Decimal, discount: any) => sum.plus(discount.amount), new Prisma.Decimal(0));
       const discount = new Prisma.Decimal(amount);
       if (existing.plus(discount).greaterThan(subtotal)) throw new Error('Desconto maior que o total da fatura');
-      await tx.invoiceDiscount.create({ data: { invoiceId, clinicId: invoice.clinicId, amount: discount, reason: reason.trim(), authorizedByUserId } });
       const totalAmount = subtotal.minus(existing).minus(discount);
-      return tx.invoice.update({ where: { id: invoiceId }, data: { totalAmount }, include: { items: true, discounts: true, payments: true, appointment: { include: { pet: { include: { tutor: true } } } } } });
+      const posted = postedTotal(invoice.payments || []);
+      // Antes o total podia ficar abaixo do já recebido: a fatura nunca chegava a paga e o excedente sumia.
+      if (totalAmount.lessThan(posted)) throw new Error('Desconto deixaria a fatura abaixo do valor já recebido');
+      await tx.invoiceDiscount.create({ data: { invoiceId, clinicId: invoice.clinicId, amount: discount, reason: reason.trim(), authorizedByUserId } });
+      const status = posted.greaterThan(0) && totalAmount.equals(posted) ? 'PAID' : invoice.status;
+      return tx.invoice.update({ where: { id: invoiceId }, data: { totalAmount, status }, include: { items: true, discounts: true, payments: true, appointment: { include: { pet: { include: { tutor: true } } } } } });
     });
   }
 

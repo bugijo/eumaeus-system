@@ -146,7 +146,7 @@ jest.mock('@prisma/client', () => {
 
   return {
     PrismaClient: jest.fn(() => mockPrisma),
-    Prisma: { TransactionIsolationLevel: { Serializable: 'Serializable' }, Decimal: class Decimal { value: number; constructor(value: unknown) { this.value = Number(value); } plus(other: any) { return new (this.constructor as any)(this.value + Number(other.value ?? other)); } greaterThan(other: any) { return this.value > Number(other.value ?? other); } equals(other: any) { return this.value === Number(other.value ?? other); } toFixed(scale = 2) { return this.value.toFixed(scale); } toString() { return this.value.toFixed(2); } } },
+    Prisma: { TransactionIsolationLevel: { Serializable: 'Serializable' }, Decimal: class Decimal { value: number; constructor(value: unknown) { this.value = Number(value); } plus(other: any) { return new (this.constructor as any)(this.value + Number(other.value ?? other)); } greaterThan(other: any) { return this.value > Number(other.value ?? other); } minus(other: any) { return new (this.constructor as any)(this.value - Number(other.value ?? other)); } lessThan(other: any) { return this.value < Number(other.value ?? other); } greaterThanOrEqualTo(other: any) { return this.value >= Number(other.value ?? other); } valueOf() { return this.value; } equals(other: any) { return this.value === Number(other.value ?? other); } toFixed(scale = 2) { return this.value.toFixed(scale); } toString() { return this.value.toFixed(2); } } },
   };
 });
 
