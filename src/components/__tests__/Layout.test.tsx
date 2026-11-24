@@ -19,6 +19,12 @@ vi.mock('../../api/userApi', () => ({
   useMyAccess: () => ({ data: undefined }),
 }));
 
+vi.mock('../../api/helpApi', () => ({
+  useHelpArticles: () => ({ data: [], isLoading: false }),
+  useAssistantStatus: () => ({ data: { enabled: false } }),
+  useAskAssistant: () => ({ mutate: vi.fn(), isPending: false }),
+}));
+
 vi.mock('../../api/authApi', () => ({
   authApi: {
     logout: vi.fn()

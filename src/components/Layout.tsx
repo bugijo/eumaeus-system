@@ -25,7 +25,10 @@ import {
   Workflow,
   ShoppingCart,
   HeartPulse,
+  LifeBuoy,
 } from 'lucide-react';
+import HelpPanel from '@/components/help/HelpPanel';
+import OnboardingTour from '@/components/help/OnboardingTour';
 import { useAuthStore } from '../stores/authStore';
 import { authApi } from '../api/authApi';
 import { Button } from '@/components/ui/button';
@@ -81,6 +84,7 @@ const Layout = ({ children }: LayoutProps) => {
     { icon: DollarSign, label: 'Financeiro', path: '/financeiro', section: 'Gestão' },
     { icon: Workflow, label: 'Operação', path: '/operacao', section: 'Gestão' },
     { icon: Settings, label: 'Configurações', path: '/configuracoes', section: 'Gestão' },
+    { icon: LifeBuoy, label: 'Central de ajuda', path: '/ajuda', section: 'Ajuda' },
   ];
   // Menu mostra só o que o plano e as permissões da pessoa liberam.
   const navigationItems = allNavigationItems.filter((item) => canAccessPath(item.path, access?.permissions));
@@ -145,6 +149,7 @@ const Layout = ({ children }: LayoutProps) => {
                 : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
             }`}
             aria-current={isActive ? 'page' : undefined}
+            data-tour={`nav-${item.path}`}
             aria-label={`Navegar para ${item.label}`}
             onClick={() => window.innerWidth < 768 && setSidebarOpen(false)}
             title={sidebarCollapsed && !sidebarOpen ? item.label : undefined}
@@ -267,10 +272,10 @@ const Layout = ({ children }: LayoutProps) => {
 
 
       {/* Main Content */}
-      <div className="flex flex-col h-full flex-1 transition-all duration-300">
+      <div className="flex min-w-0 flex-col h-full flex-1 transition-all duration-300">
         {/* Top Header */}
         <header className="bg-card border-b border-border px-2 md:px-4 py-3 flex items-center justify-between shadow-sm supports-[backdrop-filter]:bg-card/90 backdrop-blur">
-          <div className="flex items-center space-x-2 md:space-x-4 flex-1">
+          <div className="flex min-w-0 items-center space-x-2 md:space-x-4 flex-1">
             {/* Menu Toggle Button */}
             <Button
               variant="ghost"
@@ -291,14 +296,15 @@ const Layout = ({ children }: LayoutProps) => {
               <Menu className="h-5 w-5" aria-hidden="true" />
             </Button>
             
-            <div className="px-2 md:px-4 py-2 rounded-lg bg-gradient-to-r from-primary/10 to-secondary/10 flex-1 md:flex-none">
+            <div className="min-w-0 px-2 md:px-4 py-2 rounded-lg bg-gradient-to-r from-primary/10 to-secondary/10 flex-1 md:flex-none">
               <h1 className="text-sm md:text-lg font-semibold text-foreground truncate">
                 Bem-vindo(a), {user?.name || 'Usuário'}! 👋
               </h1>
             </div>
           </div>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex shrink-0 items-center space-x-2 md:space-x-4">
+            <HelpPanel />
             {/* User Menu */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -348,6 +354,8 @@ const Layout = ({ children }: LayoutProps) => {
           ) : children}
         </main>
       </div>
+
+      {user?.type !== 'tutor' && <OnboardingTour userId={user?.id} />}
 
       {import.meta.env.DEV && showThemeDebug && (
         <div className="fixed bottom-4 right-4 z-[100] max-w-sm text-xs bg-white/90 backdrop-blur border border-border rounded-lg shadow-lg p-3">

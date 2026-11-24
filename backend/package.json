@@ -22,6 +22,7 @@
     "prisma:validate": "prisma validate"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "1.7.0",
     "@prisma/client": "^5.0.0",
     "@types/bcrypt": "^6.0.0",
     "@types/compression": "^1.8.1",

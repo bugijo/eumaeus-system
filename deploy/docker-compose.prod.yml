@@ -36,6 +36,10 @@ services:
       ALLOW_TEST_DATA_MUTATION: "false"
       EMAIL_USER: ${EMAIL_USER:-}
       EMAIL_PASSWORD: ${EMAIL_PASSWORD:-}
+      # Assistente de suporte (opcional): sem chave, o chat fica desligado e a central de ajuda continua funcionando.
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      HELP_ASSISTANT_MODEL: ${HELP_ASSISTANT_MODEL:-claude-haiku-5-5}
+      HELP_ASSISTANT_DAILY_LIMIT: ${HELP_ASSISTANT_DAILY_LIMIT:-80}
     healthcheck:
       test: ["CMD-SHELL", "node -e \"fetch('http://127.0.0.1:3333/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\""]
       interval: 15s
