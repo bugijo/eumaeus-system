@@ -12,6 +12,9 @@ export class InvoiceService {
   async createFromAppointment(appointmentId: number) {
     // Usar transação para garantir consistência
     return await prisma.$transaction(async (tx) => {
+      // Trava o atendimento: o estorno de sessão de pacote e um segundo clique em "gerar fatura"
+      // esperam esta transação, então a fatura nunca cobre com preço zero uma sessão já estornada.
+      await tx.$queryRaw`SELECT "id" FROM "Appointment" WHERE "id" = ${appointmentId} FOR UPDATE`;
       // 1. Buscar o agendamento com todos os dados necessários
       const appointment = await tx.appointment.findUnique({
         where: { id: appointmentId },
@@ -232,7 +235,7 @@ export class InvoiceService {
       const posted = postedTotal(invoice.payments || []);
       // Antes o total podia ficar abaixo do já recebido: a fatura nunca chegava a paga e o excedente sumia.
       if (totalAmount.lessThan(posted)) throw new Error('Desconto deixaria a fatura abaixo do valor já recebido');
-      await tx.invoiceDiscount.create({ data: { invoiceId, clinicId: invoice.clinicId, amount: discount, reason: reason.trim(), authorizedByUserId } });
+      await tx.invoiceDiscount.create({ data: { invoiceId, amount: discount, reason: reason.trim(), authorizedByUserId } });
       const status = posted.greaterThan(0) && totalAmount.equals(posted) ? 'PAID' : invoice.status;
       return tx.invoice.update({ where: { id: invoiceId }, data: { totalAmount, status }, include: { items: true, discounts: true, payments: true, appointment: { include: { pet: { include: { tutor: true } } } } } });
     });

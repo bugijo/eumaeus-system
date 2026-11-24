@@ -51,13 +51,28 @@ describe('package consumption and reversal invariants', () => {
 
   it('reverses an unbilled session with an explicit reason and restores balance', async () => {
     db.packageSession.findFirst
-      .mockResolvedValueOnce({ id: 20, contractId: 5, reversedAt: null })
+      .mockResolvedValueOnce({ appointmentId: 9 })
+      .mockResolvedValueOnce({ id: 20, contractId: 5, appointmentId: 9, reversedAt: null })
       .mockResolvedValueOnce({ id: 20, contractId: 5, reversedAt: new Date(), reversalReason: 'Correção sintética' });
     db.invoiceItem.findFirst.mockResolvedValue(null);
-    db.packageSession.update.mockResolvedValue({ id: 20 });
+    db.packageSession.updateMany = jest.fn().mockResolvedValue({ count: 1 });
     db.packageContract.update.mockResolvedValue({ id: 5, remainingSessions: 2 });
     await expect(runWithClinic(1, () => PackageService.reverse(20, 'Correção sintética'))).resolves.toEqual(expect.objectContaining({ id: 20 }));
-    expect(db.packageSession.update).toHaveBeenCalledWith(expect.objectContaining({ where: { id: 20 }, data: expect.objectContaining({ reversalReason: 'Correção sintética' }) }));
+    expect(db.packageSession.updateMany).toHaveBeenCalledWith(expect.objectContaining({ where: { id: 20, reversedAt: null }, data: expect.objectContaining({ reversalReason: 'Correção sintética' }) }));
     expect(db.packageContract.update).toHaveBeenCalledWith({ where: { id: 5 }, data: { remainingSessions: { increment: 1 } } });
+  });
+
+  it('estorno trava o atendimento e não devolve saldo em dobro', async () => {
+    db.$queryRaw.mockClear();
+    db.packageSession.findFirst
+      .mockResolvedValueOnce({ appointmentId: 9 })
+      .mockResolvedValueOnce({ id: 20, contractId: 5, appointmentId: 9, reversedAt: null });
+    db.invoiceItem.findFirst.mockResolvedValue(null);
+    db.packageSession.updateMany = jest.fn().mockResolvedValue({ count: 0 });
+    db.packageContract.update.mockClear();
+    await expect(runWithClinic(1, () => PackageService.reverse(20, 'Duplo clique'))).rejects.toThrow('Sessão já estornada');
+    expect(db.packageContract.update).not.toHaveBeenCalled();
+    expect(db.$queryRaw.mock.calls[0][0].join('?')).toMatch(/FROM "Appointment" WHERE "id" = \? FOR UPDATE/);
+    expect(db.$queryRaw.mock.calls[0][1]).toBe(9);
   });
 });

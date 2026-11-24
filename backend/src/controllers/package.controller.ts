@@ -8,7 +8,7 @@ export const packageController = {
     catch (error) { return res.status(400).json({ error: error instanceof Error ? error.message : 'Pacote inválido' }); }
   },
   async purchase(req: Request, res: Response) {
-    try { return res.status(201).json({ success: true, data: await PackageService.purchase(Number(req.params.packageId), Number(req.body.tutorId), Number(req.body.petId)) }); }
+    try { return res.status(201).json({ success: true, data: await PackageService.purchase(Number(req.params.packageId), Number(req.body.tutorId), Number(req.body.petId), req.body.payments, String(req.body.idempotencyKey ?? '')) }); }
     catch (error) { return res.status(400).json({ error: error instanceof Error ? error.message : 'Compra inválida' }); }
   },
   async consume(req: Request, res: Response) {

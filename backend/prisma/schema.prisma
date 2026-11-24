@@ -548,6 +548,7 @@ model Sale {
   payments         SalePayment[]
   resultCenter     ResultCenter? @relation(fields: [resultCenterId], references: [id], onDelete: SetNull)
   cashSession      CashSession?  @relation(fields: [cashSessionId], references: [id], onDelete: SetNull)
+  packageContract  PackageContract?
 
   @@unique([clinicId, idempotencyKey])
   @@unique([clinicId, number])
@@ -851,6 +852,8 @@ model PackageContract {
   remainingSessions Int
   expiresAt         DateTime
   status            String           @default("ACTIVE")
+  saleId            Int?             @unique
+  sale              Sale?            @relation(fields: [saleId], references: [id], onDelete: SetNull)
   package           ServicePackage   @relation(fields: [packageId], references: [id])
   tutor             Tutor            @relation(fields: [tutorId], references: [id])
   pet               Pet              @relation(fields: [petId], references: [id])

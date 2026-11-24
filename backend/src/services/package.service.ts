@@ -1,6 +1,8 @@
 import { prisma } from '../lib/prisma';
 import { Prisma } from '@prisma/client';
-import { getCurrentClinicId } from '../tenantContext';
+import { getCurrentClinicId, getCurrentUserId } from '../tenantContext';
+import { lockClinicCash } from './cash.service';
+import { computeSaleTotals, SalePaymentInput } from './sale.service';
 
 export class PackageService {
   static async listPackages() {
@@ -19,18 +21,56 @@ export class PackageService {
     return prisma.servicePackage.create({ data: { clinicId, name: data.name.trim(), description: data.description?.trim() || null, price: new Prisma.Decimal(data.price), totalSessions: data.totalSessions, validityDays: data.validityDays, coveredCatalogServiceId: data.coveredCatalogServiceId } });
   }
 
-  static async purchase(packageId: number, tutorId: number, petId: number) {
+  /**
+   * Compra de pacote = venda no caixa. Sem isso o contrato liberava sessões sem nenhum recebimento
+   * registrado. Exige caixa aberto e pagamento do valor do pacote; a chave de idempotência evita contrato duplo.
+   */
+  static async purchase(packageId: number, tutorId: number, petId: number, payments: SalePaymentInput[] = [], idempotencyKey = '') {
+    const clinicId = getCurrentClinicId();
+    const userId = getCurrentUserId();
+    if (!clinicId || !userId) throw new Error('Autoria autenticada obrigatória');
+    const key = String(idempotencyKey || '').trim();
+    if (!key) throw new Error('Chave de idempotência obrigatória');
+    if (!Array.isArray(payments)) throw new Error('Informe a forma de pagamento');
     return prisma.$transaction(async (tx: any) => {
+      await lockClinicCash(tx, clinicId);
+      const duplicate = await tx.sale.findFirst({ where: { idempotencyKey: `package:${key}` }, select: { id: true } });
+      if (duplicate) {
+        const existing = await tx.packageContract.findFirst({ where: { saleId: duplicate.id } });
+        if (existing) return existing;
+        throw new Error('Chave de idempotência já usada em outra venda');
+      }
       const packageRecord = await tx.servicePackage.findFirst({ where: { id: packageId, active: true } });
       const [tutor, pet] = await Promise.all([
         tx.tutor.findFirst({ where: { id: tutorId, deletedAt: null } }),
         tx.pet.findFirst({ where: { id: petId, deletedAt: null } }),
       ]);
       if (!packageRecord || !tutor || !pet || pet.tutorId !== tutor.id) throw new Error('Pacote, tutor e pet devem pertencer à clínica autenticada');
+      const cashSession = await tx.cashSession.findFirst({ where: { status: 'OPEN' }, select: { id: true } });
+      if (!cashSession) throw new Error('Abra o caixa antes de vender o pacote');
+      const price = Number(packageRecord.price);
+      const totals = computeSaleTotals([{ quantity: 1, unitPrice: price }], 0, payments);
+      const last = await tx.sale.findFirst({ orderBy: { number: 'desc' }, select: { number: true } });
+      const money = (cents: number) => new Prisma.Decimal((cents / 100).toFixed(2));
+      const sale = await tx.sale.create({
+        data: {
+          number: (last?.number || 0) + 1,
+          subtotal: money(totals.subtotal),
+          discount: money(0),
+          total: money(totals.total),
+          change: money(totals.change),
+          tutorId: tutor.id,
+          soldByUserId: userId,
+          idempotencyKey: `package:${key}`,
+          cashSessionId: cashSession.id,
+          items: { create: [{ clinicId, productId: null, description: `Pacote: ${packageRecord.name}`, barcode: null, quantity: 1, unitPrice: money(totals.subtotal), total: money(totals.subtotal) }] },
+          payments: { create: payments.map((payment) => ({ clinicId, method: String(payment.method).toUpperCase(), amount: new Prisma.Decimal(Number(payment.amount).toFixed(2)) })) },
+        },
+      });
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + packageRecord.validityDays);
-      return tx.packageContract.create({ data: { packageId, tutorId, petId, contractedPrice: packageRecord.price, totalSessions: packageRecord.totalSessions, remainingSessions: packageRecord.totalSessions, expiresAt } });
-    });
+      return tx.packageContract.create({ data: { packageId, tutorId, petId, contractedPrice: packageRecord.price, totalSessions: packageRecord.totalSessions, remainingSessions: packageRecord.totalSessions, expiresAt, saleId: sale.id } });
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted });
   }
 
   static async consume(contractId: number, appointmentId: number, serviceId: number) {
@@ -55,11 +95,17 @@ export class PackageService {
   static async reverse(sessionId: number, reason: string) {
     if (!reason?.trim()) throw new Error('Justificativa do estorno é obrigatória');
     return prisma.$transaction(async (tx: any) => {
+      const found = await tx.packageSession.findFirst({ where: { id: sessionId, reversedAt: null }, select: { appointmentId: true } });
+      if (!found) throw new Error('Sessão já estornada ou não encontrada');
+      // Mesma trava do faturamento (linha do atendimento): estorno e fatura não se cruzam.
+      await tx.$queryRaw`SELECT "id" FROM "Appointment" WHERE "id" = ${found.appointmentId} FOR UPDATE`;
       const session = await tx.packageSession.findFirst({ where: { id: sessionId, reversedAt: null } });
       if (!session) throw new Error('Sessão já estornada ou não encontrada');
       const invoiced = await tx.invoiceItem.findFirst({ where: { packageSessionId: sessionId } });
       if (invoiced) throw new Error('Sessão já refletida em fatura; faça um ajuste financeiro auditado antes do estorno');
-      await tx.packageSession.update({ where: { id: sessionId }, data: { reversedAt: new Date(), reversalReason: reason.trim() } });
+      // Condicional: dois estornos simultâneos não devolvem o saldo em dobro.
+      const reversed = await tx.packageSession.updateMany({ where: { id: sessionId, reversedAt: null }, data: { reversedAt: new Date(), reversalReason: reason.trim() } });
+      if (reversed.count !== 1) throw new Error('Sessão já estornada ou não encontrada');
       await tx.packageContract.update({ where: { id: session.contractId }, data: { remainingSessions: { increment: 1 } } });
       return tx.packageSession.findFirst({ where: { id: sessionId } });
     });

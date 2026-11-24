@@ -47,7 +47,7 @@ describe('OperacaoPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Selecionar' }));
 
     expect(screen.getByText('Pet selecionado: Pet QA')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Contratar pacote selecionado' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Vender pacote (entra no caixa)' })).toBeEnabled();
   });
 
   it('oferece atendimento e serviço vinculados ao pet selecionado para consumo', async () => {
@@ -60,7 +60,7 @@ describe('OperacaoPage', () => {
     await waitFor(() => expect(screen.getByRole('option', { name: /SCHEDULED/ })).toBeInTheDocument());
     fireEvent.change(screen.getByRole('combobox', { name: 'Atendimento para consumo' }), { target: { value: '41' } });
     fireEvent.click(screen.getByRole('button', { name: 'Selecionar' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Contratar pacote selecionado' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Vender pacote (entra no caixa)' }));
 
     await waitFor(() => expect(screen.getByRole('option', { name: /Banho · R\$ 80/ })).toBeInTheDocument());
   });

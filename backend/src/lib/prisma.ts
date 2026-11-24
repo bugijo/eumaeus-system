@@ -13,6 +13,7 @@ const TENANT_MODELS = new Set([
   'prescription', 'prescriptionItem', 'financialAuditEvent', 'assistantReminder', 'assistantReminderAction',
   'documentShare', 'documentShareEvent',
   'allocationRule', 'sale', 'saleItem', 'salePayment', 'cashSession', 'cashMovement', 'purchaseInvoice', 'supplierProductLink',
+  'invoiceDiscount',
   'hospitalizationAdmission', 'hospitalizationTask', 'hospitalizationPrescription', 'hospitalizationHandoff',
   'surgeryCase', 'surgeryBudgetVersion', 'surgeryConsent', 'surgeryChecklistItem', 'surgeryInstruction',
 ]);
@@ -53,7 +54,8 @@ const TENANT_RELATIONS: Record<string, Record<string, { target: string; many: bo
   documentShare: { createdBy: { target: 'user', many: false }, events: { target: 'documentShareEvent', many: true } },
   documentShareEvent: { share: { target: 'documentShare', many: false }, actor: { target: 'user', many: false } },
   resultCenter: { products: { target: 'product', many: true }, invoices: { target: 'invoice', many: true }, invoiceItems: { target: 'invoiceItem', many: true }, expenses: { target: 'expense', many: true } },
-  invoice: { appointment: { target: 'appointment', many: false }, items: { target: 'invoiceItem', many: true }, resultCenter: { target: 'resultCenter', many: false }, payments: { target: 'payment', many: true } },
+  invoice: { appointment: { target: 'appointment', many: false }, items: { target: 'invoiceItem', many: true }, resultCenter: { target: 'resultCenter', many: false }, payments: { target: 'payment', many: true }, discounts: { target: 'invoiceDiscount', many: true } },
+  invoiceDiscount: { invoice: { target: 'invoice', many: false } },
   invoiceItem: { invoice: { target: 'invoice', many: false }, service: { target: 'service', many: false }, packageSession: { target: 'packageSession', many: false }, resultCenter: { target: 'resultCenter', many: false } },
   payment: { invoice: { target: 'invoice', many: false } },
   expense: { resultCenter: { target: 'resultCenter', many: false } },
@@ -133,6 +135,7 @@ const SAFE_RAW_SQL = [
   // Prisma tagged SQL exposes either the placeholder or the interpolated
   // fragment array to the proxy; both forms are this exact row lock.
   /^SELECT\s+"id"\s+FROM\s+"Invoice"\s+WHERE\s+"id"\s*=\s*(?:\$\d+)?\s+FOR\s+UPDATE$/i,
+  /^SELECT\s+"id"\s+FROM\s+"Appointment"\s+WHERE\s+"id"\s*=\s*(?:\$\d+)?\s+FOR\s+UPDATE$/i,
 ];
 
 const assertSafeRawQuery = (query: unknown): void => {

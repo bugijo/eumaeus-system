@@ -180,6 +180,15 @@ export class SaleService {
       if (!sale) throw new Error('Venda não encontrada');
       if (sale.status === 'CANCELLED') return sale;
       if (sale.cashSession?.status === 'CLOSED') throw new Error('O caixa desta venda já foi fechado. Registre a devolução como despesa no Financeiro.');
+      // Venda de pacote: cancelar a venda encerra o contrato, desde que nenhuma sessão tenha sido usada.
+      const contract = await tx.packageContract.findFirst({ where: { saleId: sale.id } });
+      if (contract) {
+        const used = await tx.packageSession.count({ where: { contractId: contract.id, reversedAt: null } });
+        if (used > 0) throw new Error('Este pacote já teve sessões usadas; estorne as sessões antes de cancelar a venda.');
+        const closed = await tx.packageContract.updateMany({ where: { id: contract.id, status: 'ACTIVE', remainingSessions: contract.totalSessions }, data: { status: 'CANCELLED', remainingSessions: 0 } });
+        // Condicional no saldo cheio: um consumo que entre ao mesmo tempo faz o cancelamento falhar.
+        if (closed.count !== 1) throw new Error('Pacote em uso ou inativo; confira o contrato antes de cancelar a venda.');
+      }
       for (const item of sale.items) {
         if (item.productId) await tx.product.updateMany({ where: { id: item.productId }, data: { quantity: { increment: item.quantity } } });
       }
