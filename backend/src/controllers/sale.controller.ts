@@ -1,7 +1,12 @@
 import { Request, Response } from 'express';
 import { SaleService } from '../services/sale.service';
 
-const message = (error: unknown, fallback: string) => (error instanceof Error ? error.message : fallback);
+// Erros internos do Prisma (código P....) não vão para a tela: mostram detalhes do banco e não ajudam o usuário.
+const message = (error: unknown, fallback: string) => {
+  if (!(error instanceof Error)) return fallback;
+  if (/^P\d{4}$/.test(String((error as { code?: string }).code || '')) || error.message.includes('prisma.')) return fallback;
+  return error.message;
+};
 
 export const saleController = {
   async list(req: Request, res: Response) {

@@ -1,3 +1,4 @@
+import { withSerializableRetry } from '../lib/serializableRetry';
 import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { getCurrentClinicId, getCurrentUserId } from '../tenantContext';
@@ -251,7 +252,7 @@ export class FinancialService {
     if (!Number.isFinite(amount) || amount <= 0 || !method?.trim() || !idempotencyKey?.trim()) throw new Error('Valor, método e chave de idempotência são obrigatórios');
     const actorUserId = getCurrentUserId();
     if (!actorUserId) throw new Error('Autoria autenticada obrigatória');
-    return prisma.$transaction(async (tx: any) => {
+    return withSerializableRetry(() => prisma.$transaction(async (tx: any) => {
       await tx.$queryRaw`SELECT "id" FROM "Invoice" WHERE "id" = ${invoiceId} FOR UPDATE`;
       const invoice = await tx.invoice.findFirst({ where: { id: invoiceId }, include: { items: true, discounts: true, payments: true } });
       if (!invoice) throw new Error('Fatura não encontrada');
@@ -270,14 +271,14 @@ export class FinancialService {
       const nextTotal = received.plus(paymentAmount);
       await tx.invoice.update({ where: { id: invoiceId }, data: { status: nextTotal.equals(invoice.totalAmount) ? 'PAID' : 'PENDING' } });
       return payment;
-    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable }));
   }
 
   static async reversePayment(paymentId: number, reason: string) {
     if (!reason?.trim()) throw new Error('Justificativa do estorno é obrigatória');
     const actorUserId = getCurrentUserId();
     if (!actorUserId) throw new Error('Autoria autenticada obrigatória');
-    return prisma.$transaction(async (tx: any) => {
+    return withSerializableRetry(() => prisma.$transaction(async (tx: any) => {
       const payment = await tx.payment.findFirst({ where: { id: paymentId } });
       if (!payment) throw new Error('Recebimento não encontrado');
       if (payment.status === 'REVERSED') return payment;
@@ -296,6 +297,6 @@ export class FinancialService {
       const postedTotal = (invoice?.payments || []).filter((item: any) => item.status === 'POSTED').reduce((sum: Prisma.Decimal, item: any) => sum.plus(item.amount), new Prisma.Decimal(0));
       await tx.invoice.update({ where: { id: payment.invoiceId }, data: { status: invoice && postedTotal.equals(invoice.totalAmount) ? 'PAID' : 'PENDING' } });
       return reversed;
-    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable }));
   }
 }

@@ -1,3 +1,4 @@
+import { withSerializableRetry } from '../lib/serializableRetry';
 import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { getCurrentClinicId, getCurrentUserId } from '../tenantContext';
@@ -15,6 +16,9 @@ export interface CreateSaleInput {
   tutorId?: number;
   idempotencyKey: string;
 }
+
+/** Primeiro número da trava por estabelecimento (pg_advisory_xact_lock(int, int)). */
+const SALE_LOCK_NAMESPACE = 41001;
 
 const toCents = (value: number) => Math.round(Number(value) * 100);
 const fromCents = (cents: number) => (cents / 100).toFixed(2);
@@ -76,12 +80,14 @@ export class SaleService {
       grouped.set(productId, { productId, quantity: (current?.quantity || 0) + Number(item.quantity), unitPrice: item.unitPrice ?? current?.unitPrice });
     }
 
-    return prisma.$transaction(async (tx: any) => {
+    return withSerializableRetry(() => prisma.$transaction(async (tx: any) => {
+      // Vendas do mesmo estabelecimento entram em fila: evita disputa pelo número da venda e pelo estoque.
+      await tx.$queryRaw`SELECT pg_advisory_xact_lock(${SALE_LOCK_NAMESPACE}::int, ${clinicId}::int) IS NULL AS "locked"`;
       const duplicate = await tx.sale.findFirst({ where: { idempotencyKey: key }, include: { items: true, payments: true } });
       if (duplicate) return duplicate;
 
       const productIds = [...grouped.keys()];
-      // A baixa usa updateMany condicional (quantity >= pedido) + transação serializável: não há venda acima do saldo.
+      // A baixa usa updateMany condicional (quantity >= pedido), reavaliado sob trava de linha: não há venda acima do saldo.
       const products = await tx.product.findMany({ where: { id: { in: productIds } } });
       const byId = new Map<number, any>(products.map((product: any) => [product.id, product]));
 
@@ -130,7 +136,8 @@ export class SaleService {
         await SaleService.consumeStock(tx, line.product.id, line.quantity, `Venda PDV #${sale.number}`, `sale:${sale.id}:${line.product.id}`, userId);
       }
       return sale;
-    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+      // ReadCommitted de propósito: em Serializable o retrato dos dados seria tirado antes da fila e geraria conflito.
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted }), { retryOnUnique: true });
   }
 
   /** Baixa o saldo do produto e, se houver lotes, consome pelo vencimento mais próximo (FEFO). */
