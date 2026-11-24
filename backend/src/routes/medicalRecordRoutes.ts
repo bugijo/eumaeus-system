@@ -6,15 +6,15 @@ import {
   getRecordByAppointment,
   getAvailableProducts
 } from '../controllers/medicalRecordController';
-import { requireRoles, ROLE } from '../middlewares/auth.middleware';
+import { requireRoles, requireRolesStrict, ROLE } from '../middlewares/auth.middleware';
 
 const router = Router();
 
 // POST /api/records/direct - Criar prontuário diretamente para um pet
-router.post('/direct', requireRoles(ROLE.DONO, ROLE.VETERINARIO), createDirectMedicalRecord);
+router.post('/direct', requireRolesStrict(ROLE.DONO, ROLE.VETERINARIO), createDirectMedicalRecord);
 
 // POST /api/records/:appointmentId - Criar prontuário para um agendamento
-router.post('/:appointmentId', requireRoles(ROLE.DONO, ROLE.VETERINARIO), createMedicalRecord);
+router.post('/:appointmentId', requireRolesStrict(ROLE.DONO, ROLE.VETERINARIO), createMedicalRecord);
 
 // GET /api/pets/:petId/records - Buscar todos os prontuários de um pet
 router.get('/pets/:petId/records', requireRoles(ROLE.DONO, ROLE.VETERINARIO, ROLE.AUXILIAR), getRecordsByPet);

@@ -134,7 +134,9 @@ export const ROUTE_RULES: Rule[] = [
 
 /** Chaves que liberam a requisição, ou null quando o caminho não é controlado por módulo. */
 export function requiredPermissions(method: string, path: string): PermissionKey[] | null {
-  const clean = path.split('?')[0].replace(/\/+$/, '') || '/';
+  // O Express roteia sem diferenciar maiúsculas: /API/TUTORS chega à mesma rota que /api/tutors.
+  // Sem normalizar, a grafia em maiúsculas não casava nenhuma regra e passava sem checagem de módulo.
+  const clean = (path.split('?')[0].replace(/\/+$/, '') || '/').toLowerCase();
   const rule = ROUTE_RULES.find((item) => item.pattern.test(clean));
   if (!rule) return null;
   return ['GET', 'HEAD'].includes(method.toUpperCase()) ? rule.read : rule.write;

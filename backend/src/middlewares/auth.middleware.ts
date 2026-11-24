@@ -109,8 +109,10 @@ export const authenticateUser = (req: AuthenticatedRequest, res: Response, next:
   });
 };
 
-// RBAC para rotas de funcionários
-export const requireRoles = (...allowedRoles: AppRole[]) => {
+// RBAC para rotas de funcionários.
+// strict = true: a lista de cargos vale mesmo quando o porteiro de módulos concedeu (atos clínicos
+// privativos de veterinário e ajuste de estoque do dono não podem ser abertos por permissão de módulo).
+const buildRoleGuard = (strict: boolean, allowedRoles: AppRole[]) => {
   const normalizedAllowedRoles = allowedRoles.map((role) => role.toUpperCase());
   const roleAlias: Record<string, string> = {
     FUNCIONARIO: ROLE.RECEPCAO,
@@ -128,7 +130,7 @@ export const requireRoles = (...allowedRoles: AppRole[]) => {
 
       // O porteiro de módulos (access/accessGate) já conferiu plano e permissões desta rota:
       // nesse caso a lista fixa de cargos não se aplica, para valer a escolha do dono.
-      const moduleGranted = (req as any).accessGranted === true;
+      const moduleGranted = !strict && (req as any).accessGranted === true;
       const rawUserRole = (req.user.role || '').toUpperCase();
       const normalizedUserRole = roleAlias[rawUserRole] || rawUserRole;
       if (!moduleGranted && (!normalizedUserRole || !normalizedAllowedRoles.includes(normalizedUserRole))) {
@@ -149,5 +151,10 @@ export const requireRoles = (...allowedRoles: AppRole[]) => {
     });
   };
 };
+
+export const requireRoles = (...allowedRoles: AppRole[]) => buildRoleGuard(false, allowedRoles);
+
+/** Exige o cargo da lista sempre; o porteiro de módulos continua valendo antes (plano e permissões). */
+export const requireRolesStrict = (...allowedRoles: AppRole[]) => buildRoleGuard(true, allowedRoles);
 
 export { AuthenticatedRequest };

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { inventoryController } from '../controllers/inventory.controller';
-import { requireRoles, ROLE } from '../middlewares/auth.middleware';
+import { requireRoles, requireRolesStrict, ROLE } from '../middlewares/auth.middleware';
 import { purchaseInvoiceController } from '../controllers/purchaseInvoice.controller';
 
 const router = Router();
@@ -11,7 +11,7 @@ router.get('/movements', read, inventoryController.movements);
 router.post('/receipts', write, inventoryController.receive);
 router.post('/issues', write, inventoryController.issue);
 router.post('/changes', write, inventoryController.change);
-router.post('/adjustments', requireRoles(ROLE.DONO), inventoryController.adjustment);
+router.post('/adjustments', requireRolesStrict(ROLE.DONO), inventoryController.adjustment);
 router.post('/losses', write, inventoryController.loss);
 router.post('/returns', write, inventoryController.returnStock);
 // Importação de XML de NF-e de compra.

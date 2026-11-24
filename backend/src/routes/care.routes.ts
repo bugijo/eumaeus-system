@@ -1,9 +1,9 @@
 import { Router } from 'express';
-import { requireRoles, ROLE } from '../middlewares/auth.middleware';
+import { requireRoles, requireRolesStrict, ROLE } from '../middlewares/auth.middleware';
 import { careController } from '../controllers/care.controller';
 const router = Router();
 const read = requireRoles(ROLE.DONO, ROLE.VETERINARIO, ROLE.RECEPCAO, ROLE.AUXILIAR);
-const clinical = requireRoles(ROLE.DONO, ROLE.VETERINARIO);
+const clinical = requireRolesStrict(ROLE.DONO, ROLE.VETERINARIO);
 router.get('/hospitalizations', read, careController.admissions);
 router.post('/hospitalizations', clinical, careController.admit);
 router.post('/hospitalizations/:id/tasks', clinical, careController.task);
