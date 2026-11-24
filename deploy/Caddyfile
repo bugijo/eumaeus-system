@@ -11,7 +11,10 @@
 
 	@api path /api/* /health
 	handle @api {
-		reverse_proxy api:3333
+		reverse_proxy api:3333 {
+			# Nunca repassa o X-Forwarded-For enviado pelo cliente: a API usa este valor como IP no limitador.
+			header_up X-Forwarded-For {remote_host}
+		}
 	}
 
 	handle {

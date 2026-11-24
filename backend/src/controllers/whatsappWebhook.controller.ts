@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { createHmac, timingSafeEqual } from 'node:crypto';
+import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
 import { WhatsAppChannelConfig } from '../integrations/whatsapp/config';
 
 export interface WhatsAppWebhookStore {
@@ -33,6 +33,14 @@ const validSignature = (body: Buffer, value: string | undefined, secret: string)
 
 const stringValue = (value: unknown): string => typeof value === 'string' ? value : '';
 
+/** Comparação em tempo constante para segredos de tamanho variável (compara os hashes). */
+const sameSecret = (received: string, expected: string): boolean => {
+  const a = createHash('sha256').update(received).digest();
+  const b = createHash('sha256').update(expected).digest();
+  return timingSafeEqual(a, b) && received.length === expected.length;
+};
+
+
 const extractEvent = (candidate: Record<string, unknown>): { id: string; type: string; phone: string; payload: Record<string, unknown> } | null => {
   const directId = stringValue(candidate.id);
   const directType = stringValue(candidate.type);
@@ -62,20 +70,31 @@ const extractEvent = (candidate: Record<string, unknown>): { id: string; type: s
   return { id, type, phone: stringValue(itemRecord.from || itemRecord.recipient_id), payload: itemRecord };
 };
 
-export const createWhatsAppWebhookController = ({ channels, store }: WhatsAppWebhookDependencies) => ({
+export const createWhatsAppWebhookController = ({ channels, store }: WhatsAppWebhookDependencies) => {
+  // Só canais configurados (propriedade própria). channels[id] com id "constructor" ou "__proto__"
+  // devolvia algo herdado de Object, o HMAC recebia segredo undefined e o erro derrubava o processo.
+  const findChannel = (rawId: unknown): WhatsAppChannelConfig | undefined => {
+    const id = String(rawId ?? '');
+    if (!Object.prototype.hasOwnProperty.call(channels, id)) return undefined;
+    const channel = channels[id];
+    if (!channel || typeof channel.webhookSecret !== 'string' || !channel.webhookSecret || typeof channel.verifyToken !== 'string') return undefined;
+    return channel;
+  };
+
+  return {
   handshake(req: Request, res: Response) {
-    const channel = channels[String(req.params.channelId)];
+    const channel = findChannel(req.params.channelId);
     const mode = String(req.query['hub.mode'] || '');
     const token = String(req.query['hub.verify_token'] || '');
     const challenge = String(req.query['hub.challenge'] || '');
-    if (!channel || mode !== 'subscribe' || token !== channel.verifyToken || !challenge) {
+    if (!channel || mode !== 'subscribe' || !challenge || !sameSecret(token, channel.verifyToken)) {
       return res.sendStatus(403);
     }
     return res.status(200).type('text/plain').send(challenge);
   },
 
   async receive(req: Request, res: Response) {
-    const channel = channels[String(req.params.channelId)];
+    const channel = findChannel(req.params.channelId);
     const body = rawBody(req);
     if (!channel) return res.status(404).json({ error: 'Canal WhatsApp não configurado' });
     if (!body) return res.status(415).json({ error: 'O webhook exige corpo JSON bruto' });
@@ -103,4 +122,5 @@ export const createWhatsAppWebhookController = ({ channels, store }: WhatsAppWeb
       return res.status(503).json({ error: 'Persistência do webhook indisponível' });
     }
   },
-});
+};
+};

@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import { accessGate } from './access/accessGate';
 import compression from 'compression';
+import jwt from 'jsonwebtoken';
 import cron from 'node-cron';
 import http from 'http';
 import { config } from './config/env';
@@ -39,7 +40,17 @@ const HOST = '0.0.0.0';
 export const DATABASE_READINESS_ERROR = 'Banco de dados indisponível ou schema não migrado.';
 
 export const app = express();
-app.set('trust proxy', true);
+// Confia só em proxies da rede local/privada (o Caddy na rede do compose). Com "true", qualquer cliente
+// escolhia o próprio IP pelo X-Forwarded-For. TRUST_PROXY aceita o formato do Express (ex.: 1, true, lista).
+const parseTrustProxy = (raw: string | undefined): boolean | number | string => {
+  const value = (raw || '').trim();
+  if (!value) return 'loopback, linklocal, uniquelocal';
+  if (value === 'true') return true;
+  if (value === 'false') return false;
+  if (/^\d+$/.test(value)) return Number(value);
+  return value;
+};
+app.set('trust proxy', parseTrustProxy(process.env.TRUST_PROXY));
 // Prisma Decimal serializa como string por padrão. O frontend existente espera
 // números para formatar preços com toFixed; como os campos já têm escala fixa
 // de centavos, esta conversão mantém o contrato sem reintroduzir Float no banco.
@@ -77,26 +88,35 @@ const RATE_LIMIT_AUTH_MAX = Number(process.env.RATE_LIMIT_AUTH_MAX_REQUESTS || 1
 const RATE_LIMIT_API_MAX = Number(process.env.RATE_LIMIT_API_MAX_REQUESTS || 400);
 const RATE_LIMIT_PUBLIC_MAX = Number(process.env.RATE_LIMIT_PUBLIC_MAX_REQUESTS || 300);
 
-const getClientKey = (req: express.Request) => {
-  const authHeader = req.headers.authorization || '';
-  if (authHeader.startsWith('Bearer ') && authHeader.length > 30) {
-    return `token:${authHeader.slice(-24)}`;
+/**
+ * Chave do limitador: identidade de token VERIFICADO (assinatura HS256) ou o IP resolvido pelo Express
+ * (req.ip, que respeita "trust proxy"). Antes, qualquer Bearer não verificado ou o primeiro X-Forwarded-For
+ * virava chave, e trocar o cabeçalho a cada tentativa dava um balde novo (login sem limite).
+ * Em /api/auth a chave é sempre o IP: o login não pode depender de um cabeçalho do próprio cliente.
+ */
+export const getClientKey = (req: express.Request) => {
+  const ip = req.ip || req.socket?.remoteAddress || 'unknown';
+  if (req.path.toLowerCase().startsWith('/api/auth')) return `ip:${ip}`;
+  const [scheme, token] = (req.headers.authorization || '').trim().split(/\s+/);
+  if (scheme?.toLowerCase() === 'bearer' && token) {
+    try {
+      const decoded = jwt.verify(token, config.jwt.secret, { algorithms: ['HS256'] });
+      if (decoded && typeof decoded === 'object' && (decoded as any).id !== undefined) {
+        const subject = decoded as { id: unknown; type?: unknown; clinicId?: unknown };
+        return `${String(subject.type || 'user')}:${String(subject.clinicId ?? '-')}:${String(subject.id)}`;
+      }
+    } catch { /* token inválido ou expirado: cai no IP */ }
   }
-
-  const forwardedFor = req.headers['x-forwarded-for'];
-  const forwardedIp = Array.isArray(forwardedFor)
-    ? forwardedFor[0]
-    : (forwardedFor || '').split(',')[0].trim();
-  const ip = forwardedIp || req.ip || req.socket.remoteAddress || 'unknown';
   return `ip:${ip}`;
 };
 
 app.use((req, res, next) => {
   const now = Date.now();
   const key = getClientKey(req);
-  const maxRequests = req.url.includes('/api/auth')
+  const lowerPath = req.path.toLowerCase();
+  const maxRequests = lowerPath.startsWith('/api/auth')
     ? RATE_LIMIT_AUTH_MAX
-    : req.url.includes('/api/')
+    : lowerPath.startsWith('/api/')
       ? RATE_LIMIT_API_MAX
       : RATE_LIMIT_PUBLIC_MAX;
 

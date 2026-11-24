@@ -26,6 +26,20 @@ export interface VaccineReminderData {
   clinicPhone?: string;
 }
 
+/** Escapa texto digitado (nome do tutor, pet, vacina, clínica) antes de entrar no HTML do e-mail. */
+export const escapeHtml = (value: unknown): string => String(value ?? '')
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#39;');
+
+/** Assunto em uma linha só, sem quebra que possa virar cabeçalho extra. */
+const singleLine = (value: unknown): string => String(value ?? '').replace(/[\r\n]+/g, ' ').trim();
+
+const escapeFields = <T extends object>(data: T): T =>
+  Object.fromEntries(Object.entries(data).map(([key, value]) => [key, value === undefined ? value : escapeHtml(value)])) as T;
+
 class EmailService {
   private transporter: ReturnType<typeof nodemailer.createTransport> | undefined;
   private from: string;
@@ -72,9 +86,10 @@ class EmailService {
     }
   }
 
-  async sendAppointmentReminder(email: string, data: ReminderEmailData): Promise<boolean> {
-    const subject = `🐾 Lembrete: Consulta do ${data.petName} amanhã`;
-    
+  async sendAppointmentReminder(email: string, raw: ReminderEmailData): Promise<boolean> {
+    const subject = singleLine(`🐾 Lembrete: Consulta do ${raw.petName} amanhã`);
+    const data = escapeFields(raw);
+
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
         <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
@@ -120,16 +135,16 @@ class EmailService {
     `;
 
     const text = `
-      Olá, ${data.tutorName}!
+      Olá, ${raw.tutorName}!
       
-      Lembrete: Não se esqueça da consulta do ${data.petName} amanhã!
+      Lembrete: Não se esqueça da consulta do ${raw.petName} amanhã!
       
       Detalhes:
-      - Pet: ${data.petName}
-      - Data: ${data.appointmentDate}
-      - Horário: ${data.appointmentTime}
-      ${data.clinicName ? `- Clínica: ${data.clinicName}` : ''}
-      ${data.clinicPhone ? `- Telefone: ${data.clinicPhone}` : ''}
+      - Pet: ${raw.petName}
+      - Data: ${raw.appointmentDate}
+      - Horário: ${raw.appointmentTime}
+      ${raw.clinicName ? `- Clínica: ${raw.clinicName}` : ''}
+      ${raw.clinicPhone ? `- Telefone: ${raw.clinicPhone}` : ''}
       
       Chegue com 10 minutos de antecedência e traga a carteirinha de vacinação.
       
@@ -139,9 +154,10 @@ class EmailService {
     return this.sendEmail({ to: email, subject, html, text });
   }
 
-  async sendVaccineReminder(email: string, data: VaccineReminderData): Promise<boolean> {
-    const subject = `💉 Lembrete: Vacina do ${data.petName} está vencendo`;
-    
+  async sendVaccineReminder(email: string, raw: VaccineReminderData): Promise<boolean> {
+    const subject = singleLine(`💉 Lembrete: Vacina do ${raw.petName} está vencendo`);
+    const data = escapeFields(raw);
+
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
         <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
@@ -187,16 +203,16 @@ class EmailService {
     `;
 
     const text = `
-      Olá, ${data.tutorName}!
+      Olá, ${raw.tutorName}!
       
-      Lembrete: A vacina do ${data.petName} está próxima do vencimento!
+      Lembrete: A vacina do ${raw.petName} está próxima do vencimento!
       
       Detalhes:
-      - Pet: ${data.petName}
-      - Vacina: ${data.vaccineName}
-      - Data de Vencimento: ${data.dueDate}
-      ${data.clinicName ? `- Clínica: ${data.clinicName}` : ''}
-      ${data.clinicPhone ? `- Telefone: ${data.clinicPhone}` : ''}
+      - Pet: ${raw.petName}
+      - Vacina: ${raw.vaccineName}
+      - Data de Vencimento: ${raw.dueDate}
+      ${raw.clinicName ? `- Clínica: ${raw.clinicName}` : ''}
+      ${raw.clinicPhone ? `- Telefone: ${raw.clinicPhone}` : ''}
       
       Agende a revacinação para manter a proteção em dia!
       
