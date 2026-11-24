@@ -15,7 +15,7 @@ async function testConnection() {
     console.log('2. Testando login do tutor...');
     const loginResponse = await axios.post('http://localhost:3333/api/auth/login', {
       email: 'tutor@example.com',
-      password: '***REMOVIDO***'
+      password: process.env.E2E_PASSWORD
     }, {
       timeout: 5000
     });

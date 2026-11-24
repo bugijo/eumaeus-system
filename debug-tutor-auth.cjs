@@ -38,8 +38,8 @@ async function debugTutorAuth() {
     
     // 2. Testar senha
     if (authProfile.password) {
-      const isValid = await bcrypt.compare('***REMOVIDO***', authProfile.password);
-      console.log(`\n🔐 Teste de senha '***REMOVIDO***': ${isValid ? '✅ VÁLIDA' : '❌ INVÁLIDA'}`);
+      const isValid = await bcrypt.compare(process.env.TEST_PASSWORD || '', authProfile.password);
+      console.log(`\n🔐 Teste de senha (TEST_PASSWORD): ${isValid ? '✅ VÁLIDA' : '❌ INVÁLIDA'}`);
     }
     
     // 3. Buscar tutor diretamente

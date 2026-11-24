@@ -6,7 +6,7 @@ async function testLogin() {
     
     const response = await axios.post('http://localhost:3333/api/auth/login', {
       email: 'tutor@example.com',
-      password: '***REMOVIDO***'
+      password: process.env.E2E_PASSWORD
     });
     
     console.log('✅ Login bem-sucedido!');

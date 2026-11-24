@@ -13,7 +13,7 @@ echo "Plano: 1) Clínica  2) Pet Shop  3) Clínica + Pet Shop"
 read -r -p "Escolha [3]: " PLAN_CHOICE
 case "${PLAN_CHOICE:-3}" in 1) OWNER_PLAN=CLINICA ;; 2) OWNER_PLAN=PETSHOP ;; 3) OWNER_PLAN=CLINICA_PETSHOP ;; *) echo "Plano inválido."; exit 1 ;; esac
 echo "Senha: 16 a 72 caracteres, com maiúscula, minúscula, número e símbolo;"
-echo "sem 'senha', 'admin', 'eumaeus', '***REMOVIDO***' nem o nome do e-mail."
+echo "sem 'senha', 'admin', 'eumaeus', sequências simples nem o nome do e-mail."
 read -r -s -p "Senha: " OWNER_PASSWORD; echo
 read -r -s -p "Repita a senha: " OWNER_PASSWORD2; echo
 if [[ "$OWNER_PASSWORD" != "$OWNER_PASSWORD2" ]]; then echo "As senhas não conferem."; exit 1; fi
