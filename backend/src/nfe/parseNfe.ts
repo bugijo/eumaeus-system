@@ -74,6 +74,7 @@ function parseItem(det: XmlNode): NfeItem {
   const label = `item ${nItem}`;
   const quantity = toQuantity(textOf(prod, 'qCom'), label);
   const totalCents = toCents(textOf(prod, 'vProd')) - toCents(textOf(prod, 'vDesc'));
+  if (totalCents < 0) throw new NfeError(`Desconto maior que o valor do ${label}`);
   const lots = childrenNamed(prod, 'rastro').map((rastro) => ({
     code: (textOf(rastro, 'nLote') ?? '').slice(0, 60),
     quantity: toQuantity(textOf(rastro, 'qLote'), `lote do ${label}`),
