@@ -61,7 +61,7 @@ export default function Agendamentos() {
       
       const event = {
         id: apt.id.toString(),
-        title: `${apt.serviceType} - Pet ID: ${apt.petId}`,
+        title: `${apt.serviceType ?? 'Atendimento'} · ${apt.pet?.name ?? `pet nº ${apt.petId}`}`,
         start,
         className: `event-${cssStatus}`,
         extendedProps: {

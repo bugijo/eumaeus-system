@@ -65,3 +65,18 @@ export function formatCurrency(value: number): string {
     currency: 'BRL'
   }).format(value);
 }
+
+/** Idade do pet a partir da data de nascimento ("3 anos", "8 meses"); usa a idade informada se não houver data. */
+export function petAgeLabel(birthDate?: string | Date | null, age?: number | null, now: Date = new Date()): string {
+  const birth = birthDate ? new Date(birthDate) : null;
+  if (birth && !Number.isNaN(birth.getTime())) {
+    let months = (now.getFullYear() - birth.getFullYear()) * 12 + (now.getMonth() - birth.getMonth());
+    if (now.getDate() < birth.getDate()) months -= 1;
+    if (months < 0) return 'Não informada';
+    if (months < 12) return months === 1 ? '1 mês' : `${months} meses`;
+    const years = Math.floor(months / 12);
+    return years === 1 ? '1 ano' : `${years} anos`;
+  }
+  if (typeof age === 'number' && age >= 0) return age === 1 ? '1 ano' : `${age} anos`;
+  return 'Não informada';
+}

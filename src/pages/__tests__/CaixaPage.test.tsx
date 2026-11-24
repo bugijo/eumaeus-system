@@ -7,6 +7,7 @@ import { useProducts } from '../../api/productApi';
 import { useResultCenters } from '../../api/financialApi';
 import { saleApi, useCancelSale, useCreateSale, useSales } from '../../api/saleApi';
 
+vi.mock('@/api/userApi', async (importOriginal) => ({ ...(await importOriginal<any>()), useMyAccess: () => ({ data: undefined }) }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 vi.mock('@/components/barcode/CameraBarcodeScanner', () => ({ default: () => null }));
 vi.mock('../../api/productApi', () => ({ useProducts: vi.fn() }));

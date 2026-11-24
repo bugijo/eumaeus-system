@@ -5,6 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import PlanSettings from "@/components/settings/PlanSettings";
+import { useMyAccess } from "@/api/userApi";
+import { hasPermission } from "@/lib/access";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +25,9 @@ import MyAccountSettings from '@/components/settings/MyAccountSettings';
 export default function Configuracoes() {
   const authUser = useAuthStore((state) => state.user);
   const isOwner = authUser?.role === 'DONO';
+  const { data: access } = useMyAccess();
+  const canConfigure = isOwner || hasPermission(access, 'configuracoes');
+  const canReminders = canConfigure || hasPermission(access, 'lembretes');
   const [searchParams] = useSearchParams();
   const initialTab = searchParams.get('aba') || 'estabelecimento';
   const [catalogServices, setCatalogServices] = useState<ServiceType[]>([]);
@@ -130,12 +136,13 @@ export default function Configuracoes() {
           <TabsTrigger value="estabelecimento">Estabelecimento</TabsTrigger>
           {isOwner && <TabsTrigger value="usuarios">Equipe e acessos</TabsTrigger>}
           <TabsTrigger value="conta">Minha conta</TabsTrigger>
-          <TabsTrigger value="notificacoes">Lembretes</TabsTrigger>
-          <TabsTrigger value="servicos">Serviços</TabsTrigger>
+          {canReminders && <TabsTrigger value="notificacoes">Lembretes</TabsTrigger>}
+          {canConfigure && <TabsTrigger value="servicos">Serviços</TabsTrigger>}
         </TabsList>
 
         <TabsContent value="estabelecimento" className="space-y-6">
-          <EstablishmentSettings canEdit={isOwner} />
+          <PlanSettings canEdit={canConfigure} />
+          <EstablishmentSettings canEdit={canConfigure} />
         </TabsContent>
 
         {isOwner && (

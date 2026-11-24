@@ -10,13 +10,14 @@ const fail = (res: Response, error: unknown, fallback: string) => {
 
 export const userController = {
   roles(_req: Request, res: Response) { return res.json(UserService.roles()); },
+  async myAccess(_req: Request, res: Response) { try { return res.json(await UserService.myAccess()); } catch (error) { return fail(res, error, 'Falha ao carregar acessos'); } },
   async list(_req: Request, res: Response) { try { return res.json(await UserService.list()); } catch (error) { return fail(res, error, 'Falha ao listar usuários'); } },
   async create(req: Request, res: Response) {
-    try { return res.status(201).json(await UserService.create({ name: req.body?.name, email: req.body?.email, role: req.body?.role, password: req.body?.password })); }
+    try { return res.status(201).json(await UserService.create({ name: req.body?.name, email: req.body?.email, role: req.body?.role, password: req.body?.password, permissions: req.body?.permissions })); }
     catch (error) { return fail(res, error, 'Falha ao criar usuário'); }
   },
   async update(req: Request, res: Response) {
-    try { return res.json(await UserService.update(Number(req.params.id), { name: req.body?.name, role: req.body?.role, active: req.body?.active })); }
+    try { return res.json(await UserService.update(Number(req.params.id), { name: req.body?.name, role: req.body?.role, active: req.body?.active, permissions: req.body?.permissions })); }
     catch (error) { return fail(res, error, 'Falha ao atualizar usuário'); }
   },
   async resetPassword(req: Request, res: Response) {

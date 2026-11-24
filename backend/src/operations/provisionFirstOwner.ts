@@ -10,6 +10,8 @@ export type FirstOwnerInput = {
   email: string;
   name: string;
   password: string;
+  /** Plano contratado: CLINICA, PETSHOP ou CLINICA_PETSHOP (padrão). */
+  plan?: string;
 };
 
 export class FirstOwnerProvisioningError extends Error {
@@ -93,7 +95,11 @@ export const loadFirstOwnerInput = (
 
   validatePassword(password, email);
 
-  return { email, name, password };
+  const rawPlan = String(environment.INITIAL_PLAN || 'CLINICA_PETSHOP').trim().toUpperCase();
+  if (!['CLINICA', 'PETSHOP', 'CLINICA_PETSHOP'].includes(rawPlan)) {
+    throw new FirstOwnerProvisioningError('INITIAL_PLAN deve ser CLINICA, PETSHOP ou CLINICA_PETSHOP');
+  }
+  return { email, name, password, plan: rawPlan };
 };
 
 type PasswordHasher = (password: string, rounds: number) => Promise<string>;
@@ -201,6 +207,13 @@ export const provisionFirstOwner = async (
       },
       select: { id: true },
     });
+
+    // O plano define os módulos liberados; sem esta linha vale o padrão (Clínica + Pet Shop).
+    if (input.plan) {
+      await transaction.clinicSettings.create({
+        data: { clinicId: 1, plan: input.plan, separateUnits: input.plan === 'CLINICA_PETSHOP' },
+      });
+    }
   }, {
     isolationLevel: 'Serializable',
   });

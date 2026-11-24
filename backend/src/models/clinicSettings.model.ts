@@ -48,6 +48,7 @@ export interface UpdateClinicSettingsRequest {
   businessHours?: string | null;
   reminderSendTime?: string;
   vaccineReminderDaysBefore?: number;
+  separateUnits?: boolean;
 }
 
 export interface ClinicSettingsResponse {
@@ -67,6 +68,8 @@ export interface ClinicSettingsResponse {
   businessHours?: string | null;
   reminderSendTime: string;
   vaccineReminderDaysBefore: number;
+  plan?: string;
+  separateUnits?: boolean;
   clinicId: number;
   createdAt: Date;
   updatedAt: Date;

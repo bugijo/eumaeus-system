@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Button } from '../components/ui/button';
 import { ArrowLeft, FileText } from 'lucide-react';
 import { toast } from 'sonner';
+import { petAgeLabel } from '@/lib/utils';
 
 export function MedicalRecordPage() {
   const { petId } = useParams<{ petId: string }>();
@@ -48,7 +49,7 @@ export function MedicalRecordPage() {
     toast.success('Prontuário criado com sucesso!');
     setIsFormVisible(false);
     // Optionally navigate to pet details or medical records list
-    navigate(`/pets/${petId}`);
+    navigate(`/prontuario/${petId}`);
   };
   
   const handleCancel = () => {
@@ -119,7 +120,7 @@ export function MedicalRecordPage() {
                 </div>
                 <div>
                   <span className="font-medium text-blue-800">Idade:</span>
-                  <span className="ml-2 text-blue-700">{pet.age} anos</span>
+                  <span className="ml-2 text-blue-700">{petAgeLabel((pet as any).birthDate, (pet as any).age)}</span>
                 </div>
                 {pet.tutor && (
                   <div className="md:col-span-2">
@@ -142,7 +143,7 @@ export function MedicalRecordPage() {
               
               <Button
                 variant="outline"
-                onClick={() => navigate(`/pets/${petId}/medical-records`)}
+                onClick={() => navigate(`/prontuario/${petId}`)}
                 className="flex items-center gap-2"
               >
                 <FileText className="h-4 w-4" />

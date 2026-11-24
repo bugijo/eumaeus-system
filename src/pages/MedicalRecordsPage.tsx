@@ -11,6 +11,7 @@ import { Calendar, FileText, Pill, User, ArrowLeft, DollarSign, Receipt } from '
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
+import { petAgeLabel } from '@/lib/utils';
 
 const MedicalRecordsPage = () => {
   const { petId } = useParams<{ petId: string }>();
@@ -137,7 +138,7 @@ const MedicalRecordsPage = () => {
             </div>
             <div>
               <p className="text-sm text-gray-500">Idade</p>
-              <p className="font-medium">{pet.age} anos</p>
+              <p className="font-medium">{petAgeLabel((pet as any).birthDate, (pet as any).age)}</p>
             </div>
             <div>
               <p className="text-sm text-gray-500">Peso</p>

@@ -8,7 +8,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 interface StatItem {
   title: string;
   value: string;
-  change: string;
+  change?: string;
   icon: React.ComponentType<any>;
   positive: boolean;
   isStatic: boolean;
@@ -57,10 +57,12 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ stats, isLoading
                   stat.value
                 )}
               </div>
-              <div className="flex items-center text-xs">
-                <TrendIcon className={`h-3 w-3 mr-1 ${stat.positive ? 'text-secondary' : 'text-primary'}`} />
-                <span className={stat.positive ? 'text-secondary' : 'text-primary'}>{stat.change}</span>
-              </div>
+              {stat.change && (
+                <div className="flex items-center text-xs">
+                  <TrendIcon className={`h-3 w-3 mr-1 ${stat.positive ? 'text-secondary' : 'text-primary'}`} />
+                  <span className={stat.positive ? 'text-secondary' : 'text-primary'}>{stat.change}</span>
+                </div>
+              )}
             </CardContent>
           </Card>
         );

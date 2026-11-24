@@ -3,6 +3,12 @@ import { prisma } from '../lib/prisma';
 import { AssistantService } from '../services/assistant.service';
 import { AssistantReminderService } from '../services/assistantReminder.service';
 
+const APPOINTMENT_STATUS_LABEL: Record<string, string> = {
+  SCHEDULED: 'marcado', CONFIRMED: 'confirmado', ARRIVED: 'com chegada registrada', IN_PROGRESS: 'em atendimento',
+  READY: 'com pet pronto', COMPLETED: 'finalizado', CANCELLED: 'cancelado', NO_SHOW: 'com falta',
+};
+const INVOICE_STATUS_LABEL: Record<string, string> = { PENDING: 'pendente', PAID: 'paga', PARTIALLY_PAID: 'paga em parte', CANCELLED: 'cancelada' };
+
 // Cache simples para estatisticas (5 minutos)
 let statsCache: any = null;
 let statsCacheTime = 0;
@@ -38,7 +44,8 @@ export const dashboardController = {
         return res.json(statsCache);
       }
 
-      const [tutorCount, petCount, appointmentCount, productCount, monthlyRevenue] = await Promise.all([
+      const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+      const [tutorCount, petCount, appointmentCount, productCount, monthlyRevenue, monthlySales] = await Promise.all([
         prisma.tutor.count({ where: { deletedAt: null } }),
         prisma.pet.count({ where: { deletedAt: null } }),
         prisma.appointment.count(),
@@ -46,11 +53,10 @@ export const dashboardController = {
         prisma.invoice.aggregate({
           _sum: { totalAmount: true },
           where: {
-            createdAt: {
-              gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
-            },
+            createdAt: { gte: monthStart },
           },
         }),
+        prisma.sale.aggregate({ _sum: { total: true }, where: { createdAt: { gte: monthStart }, status: 'COMPLETED' } }),
       ]);
 
       const stats = {
@@ -58,7 +64,7 @@ export const dashboardController = {
         petCount,
         appointmentCount,
         productCount,
-        monthlyRevenue: Number(monthlyRevenue._sum?.totalAmount || 0),
+        monthlyRevenue: Number(monthlyRevenue._sum?.totalAmount || 0) + Number(monthlySales._sum?.total || 0),
       };
 
       statsCache = stats;
@@ -94,6 +100,7 @@ export const dashboardController = {
         select: {
           id: true,
           appointmentDate: true,
+          time: true,
           status: true,
           notes: true,
           pet: {
@@ -181,13 +188,13 @@ export const dashboardController = {
         ...recentAppointments.map((appointment) => ({
           id: `appointment-${appointment.id}`,
           type: 'appointment',
-          description: `Agendamento ${appointment.status.toLowerCase()} para ${appointment.pet.name}`,
+          description: `Agendamento ${APPOINTMENT_STATUS_LABEL[appointment.status] ?? 'atualizado'} para ${appointment.pet.name}`,
           timestamp: appointment.createdAt.toISOString(),
         })),
         ...recentInvoices.map((invoice) => ({
           id: `invoice-${invoice.id}`,
           type: 'payment',
-          description: `Fatura de R$ ${invoice.totalAmount.toFixed(2)} - ${invoice.status}`,
+          description: `Fatura de R$ ${invoice.totalAmount.toFixed(2).replace('.', ',')} (${INVOICE_STATUS_LABEL[invoice.status] ?? 'registrada'})`,
           timestamp: invoice.createdAt.toISOString(),
         })),
       ]

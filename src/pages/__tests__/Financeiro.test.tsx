@@ -8,7 +8,9 @@ import { ACCOUNTS_PAYABLE_DATA_SOURCE } from '../../constants';
 import { financialApi, useCreateExpense, useCreateResultCenter, useExpenses, useReceivePayment, useResultCenters, useReversePayment } from '../../api/financialApi';
 import { useAuthStore } from '../../stores/authStore';
 
+vi.mock('@/api/userApi', async (importOriginal) => ({ ...(await importOriginal<any>()), useMyAccess: () => ({ data: undefined }) }));
 vi.mock('@/components/financial/RateioCard', () => ({ default: () => null, RateioCard: () => null }));
+vi.mock('@/api/saleApi', () => ({ useSales: () => ({ data: [] }) }));
 vi.mock('../../stores/authStore', () => ({ useAuthStore: vi.fn() }));
 
 vi.mock('../../api/invoiceApi', () => ({

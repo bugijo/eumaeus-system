@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { KeyRound, UserPlus, Users } from 'lucide-react';
+import { KeyRound, ShieldCheck, UserPlus, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -11,10 +11,11 @@ import { Switch } from '@/components/ui/switch';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
   ROLE_LABELS, StaffRole, StaffUser, apiErrorMessage,
-  useCreateStaffUser, useResetStaffPassword, useStaffRoles, useStaffUsers, useUpdateStaffUser,
+  useCreateStaffUser, useMyAccess, useResetStaffPassword, useStaffRoles, useStaffUsers, useUpdateStaffUser,
 } from '@/api/userApi';
+import PermissionsDialog from './PermissionsDialog';
 
-const ROLE_ORDER: StaffRole[] = ['DONO', 'VETERINARIO', 'RECEPCAO', 'AUXILIAR', 'FINANCEIRO'];
+const ROLE_ORDER: StaffRole[] = ['DONO', 'VETERINARIO', 'RECEPCAO', 'AUXILIAR', 'BANHO_TOSA', 'FINANCEIRO'];
 const selectClass = 'h-10 w-full rounded-md border border-input bg-background px-3 text-sm';
 export const SENHA_REGRAS_TEXTO = 'Mínimo de 10 caracteres, com letras e números.';
 
@@ -28,6 +29,8 @@ export default function StaffUsersSettings({ currentUserId, currentEmail }: { cu
   const [form, setForm] = useState({ name: '', email: '', role: 'RECEPCAO' as StaffRole, password: '' });
   const [resetFor, setResetFor] = useState<StaffUser | null>(null);
   const [newPassword, setNewPassword] = useState('');
+  const [permissionsFor, setPermissionsFor] = useState<StaffUser | null>(null);
+  const { data: access } = useMyAccess();
 
   const isSelf = (user: StaffUser) => user.id === currentUserId || (!!currentEmail && user.email === currentEmail);
   const roleDescription = (role: string) => roles.find((item) => item.name === role)?.description;
@@ -64,7 +67,7 @@ export default function StaffUsersSettings({ currentUserId, currentEmail }: { cu
       <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <CardTitle className="flex items-center gap-2"><Users className="h-5 w-5 text-primary" /> Equipe e acessos</CardTitle>
-          <CardDescription>Cada pessoa tem o próprio login. O cargo define o que ela vê e pode fazer.</CardDescription>
+          <CardDescription>Cada pessoa tem o próprio login. O cargo traz um padrão de acessos, e você pode mudar o que cada um vê em "Acessos".</CardDescription>
         </div>
         <Button onClick={() => setCreating(true)}><UserPlus className="mr-2 h-4 w-4" /> Novo acesso</Button>
       </CardHeader>
@@ -73,7 +76,7 @@ export default function StaffUsersSettings({ currentUserId, currentEmail }: { cu
           <div className="overflow-x-auto rounded-md border">
             <Table>
               <TableHeader>
-                <TableRow><TableHead>Nome</TableHead><TableHead>E-mail</TableHead><TableHead>Cargo</TableHead><TableHead>Ativo</TableHead><TableHead className="text-right">Senha</TableHead></TableRow>
+                <TableRow><TableHead>Nome</TableHead><TableHead>E-mail</TableHead><TableHead>Cargo</TableHead><TableHead>Acessos</TableHead><TableHead>Ativo</TableHead><TableHead className="text-right">Senha</TableHead></TableRow>
               </TableHeader>
               <TableBody>
                 {users.map((user) => (
@@ -85,11 +88,18 @@ export default function StaffUsersSettings({ currentUserId, currentEmail }: { cu
                         {ROLE_ORDER.map((role) => <option key={role} value={role}>{ROLE_LABELS[role]}</option>)}
                       </select>
                     </TableCell>
+                    <TableCell>
+                      {user.role === 'DONO' ? <span className="text-sm text-muted-foreground">Acesso total</span> : (
+                        <Button variant="outline" size="sm" onClick={() => setPermissionsFor(user)} disabled={isSelf(user)}>
+                          <ShieldCheck className="mr-1 h-4 w-4" /> {user.permissions ? `Personalizado (${user.permissions.length})` : 'Padrão do cargo'}
+                        </Button>
+                      )}
+                    </TableCell>
                     <TableCell><Switch aria-label={`Acesso ativo de ${user.name}`} checked={user.active} disabled={isSelf(user) || update.isPending} onCheckedChange={(active) => change(user, { active })} /></TableCell>
                     <TableCell className="text-right"><Button variant="outline" size="sm" onClick={() => { setResetFor(user); setNewPassword(''); }}><KeyRound className="mr-1 h-4 w-4" /> Redefinir</Button></TableCell>
                   </TableRow>
                 ))}
-                {users.length === 0 && <TableRow><TableCell colSpan={5} className="text-center text-sm text-muted-foreground">Nenhum usuário.</TableCell></TableRow>}
+                {users.length === 0 && <TableRow><TableCell colSpan={6} className="text-center text-sm text-muted-foreground">Nenhum usuário.</TableCell></TableRow>}
               </TableBody>
             </Table>
           </div>
@@ -117,6 +127,8 @@ export default function StaffUsersSettings({ currentUserId, currentEmail }: { cu
           </form>
         </DialogContent>
       </Dialog>
+
+      {permissionsFor && <PermissionsDialog user={permissionsFor} access={access} roles={roles} onClose={() => setPermissionsFor(null)} />}
 
       <Dialog open={!!resetFor} onOpenChange={(open) => !open && setResetFor(null)}>
         <DialogContent>

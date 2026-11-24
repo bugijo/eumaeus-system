@@ -1,4 +1,6 @@
 
+import { useMyAccess } from '@/api/userApi';
+import { canAccessPath } from '@/lib/access';
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
@@ -65,7 +67,8 @@ const Layout = ({ children }: LayoutProps) => {
     }
   };
 
-  const navigationItems = [
+  const { data: access } = useMyAccess(user?.type !== 'tutor');
+  const allNavigationItems = [
     { icon: LayoutDashboard, label: 'Início', path: '/', section: 'Dia a dia' },
     { icon: Calendar, label: 'Agendamentos', path: '/agendamentos', section: 'Dia a dia' },
     { icon: ShoppingCart, label: 'Caixa', path: '/caixa', section: 'Dia a dia' },
@@ -79,6 +82,9 @@ const Layout = ({ children }: LayoutProps) => {
     { icon: Workflow, label: 'Operação', path: '/operacao', section: 'Gestão' },
     { icon: Settings, label: 'Configurações', path: '/configuracoes', section: 'Gestão' },
   ];
+  // Menu mostra só o que o plano e as permissões da pessoa liberam.
+  const navigationItems = allNavigationItems.filter((item) => canAccessPath(item.path, access?.permissions));
+  const blocked = !canAccessPath(location.pathname, access?.permissions);
 
   // ===== Debug Tema (apenas dev / habilitar com ?debugTheme=1) =====
   const [showThemeDebug, setShowThemeDebug] = useState<boolean>(false);
@@ -329,7 +335,17 @@ const Layout = ({ children }: LayoutProps) => {
           role="main"
           aria-label="Conteúdo principal da página"
         >
-          {children}
+          {blocked ? (
+            <div className="mx-auto mt-16 max-w-md rounded-2xl border border-border bg-card p-8 text-center">
+              <h1 className="text-xl font-semibold">Esta tela não faz parte do seu acesso</h1>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Peça ao responsável pelo estabelecimento para liberar o módulo em Configurações, na aba Equipe e acessos.
+              </p>
+              <button type="button" onClick={() => navigate('/')} className="mt-6 inline-flex h-10 items-center rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground transition-transform duration-150 active:scale-[0.97]">
+                Voltar ao início
+              </button>
+            </div>
+          ) : children}
         </main>
       </div>
 

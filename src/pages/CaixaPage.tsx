@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useProducts, type Product } from '@/api/productApi';
 import { useResultCenters } from '@/api/financialApi';
+import { useMyAccess } from '@/api/userApi';
 import { saleApi, useCancelSale, useCreateSale, useSales, type Sale, type SalePaymentMethod } from '@/api/saleApi';
 import CameraBarcodeScanner from '@/components/barcode/CameraBarcodeScanner';
 
@@ -34,6 +35,9 @@ const METHOD_LABEL: Record<string, string> = { DINHEIRO: 'Dinheiro', PIX: 'PIX',
 export default function CaixaPage() {
   const { data: products = [], isLoading } = useProducts();
   const { data: centers = [] } = useResultCenters();
+  const { data: access } = useMyAccess();
+  // Unidade só aparece no plano Clínica + Pet Shop com as contas separadas.
+  const unitsSplit = !access || (access.plan === 'CLINICA_PETSHOP' && access.separateUnits);
   const { data: salesToday = [] } = useSales({ from: today(), to: today() });
   const createSale = useCreateSale();
   const cancelSale = useCancelSale();
@@ -258,7 +262,7 @@ export default function CaixaPage() {
               {change > 0.004 && <div className={`flex justify-between text-lg font-semibold ${changeInvalid ? 'text-destructive' : 'text-emerald-600'}`}><span>Troco</span><span>{brl(change)}</span></div>}
             </div>
 
-            {centers.length > 0 && (
+            {unitsSplit && centers.length > 0 && (
               <div className="space-y-1">
                 <Label>Unidade / centro</Label>
                 <Select value={centerId} onValueChange={setCenterId}>

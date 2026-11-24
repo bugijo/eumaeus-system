@@ -1,4 +1,5 @@
 import express, { Request, Response } from 'express';
+import { accessGate } from './access/accessGate';
 import compression from 'compression';
 import cron from 'node-cron';
 import http from 'http';
@@ -213,6 +214,7 @@ app.get('/', (_req, res) => {
   res.json({ message: 'Eumaeus API está funcionando.' });
 });
 
+app.use('/api', accessGate);
 app.use('/api/auth', authRoutes);
 app.use('/api', tutorRoutes);
 app.use('/api', petRoutes);

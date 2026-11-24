@@ -10,6 +10,7 @@ export const ROLE = {
   RECEPCAO: 'RECEPCAO',
   AUXILIAR: 'AUXILIAR',
   FINANCEIRO: 'FINANCEIRO',
+  BANHO_TOSA: 'BANHO_TOSA',
   FUNCIONARIO: 'FUNCIONARIO',
 } as const;
 
@@ -125,9 +126,12 @@ export const requireRoles = (...allowedRoles: AppRole[]) => {
         return res.status(403).json({ message: 'Contexto da clínica ausente' });
       }
 
+      // O porteiro de módulos (access/accessGate) já conferiu plano e permissões desta rota:
+      // nesse caso a lista fixa de cargos não se aplica, para valer a escolha do dono.
+      const moduleGranted = (req as any).accessGranted === true;
       const rawUserRole = (req.user.role || '').toUpperCase();
       const normalizedUserRole = roleAlias[rawUserRole] || rawUserRole;
-      if (!normalizedUserRole || !normalizedAllowedRoles.includes(normalizedUserRole)) {
+      if (!moduleGranted && (!normalizedUserRole || !normalizedAllowedRoles.includes(normalizedUserRole))) {
         return res.status(403).json({ message: 'Permissão insuficiente para esta operação' });
       }
 
@@ -136,7 +140,7 @@ export const requireRoles = (...allowedRoles: AppRole[]) => {
           const record = await accountRecord(req.user!);
           if (!record || record.active === false) return res.status(401).json({ message: 'Acesso revogado' });
           const currentRole = roleAlias[String(record.roleName || '').toUpperCase()] || String(record.roleName || '').toUpperCase();
-          if (!normalizedAllowedRoles.includes(currentRole)) {
+          if (!moduleGranted && !normalizedAllowedRoles.includes(currentRole)) {
             return res.status(403).json({ message: 'Permissão insuficiente para esta operação' });
           }
           return next();

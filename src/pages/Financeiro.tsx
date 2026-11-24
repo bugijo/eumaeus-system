@@ -22,11 +22,13 @@ import { useAuthStore } from '@/stores/authStore';
 import { decimalToNumber, formatBRL, normalizeDecimalInput } from '@/lib/decimal';
 import { buildCsv } from '@/lib/csv';
 import RateioCard from '@/components/financial/RateioCard';
+import { useMyAccess } from '@/api/userApi';
+import { hasPermission } from '@/lib/access';
+import { useSales } from '@/api/saleApi';
 
 const newPaymentIdempotencyKey = () => `ui-payment-${globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`}`;
 
 export default function Financeiro() {
-  const [selectedPeriod, setSelectedPeriod] = useState('Este Mês');
   
   // Buscar dados da API
   const { data: financialStats, isLoading: statsLoading, error: statsError } = useFinancialStats();
@@ -36,6 +38,12 @@ export default function Financeiro() {
   const reverseMutation = useReversePayment();
   const { data: resultCenters = [] } = useResultCenters();
   const { data: expenses = [] } = useExpenses();
+  const monthStart = `${new Date().toISOString().slice(0, 7)}-01`;
+  const { data: sales = [] } = useSales({ from: monthStart });
+  const monthSales = sales.filter((sale) => sale.status === 'COMPLETED');
+  const monthSalesTotal = monthSales.reduce((sum, sale) => sum + decimalToNumber(sale.total), 0);
+  const monthExpenses = expenses.filter((item) => (item.incurredAt ?? '').slice(0, 10) >= monthStart);
+  const monthExpensesTotal = monthExpenses.reduce((sum, item) => sum + decimalToNumber(item.amount), 0);
   const expenseMutation = useCreateExpense();
   const centerMutation = useCreateResultCenter();
   const [expense, setExpense] = useState({ description: '', amount: '', reason: '', resultCenterId: '' });
@@ -49,7 +57,9 @@ export default function Financeiro() {
   const [accountingShareRecipient, setAccountingShareRecipient] = useState('');
   const [accountingShare, setAccountingShare] = useState<{ id: number; recipient: string; status: string } | null>(null);
   const role = useAuthStore(state => state.user?.role);
-  const canWriteFinancial = role === 'DONO' || role === 'FINANCEIRO';
+  const { data: access } = useMyAccess();
+  const canWriteFinancial = role === 'DONO' || role === 'FINANCEIRO' || hasPermission(access, 'financeiro');
+  const unitsSplit = !access || (access.plan === 'CLINICA_PETSHOP' && access.separateUnits);
   const canApplyDiscount = role === 'DONO' || role === 'FINANCEIRO';
   
   // Transformar faturas em contas a receber
@@ -107,7 +117,6 @@ export default function Financeiro() {
   };
 
   // Períodos disponíveis para o filtro
-  const periodos = ['Este Mês', 'Últimos 30 dias', 'Este Ano', 'Personalizado'];
 
   const prepareAccounting = async () => {
     setAccountingError('');
@@ -163,32 +172,11 @@ export default function Financeiro() {
       <div className="space-y-4">
         <h1 className="text-2xl font-bold text-text-dark mb-6">Painel Financeiro</h1>
         
-        {/* Header Bar */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          {/* Date Range Picker */}
-          <div className="flex items-center space-x-2">
-            <CalendarDays className="w-5 h-5 text-muted-foreground" />
-            <div className="flex space-x-1">
-              {periodos.map((periodo) => (
-                <Button
-                  key={periodo}
-                  variant={selectedPeriod === periodo ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSelectedPeriod(periodo)}
-                >
-                  {periodo}
-                </Button>
-              ))}
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex space-x-2">
-            <Button className="bg-primary hover:bg-primary/90">
-              <Plus className="w-4 h-4 mr-2" />
-              Nova Receita
-            </Button>
-          </div>
+        {/* Resumo do mês: vendas do caixa, despesas e saldo */}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">Vendas do caixa neste mês</p><p className="text-2xl font-bold text-green-600">{formatBRL(monthSalesTotal)}</p><p className="text-xs text-muted-foreground">{monthSales.length} venda(s)</p></CardContent></Card>
+          <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">Despesas lançadas neste mês</p><p className="text-2xl font-bold text-red-600">{formatBRL(monthExpensesTotal)}</p><p className="text-xs text-muted-foreground">{monthExpenses.length} despesa(s)</p></CardContent></Card>
+          <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">Saldo do mês</p><p className="text-2xl font-bold text-primary">{formatBRL(monthSalesTotal + decimalToNumber(financialStats?.paid?.amount) - monthExpensesTotal)}</p><p className="text-xs text-muted-foreground">Vendas + faturas pagas − despesas</p></CardContent></Card>
         </div>
       </div>
 
@@ -273,12 +261,12 @@ export default function Financeiro() {
 
       {/* Detailed View - Tabs */}
       <Card><CardHeader><CardTitle>Centros de resultado</CardTitle></CardHeader><CardContent className="space-y-3"><div className="flex flex-wrap gap-2">{resultCenters.length ? resultCenters.map(center => <Badge key={center.id} variant="outline">{center.code} · {center.name}</Badge>) : <span className="text-sm text-muted-foreground">Nenhum centro classificado; registros antigos permanecem sem atribuição.</span>}</div>{canWriteFinancial && <form className="grid gap-2 md:grid-cols-3" onSubmit={event => { event.preventDefault(); if (!centerDraft.code.trim() || !centerDraft.name.trim()) return; centerMutation.mutate(centerDraft, { onSuccess: () => setCenterDraft({ code: '', name: '' }) }); }}><input aria-label="Código do centro" className="rounded-md border px-3 py-2 text-sm" placeholder="Código (ex.: BANHO_TOSA)" value={centerDraft.code} onChange={event => setCenterDraft({ ...centerDraft, code: event.target.value })} /><input aria-label="Nome do centro" className="rounded-md border px-3 py-2 text-sm" placeholder="Nome do centro" value={centerDraft.name} onChange={event => setCenterDraft({ ...centerDraft, name: event.target.value })} /><Button type="submit" disabled={centerMutation.isPending}>Criar centro</Button></form>}{centerMutation.isError && <p role="alert" className="text-sm text-red-600">{(centerMutation.error as any)?.response?.data?.error || (centerMutation.error as Error).message}</p>}</CardContent></Card>
-      <RateioCard canWrite={canWriteFinancial} />
+      {unitsSplit && <RateioCard canWrite={canWriteFinancial} />}
       <Card><CardHeader><CardTitle>Despesas classificadas</CardTitle></CardHeader><CardContent className="space-y-4">
         {canWriteFinancial ? <form className="grid gap-2 md:grid-cols-5" onSubmit={(event) => { event.preventDefault(); const amount = normalizeDecimalInput(expense.amount); if (!expense.description.trim() || !amount || !expense.reason.trim()) return; expenseMutation.mutate({ description: expense.description.trim(), amount, reason: expense.reason.trim(), resultCenterId: expense.resultCenterId ? Number(expense.resultCenterId) : undefined }, { onSuccess: () => setExpense({ description: '', amount: '', reason: '', resultCenterId: '' }) }); }}>
           <input aria-label="Descrição da despesa" className="rounded-md border px-3 py-2 text-sm" placeholder="Descrição" value={expense.description} onChange={event => setExpense({ ...expense, description: event.target.value })} />
           <input aria-label="Valor da despesa" className="rounded-md border px-3 py-2 text-sm" placeholder="Valor" inputMode="decimal" value={expense.amount} onChange={event => setExpense({ ...expense, amount: event.target.value })} />
-          <select aria-label="Centro da despesa" className="rounded-md border px-3 py-2 text-sm" value={expense.resultCenterId} onChange={event => setExpense({ ...expense, resultCenterId: event.target.value })}><option value="">Sem centro</option>{resultCenters.map(center => <option key={center.id} value={center.id}>{center.code} · {center.name}</option>)}</select>
+          {unitsSplit && <select aria-label="Centro da despesa" className="rounded-md border px-3 py-2 text-sm" value={expense.resultCenterId} onChange={event => setExpense({ ...expense, resultCenterId: event.target.value })}><option value="">Sem centro</option>{resultCenters.map(center => <option key={center.id} value={center.id}>{center.code} · {center.name}</option>)}</select>}
           <input aria-label="Justificativa da despesa" className="rounded-md border px-3 py-2 text-sm" placeholder="Justificativa (obrigatória)" value={expense.reason} onChange={event => setExpense({ ...expense, reason: event.target.value })} />
           <Button type="submit" disabled={expenseMutation.isPending}>Registrar despesa</Button>
         </form> : <p className="text-sm text-muted-foreground" role="status">Perfil somente leitura: despesas podem ser consultadas, mas apenas DONO ou FINANCEIRO podem registrá-las.</p>}

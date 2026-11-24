@@ -1,3 +1,4 @@
+import { invalidateClinicAccess, loadClinicAccess } from '../access/accessGate';
 import { Request, Response } from 'express';
 import { clinicSettingsService } from '../services/clinicSettingsService';
 import { UpdateClinicSettingsRequest } from '../models/clinicSettings.model';
@@ -49,6 +50,12 @@ class ClinicSettingsController {
       const ALLOWED: Array<keyof UpdateClinicSettingsRequest> = ['appointmentRemindersEnabled', 'appointmentReminderTemplate', 'vaccineRemindersEnabled', 'vaccineReminderTemplate', 'emailFromName', 'emailFromAddress', 'clinicName', 'clinicPhone', 'clinicAddress', 'clinicLegalName', 'clinicDocument', 'clinicEmail', 'businessHours', 'reminderSendTime', 'vaccineReminderDaysBefore'];
       const updateData: UpdateClinicSettingsRequest = {};
       for (const key of ALLOWED) if (req.body?.[key] !== undefined) (updateData as any)[key] = typeof req.body[key] === 'string' ? req.body[key].trim() : req.body[key];
+      if (req.body?.separateUnits !== undefined) {
+        // "Separar as contas" só existe no plano Clínica + Pet Shop. O plano em si não muda por aqui.
+        const access = await loadClinicAccess(clinicId);
+        if (access.plan !== 'CLINICA_PETSHOP') return res.status(400).json({ success: false, message: 'Separar as contas por unidade só existe no plano Clínica + Pet Shop' });
+        (updateData as any).separateUnits = req.body.separateUnits === true;
+      }
       if (updateData.clinicName !== undefined && !String(updateData.clinicName).trim()) return res.status(400).json({ success: false, message: 'Informe o nome do estabelecimento' });
       if (updateData.clinicDocument) {
         const digits = String(updateData.clinicDocument).replace(/\D/g, '');
@@ -105,6 +112,7 @@ class ClinicSettingsController {
       }
       
       const updatedSettings = await clinicSettingsService.updateSettings(updateData, clinicId);
+      invalidateClinicAccess(clinicId);
       
       console.log('✅ Configurações atualizadas com sucesso');
       

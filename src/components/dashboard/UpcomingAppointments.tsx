@@ -10,6 +10,7 @@ interface Appointment {
   id: number;
   appointmentDate?: string | null;
   appointmentTime?: string;
+  time?: string | null;
   status: string;
   serviceType?: string;
   pet?: {
@@ -77,10 +78,10 @@ export const UpcomingAppointments: React.FC<UpcomingAppointmentsProps> = ({
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-medium text-foreground">
-                      {formatTime(appt.appointmentDate)}
+                      {appt.time || formatTime(appt.appointmentDate)}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {formatDate(appt.appointmentDate)}
+                      {/^\d{4}-\d{2}-\d{2}/.test(appt.appointmentDate ?? '') ? appt.appointmentDate!.slice(0, 10).split('-').reverse().join('/') : formatDate(appt.appointmentDate)}
                     </p>
                   </div>
                 </div>

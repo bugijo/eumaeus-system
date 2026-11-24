@@ -40,7 +40,6 @@ export const useDashboardData = () => {
     {
       title: 'Total de Agendamentos',
       value: isLoadingStats ? '...' : (dashboardStats?.appointmentCount ?? 0).toString(),
-      change: '+5% vs ontem',
       icon: Stethoscope,
       positive: true,
       isStatic: false,
@@ -51,7 +50,6 @@ export const useDashboardData = () => {
     {
       title: 'Pets Cadastrados',
       value: isLoadingStats ? '...' : (dashboardStats?.petCount ?? 0).toString(),
-      change: '+12% este mês',
       icon: PawPrint,
       positive: true,
       isStatic: false,
@@ -62,7 +60,6 @@ export const useDashboardData = () => {
     {
       title: 'Receita Mensal',
       value: isLoadingStats ? '...' : `R$ ${(dashboardStats?.monthlyRevenue ?? 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
-      change: '+8% vs mês anterior',
       icon: DollarSign,
       positive: true,
       isStatic: false,
@@ -73,7 +70,6 @@ export const useDashboardData = () => {
     {
       title: 'Total de Tutores',
       value: isLoadingStats ? '...' : (dashboardStats?.tutorCount ?? 0).toString(),
-      change: '+15% este mês',
       icon: Users,
       positive: true,
       isStatic: false,
@@ -84,7 +80,6 @@ export const useDashboardData = () => {
     {
       title: 'Produtos em Estoque',
       value: isLoadingStats ? '...' : (dashboardStats?.productCount ?? 0).toString(),
-      change: '+8% este mês',
       icon: Package,
       positive: true,
       isStatic: false,

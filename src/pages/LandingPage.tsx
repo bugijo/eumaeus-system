@@ -1,25 +1,83 @@
 import { Link } from 'react-router-dom';
+import { Check } from 'lucide-react';
 import { DOWNLOAD_ITEMS } from '@/components/downloads/DownloadsSection';
 import { AppFrame } from '@/components/landing/AppFrame';
-import { SplitDemo } from '@/components/landing/SplitDemo';
-import { AgendaFragment, PrescriptionFragment, StockFragment, TeamFragment } from '@/components/landing/Fragments';
+import { Screen } from '@/components/landing/Screen';
+import { MEDICATION_CATALOG } from '@/data/medicationCatalog';
 
 const MAIN_ACTION = 'Entrar no sistema';
 
-const MODULES = [
-  { title: 'Organiza a agenda do dia', text: 'Consultas, banho e tosa e vacinas na mesma lista, com o status de cada atendimento.', fragment: <AgendaFragment /> },
-  { title: 'Avisa o que vai vencer', text: 'O lote com vencimento mais próximo sai primeiro, e o estoque baixo aparece antes de faltar no balcão.', fragment: <StockFragment /> },
-  { title: 'Imprime a receita do atendimento', text: 'O veterinário preenche no prontuário do pet e imprime na hora.', fragment: <PrescriptionFragment /> },
-  { title: 'Libera cada tela pelo cargo', text: 'Cada pessoa entra com o próprio login. A recepção não vê o financeiro.', fragment: <TeamFragment /> },
+type Tour = { id: string; title: string; text: string[]; shot: string; alt: string; height?: number };
+
+const TOUR: Tour[] = [
+  {
+    id: 'inicio', title: 'A página inicial mostra o seu dia',
+    text: ['Ao entrar, você vê os próximos agendamentos, o que a equipe acabou de fazer e as pendências que pedem atenção hoje.', 'Os atalhos para agendar, abrir o caixa, cadastrar tutor e cadastrar produto ficam no topo.'],
+    shot: 'inicio', alt: 'Página inicial do Eumaeus com totais, próximos agendamentos e feed de atividades',
+  },
+  {
+    id: 'agenda', title: 'Consultas, vacinas e banho e tosa na mesma agenda',
+    text: ['Veja o mês, a semana ou o dia. Cada horário mostra o serviço e o nome do pet.', 'A cor diz em que pé está o atendimento: agendado, confirmado, chegou, em atendimento, pet pronto ou finalizado.'],
+    shot: 'agenda', alt: 'Agenda semanal com consultas, vacinas, castração e banho e tosa',
+  },
+  {
+    id: 'prontuario', title: 'Prontuário com os medicamentos aplicados',
+    text: ['A veterinária registra sintomas, diagnóstico e tratamento, e escolhe no estoque o que aplicou no atendimento.', 'Ao salvar, esses itens saem do estoque sozinhos. O histórico do pet guarda cada atendimento com o que foi usado.', 'Vacina registrada com a data da próxima dose entra na lista de lembretes ao tutor.'],
+    shot: 'prontuario', alt: 'Prontuário do pet com nova evolução, medicamento aplicado e histórico clínico', height: 1335,
+  },
+  {
+    id: 'estoque', title: 'Estoque por lote e validade',
+    text: ['Entrada por lote com validade e motivo. Ajuste, perda e devolução sempre com justificativa.', 'O painel avisa o que está com estoque baixo e o que vence nos próximos 30 dias.'],
+    shot: 'estoque', alt: 'Gestão de estoque com totais, entrada por lote e lista de produtos', height: 1353,
+  },
+  {
+    id: 'catalogo', title: `${MEDICATION_CATALOG.length} medicamentos, vacinas e materiais já cadastrados`,
+    text: ['Para cadastrar um produto, digite parte do nome e escolha no catálogo: o nome e a categoria já vêm preenchidos.', 'Depois é só conferir a apresentação, informar quantidade, custo e preço de venda.'],
+    shot: 'catalogo', alt: 'Cadastro de produto com busca no catálogo de vacinas',
+  },
+  {
+    id: 'caixa', title: 'Caixa: bipou, recebeu, baixou do estoque',
+    text: ['Leitor USB ou câmera do celular. Dinheiro, PIX, débito e crédito na mesma venda, com troco calculado e cupom para imprimir.', 'Cada venda dá baixa no estoque e aparece em "Vendas de hoje". Cancelar exige permissão.'],
+    shot: 'caixa', alt: 'Tela do caixa com carrinho, formas de pagamento e vendas do dia',
+  },
+  {
+    id: 'financeiro', title: 'Financeiro do mês e relatório para o contador',
+    text: ['Vendas do caixa, despesas e saldo do mês. Faturas de atendimento com recebimento e estorno.', 'O relatório em PDF leva vendas e despesas do período para o contador.'],
+    shot: 'financeiro', alt: 'Painel financeiro com vendas do mês, despesas e saldo',
+  },
+  {
+    id: 'equipe', title: 'Você decide o que cada funcionário vê',
+    text: ['Cada pessoa entra com o próprio login. O cargo já traz um padrão: banho e tosa vê agenda, estoque e caixa; a recepção também dá entrada no estoque.', 'Para mudar, marque e desmarque as telas de cada pessoa. A mudança vale na hora.'],
+    shot: 'acessos', alt: 'Janela de acessos de uma funcionária de banho e tosa com as telas marcadas',
+  },
+];
+
+/** Proposta de preços: precisa da aprovação do dono do produto antes de publicar. */
+const PLANS = [
+  {
+    name: 'Pet Shop', price: 99, note: 'Para banho e tosa e loja.',
+    items: ['Agenda de banho e tosa e serviços', 'Tutores e pets', 'Caixa com leitor de código de barras', 'Estoque por lote e validade', 'Financeiro e relatório para o contador', 'Lembretes aos tutores', 'Acessos por funcionário'],
+  },
+  {
+    name: 'Clínica', price: 149, note: 'Para a clínica veterinária.',
+    items: ['Tudo do dia a dia: agenda, tutores, caixa e estoque', 'Prontuário com medicamentos aplicados', 'Receitas e vacinas', 'Internação e cirurgia', 'Especialistas', 'Financeiro e relatório para o contador', 'Acessos por funcionário'],
+  },
+  {
+    name: 'Clínica + Pet Shop', price: 199, note: 'Os dois negócios no mesmo sistema.', featured: true,
+    items: ['Tudo do plano Clínica', 'Tudo do plano Pet Shop', 'Contas separadas por unidade ou tudo junto, você escolhe', 'Aluguel e energia divididos entre as unidades pela regra que você cadastrar'],
+  },
 ];
 
 const QUESTIONS = [
   { q: 'Preciso instalar alguma coisa?', a: 'Não. O Eumaeus funciona no navegador do computador, do tablet e do celular. Pelo Chrome ou pelo Safari dá para fixar o sistema na tela inicial.' },
-  { q: 'Clínica e pet shop ficam separados?', a: 'Ficam. Cada venda e cada despesa pertencem a uma unidade, e o financeiro mostra o resultado de cada uma. Contas compartilhadas, como aluguel e energia, são divididas pela regra que você cadastrar.' },
+  { q: 'Sou veterinária e dona do pet shop. Preciso separar as contas?', a: 'Não precisa. No plano Clínica + Pet Shop você escolhe: contas separadas por unidade, com o resultado de cada uma, ou tudo num caixa e num financeiro só, como uma empresa única. Dá para mudar depois nas configurações.' },
+  { q: 'O que acontece com as telas que não estão no meu plano?', a: 'Elas não aparecem para ninguém do estabelecimento. Quem contrata o plano Pet Shop, por exemplo, não vê prontuário nem internação.' },
   { q: 'Funciona com leitor de código de barras?', a: 'Funciona com leitor USB, que se comporta como teclado, e com a câmera do celular.' },
   { q: 'Emite nota fiscal?', a: 'Ainda não. A emissão de NFC-e e NFS-e está em desenvolvimento. Hoje o relatório em PDF leva vendas e despesas para o contador.' },
-  { q: 'Outro estabelecimento consegue ver os meus dados?', a: 'Não. Cada estabelecimento tem os próprios dados, e cada pessoa da equipe vê só as telas do seu cargo.' },
+  { q: 'Outro estabelecimento consegue ver os meus dados?', a: 'Não. Cada estabelecimento tem os próprios dados, e cada pessoa da equipe vê só as telas que você liberou.' },
 ];
+
+const brl = (value: number) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 0 });
 
 function MainAction({ tone = 'primary', className = '' }: { tone?: 'primary' | 'light'; className?: string }) {
   const look = tone === 'light'
@@ -47,8 +105,8 @@ export default function LandingPage() {
             <span className="text-[17px] font-semibold tracking-tight">Eumaeus</span>
           </a>
           <nav aria-label="Principal" className="flex items-center gap-1 sm:gap-2">
-            <a href="#rateio" className="lp-link hidden rounded-lg px-3 py-2 text-sm text-foreground/75 md:inline-block">Rateio</a>
-            <a href="#modulos" className="lp-link hidden rounded-lg px-3 py-2 text-sm text-foreground/75 md:inline-block">Módulos</a>
+            <a href="#telas" className="lp-link hidden rounded-lg px-3 py-2 text-sm text-foreground/75 md:inline-block">Telas</a>
+            <a href="#planos" className="lp-link hidden rounded-lg px-3 py-2 text-sm text-foreground/75 md:inline-block">Planos</a>
             <a href="#perguntas" className="lp-link hidden rounded-lg px-3 py-2 text-sm text-foreground/75 md:inline-block">Perguntas</a>
             <Link to="/login" className="lp-press ml-2 inline-flex h-10 items-center rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary/90">
               {MAIN_ACTION}
@@ -58,23 +116,22 @@ export default function LandingPage() {
       </header>
 
       <main id="conteudo">
-        {/* Primeira tela: categoria, comprador e o caixa real em tamanho grande */}
+        {/* Primeira tela: categoria, comprador e o caixa interativo */}
         <section id="topo" className="overflow-hidden pt-14 sm:pt-20">
           <div className="lp-wrap">
             <div className="lp-enter max-w-[46rem]">
               <h1 className="lp-h1 text-[2.4rem] font-semibold leading-[1.06] sm:text-[3.4rem] lg:text-[4rem]">
-                Sistema de gestão para clínica veterinária com pet shop
+                Sistema de gestão para clínica veterinária e pet shop
               </h1>
               <p className="mt-6 max-w-[38rem] text-lg leading-relaxed text-foreground/70">
-                Agenda, prontuário, caixa com leitor de código de barras, estoque por validade e o financeiro de cada unidade, direto no navegador.
+                Agenda, prontuário com os medicamentos aplicados, estoque que baixa sozinho, caixa com leitor de código de barras e financeiro. Direto no navegador.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
                 <MainAction />
-                <a href="#modulos" className="lp-press lp-link inline-flex h-12 items-center justify-center rounded-xl px-5 text-[15px] font-medium text-primary ring-1 ring-inset ring-primary/25 hover:bg-primary/5">
+                <a href="#telas" className="lp-press lp-link inline-flex h-12 items-center justify-center rounded-xl px-5 text-[15px] font-medium text-primary ring-1 ring-inset ring-primary/25 hover:bg-primary/5">
                   Ver as telas do sistema
                 </a>
               </div>
-              <p className="mt-5 text-sm text-foreground/60">Um acesso por estabelecimento: a clínica e o pet shop do mesmo endereço entram juntos.</p>
             </div>
             <div className="lp-enter lp-enter-2 mt-14 sm:mt-16">
               <AppFrame />
@@ -82,43 +139,62 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Momento interativo: a divisão de contas, que é o que diferencia o sistema */}
-        <section id="rateio" className="mt-24 bg-[hsl(207_72%_13%)] py-24 text-white sm:mt-32 sm:py-32">
-          <div className="lp-wrap grid items-center gap-12 lg:grid-cols-[1fr_1.05fr] lg:gap-20">
-            <div>
-              <h2 className="lp-h2 text-[2rem] font-semibold leading-[1.1] sm:text-[2.75rem]">
-                Aluguel, energia e água divididos entre as unidades
-              </h2>
-              <p className="mt-5 max-w-[34rem] text-lg leading-relaxed text-white/75">
-                Cadastre a regra uma vez. Cada conta lançada vira uma despesa em cada unidade, e o resultado do mês da clínica e do pet shop sai separado.
-              </p>
-              <p className="mt-4 text-sm text-white/60">Mova a regra ao lado para ver a conta dividida.</p>
-            </div>
-            <SplitDemo />
-          </div>
-        </section>
-
-        <section id="modulos" className="py-24 sm:py-32">
+        {/* Telas reais do sistema, uma por função */}
+        <section id="telas" className="py-24 sm:py-32">
           <div className="lp-wrap">
-            <h2 className="lp-h2 max-w-[40rem] text-[2rem] font-semibold leading-[1.1] sm:text-[2.75rem]">
-              Agenda, estoque, receitas e acessos da equipe
+            <h2 className="lp-h2 max-w-[42rem] text-[2rem] font-semibold leading-[1.1] sm:text-[2.75rem]">
+              Do agendamento ao caixa, sem copiar dado de um lugar para outro
             </h2>
-            <p className="mt-4 max-w-[36rem] text-lg leading-relaxed text-foreground/70">
-              Uma venda no caixa dá baixa no estoque. Um atendimento abre o histórico do pet. Ninguém copia dado de um sistema para outro.
+            <p className="mt-4 max-w-[38rem] text-lg leading-relaxed text-foreground/70">
+              O medicamento aplicado no atendimento sai do estoque. A venda do caixa entra no financeiro. As imagens abaixo são telas do sistema com dados de exemplo.
             </p>
-            <div className="mt-14 grid gap-x-10 gap-y-14 md:grid-cols-2">
-              {MODULES.map((module) => (
-                <article key={module.title} className="flex flex-col">
-                  <h3 className="text-lg font-semibold">{module.title}</h3>
-                  <p className="mt-1.5 min-h-[3.25rem] max-w-[30rem] leading-relaxed text-foreground/70">{module.text}</p>
-                  <div className="mt-5 flex-1 [&>*]:h-full">{module.fragment}</div>
+            <div className="mt-16 space-y-24 sm:space-y-32">
+              {TOUR.map((item, index) => (
+                <article key={item.id} id={`tela-${item.id}`} className={`grid items-center gap-8 lg:gap-14 ${index % 2 ? 'lg:grid-cols-[1.4fr_0.85fr]' : 'lg:grid-cols-[0.85fr_1.4fr]'}`}>
+                  <div className={index % 2 ? 'lg:order-2' : ''}>
+                    <h3 className="lp-h2 text-[1.5rem] font-semibold leading-[1.15] sm:text-[1.85rem]">{item.title}</h3>
+                    {item.text.map((paragraph) => (
+                      <p key={paragraph} className="mt-4 max-w-[30rem] leading-relaxed text-foreground/70">{paragraph}</p>
+                    ))}
+                  </div>
+                  <Screen src={item.shot} alt={item.alt} height={item.height} className={index % 2 ? 'lg:order-1' : ''} />
                 </article>
               ))}
             </div>
           </div>
         </section>
 
-        <section id="perguntas" className="border-t border-border bg-card py-24 sm:py-32">
+        {/* Planos */}
+        <section id="planos" className="border-t border-border bg-card py-24 sm:py-32">
+          <div className="lp-wrap">
+            <h2 className="lp-h2 max-w-[40rem] text-[2rem] font-semibold leading-[1.1] sm:text-[2.75rem]">Contrate só o que o seu negócio usa</h2>
+            <p className="mt-4 max-w-[38rem] text-lg leading-relaxed text-foreground/70">
+              As telas fora do plano não aparecem para ninguém da equipe. Mensalidade por estabelecimento.
+            </p>
+            <div className="mt-14 grid gap-6 lg:grid-cols-3">
+              {PLANS.map((plan) => (
+                <article key={plan.name} className={`flex flex-col rounded-2xl border p-7 ${plan.featured ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-background'}`}>
+                  <h3 className="text-xl font-semibold">{plan.name}</h3>
+                  <p className={`mt-1 text-sm ${plan.featured ? 'text-primary-foreground/75' : 'text-foreground/60'}`}>{plan.note}</p>
+                  <p className="mt-6 flex items-baseline gap-1">
+                    <span className="text-4xl font-semibold tracking-tight">{brl(plan.price)}</span>
+                    <span className={plan.featured ? 'text-primary-foreground/75' : 'text-foreground/60'}>/mês</span>
+                  </p>
+                  <ul className="mt-6 space-y-2.5 text-[15px]">
+                    {plan.items.map((feature) => (
+                      <li key={feature} className="flex gap-2.5">
+                        <Check aria-hidden className={`mt-0.5 h-4 w-4 shrink-0 ${plan.featured ? 'text-primary-foreground' : 'text-secondary'}`} />
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="perguntas" className="py-24 sm:py-32">
           <div className="lp-wrap grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
             <div>
               <h2 className="lp-h2 text-[2rem] font-semibold leading-[1.1] sm:text-[2.75rem]">Perguntas de quem está trocando de sistema</h2>

@@ -15,6 +15,10 @@ vi.mock('../../stores/authStore', () => ({
   useAuthStore: vi.fn()
 }));
 
+vi.mock('../../api/userApi', () => ({
+  useMyAccess: () => ({ data: undefined }),
+}));
+
 vi.mock('../../api/authApi', () => ({
   authApi: {
     logout: vi.fn()

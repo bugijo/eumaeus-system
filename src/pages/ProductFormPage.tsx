@@ -14,6 +14,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import { useToast } from '@/components/ui/use-toast';
 import CameraBarcodeScanner from '@/components/barcode/CameraBarcodeScanner';
 import { productSchema, type CreateProductData } from '@/schemas/productSchema';
+import CatalogSearch from '@/components/stock/CatalogSearch';
 
 const CATEGORIES = ['Ração', 'Petisco', 'Higiene', 'Acessório', 'Brinquedo', 'Medicamento', 'Vacina', 'Material clínico', 'Outro'];
 const numberOrNull = (value: string) => (value === '' ? null : Number(value.replace(',', '.')));
@@ -105,6 +106,12 @@ const ProductFormPage: React.FC = () => {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+              {!isEditing && (
+                <CatalogSearch onPick={(item) => {
+                  form.setValue('name', item.name, { shouldValidate: true, shouldDirty: true });
+                  form.setValue('category', item.category, { shouldDirty: true });
+                }} />
+              )}
               <FormField control={form.control} name="name" render={({ field }) => (
                 <FormItem><FormLabel>Nome do produto *</FormLabel><FormControl><Input placeholder="Ex.: Ração Premium Cães Adultos 15 kg" {...field} /></FormControl><FormMessage /></FormItem>
               )} />

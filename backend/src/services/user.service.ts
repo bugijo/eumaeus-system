@@ -1,15 +1,19 @@
 import bcrypt from 'bcrypt';
+import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { getCurrentClinicId, getCurrentUserId } from '../tenantContext';
+import { loadUserAccess } from '../access/accessGate';
+import { PERMISSIONS, PERMISSION_INFO, PLAN_INFO, ROLE_DEFAULTS, STAFF_ROLES, StaffRole, sanitizePermissions } from '../access/permissions';
 
-export const STAFF_ROLES = ['DONO', 'VETERINARIO', 'RECEPCAO', 'AUXILIAR', 'FINANCEIRO'] as const;
-export type StaffRole = (typeof STAFF_ROLES)[number];
+export { STAFF_ROLES };
+export type { StaffRole };
 
 const ROLE_DESCRIPTIONS: Record<StaffRole, string> = {
   DONO: 'Acesso total ao sistema.',
   VETERINARIO: 'Atendimento, prontuário, receitas e estoque clínico.',
   RECEPCAO: 'Agenda, cadastros, caixa e recepção.',
   AUXILIAR: 'Apoio clínico, estoque e caixa.',
+  BANHO_TOSA: 'Agenda de banho e tosa, estoque e caixa.',
   FINANCEIRO: 'Financeiro, caixa e relatórios contábeis.',
 };
 
@@ -29,6 +33,10 @@ export function validateStaffPassword(password: string, email = '') {
   if (identity.length >= 3 && value.toLowerCase().includes(identity)) throw new UserServiceError('A senha não pode conter o e-mail');
 }
 
+const sanitizePermissionsOrFail = (value: unknown) => {
+  try { return sanitizePermissions(value); } catch (error) { throw new UserServiceError((error as Error).message); }
+};
+
 const normalizeEmail = (email: string) => String(email || '').trim().toLowerCase();
 const isEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
 const parseRole = (role: unknown): StaffRole => {
@@ -44,11 +52,37 @@ const publicUser = (user: any) => ({
   role: user.roleName,
   active: user.active !== false,
   createdAt: user.createdAt,
+  // null = segue o padrão do cargo
+  permissions: Array.isArray(user.permissions) ? user.permissions : null,
 });
+
+/** null/undefined = padrão do cargo; lista = escolha do dono (validada). O dono não tem lista própria. */
+const parsePermissions = (value: unknown, role: StaffRole): string[] | null | undefined => {
+  if (value === undefined) return undefined;
+  if (value === null || role === 'DONO') return null;
+  try { return sanitizePermissions(value); } catch (error) { throw new UserServiceError((error as Error).message); }
+};
 
 export class UserService {
   static roles() {
-    return STAFF_ROLES.map((name) => ({ name, description: ROLE_DESCRIPTIONS[name] }));
+    return STAFF_ROLES.map((name) => ({ name, description: ROLE_DESCRIPTIONS[name], defaultPermissions: [...ROLE_DEFAULTS[name]] }));
+  }
+
+  /** Plano, módulos e permissões efetivas de quem está logado, mais o catálogo para a tela de equipe. */
+  static async myAccess() {
+    const clinicId = getCurrentClinicId();
+    const userId = getCurrentUserId();
+    if (!clinicId || !userId) throw new UserServiceError('Sessão inválida', 401);
+    const access = await loadUserAccess(userId, clinicId);
+    if (!access) throw new UserServiceError('Acesso revogado', 401);
+    const plan = PLAN_INFO[access.plan];
+    return {
+      ...access,
+      planLabel: plan.label,
+      units: plan.units,
+      planPermissions: [...plan.permissions],
+      catalog: PERMISSIONS.map((key) => ({ key, ...PERMISSION_INFO[key] })),
+    };
   }
 
   static async list() {
@@ -56,7 +90,7 @@ export class UserService {
     return users.map(publicUser);
   }
 
-  static async create(input: { name: string; email: string; role: string; password: string }) {
+  static async create(input: { name: string; email: string; role: string; password: string; permissions?: unknown }) {
     const clinicId = getCurrentClinicId();
     if (!clinicId) throw new UserServiceError('Contexto da clínica ausente', 403);
     const name = String(input.name || '').trim();
@@ -65,6 +99,7 @@ export class UserService {
     if (name.length < 2) throw new UserServiceError('Informe o nome do funcionário');
     if (!isEmail(email)) throw new UserServiceError('E-mail inválido');
     validateStaffPassword(input.password, email);
+    const permissions = parsePermissions(input.permissions, role);
     const passwordHash = await bcrypt.hash(input.password, 12);
 
     return prisma.$transaction(async (tx: any) => {
@@ -72,7 +107,7 @@ export class UserService {
       if (existing) throw new UserServiceError('Já existe um acesso com este e-mail', 409);
       await tx.role.upsert({ where: { name: role }, update: {}, create: { name: role, description: ROLE_DESCRIPTIONS[role] } });
       const authProfile = await tx.authProfile.create({ data: { email, password: passwordHash }, select: { id: true } });
-      const user = await tx.user.create({ data: { name, roleName: role, clinicId, authProfileId: authProfile.id }, include: { authProfile: { select: { email: true } } } });
+      const user = await tx.user.create({ data: { name, roleName: role, clinicId, authProfileId: authProfile.id, ...(permissions ? { permissions } : {}) }, include: { authProfile: { select: { email: true } } } });
       return publicUser(user);
     });
   }
@@ -89,9 +124,9 @@ export class UserService {
     return target;
   }
 
-  static async update(userId: number, input: { name?: string; role?: string; active?: boolean }) {
+  static async update(userId: number, input: { name?: string; role?: string; active?: boolean; permissions?: unknown }) {
     const actorId = getCurrentUserId();
-    const next: { name?: string; role?: StaffRole; active?: boolean } = {};
+    const next: { name?: string; role?: StaffRole; active?: boolean; permissions?: string[] | null } = {};
     if (input.name !== undefined) {
       const name = String(input.name).trim();
       if (name.length < 2) throw new UserServiceError('Informe o nome do funcionário');
@@ -99,19 +134,26 @@ export class UserService {
     }
     if (input.role !== undefined) next.role = parseRole(input.role);
     if (input.active !== undefined) next.active = Boolean(input.active);
+    if (input.permissions !== undefined) {
+      if (actorId === userId) throw new UserServiceError('Você não pode mudar os próprios acessos', 409);
+      next.permissions = input.permissions === null ? null : (sanitizePermissionsOrFail(input.permissions));
+    }
     if (actorId === userId && (next.active === false || (next.role && next.role !== 'DONO'))) {
       throw new UserServiceError('Você não pode desativar nem rebaixar o próprio acesso', 409);
     }
 
     return prisma.$transaction(async (tx: any) => {
       const target = await UserService.assertKeepsAnOwner(tx, userId, next);
+      const finalRole = (next.role || target.roleName) as StaffRole;
+      // O dono sempre tem tudo; trocar alguém para DONO apaga a lista própria.
+      if (finalRole === 'DONO' && (next.permissions !== undefined || next.role === 'DONO')) next.permissions = null;
       if (next.role) await tx.role.upsert({ where: { name: next.role }, update: {}, create: { name: next.role, description: ROLE_DESCRIPTIONS[next.role] } });
       const user = await tx.user.update({
         where: { id: userId },
-        data: { ...(next.name ? { name: next.name } : {}), ...(next.role ? { roleName: next.role } : {}), ...(next.active !== undefined ? { active: next.active } : {}) },
+        data: { ...(next.name ? { name: next.name } : {}), ...(next.role ? { roleName: next.role } : {}), ...(next.active !== undefined ? { active: next.active } : {}), ...(next.permissions !== undefined ? { permissions: next.permissions === null ? Prisma.DbNull : next.permissions } : {}) },
         include: { authProfile: { select: { email: true } } },
       });
-      if (next.active === false || (next.role && next.role !== target.roleName)) {
+      if (next.active === false || next.permissions !== undefined || (next.role && next.role !== target.roleName)) {
         await tx.authProfile.update({ where: { id: target.authProfileId }, data: { refreshToken: null } });
       }
       return publicUser(user);

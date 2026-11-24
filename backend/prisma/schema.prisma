@@ -285,6 +285,8 @@ model User {
   updatedAt DateTime @updatedAt
   clinicId  Int      @default(1) // Essencial para a V2 Multi-Tenant no futuro
   active    Boolean  @default(true)
+  // Lista de módulos escolhida pelo dono. null = padrão do cargo.
+  permissions Json?
 
   // Relacionamento: Um usuário tem um cargo
   roleName String
@@ -867,6 +869,11 @@ model ClinicSettings {
   // Configurações de Horário
   reminderSendTime          String @default("08:00") // Formato HH:MM
   vaccineReminderDaysBefore Int    @default(7) // Quantos dias antes avisar sobre vacinas
+
+  // Plano contratado: CLINICA, PETSHOP ou CLINICA_PETSHOP. Só o provisionamento altera.
+  plan          String  @default("CLINICA_PETSHOP")
+  // No plano Clínica + Pet Shop: separar receitas e despesas por unidade (true) ou tudo junto (false).
+  separateUnits Boolean @default(true)
 
   clinicId Int @default(1) // Para multi-tenant no futuro
 
