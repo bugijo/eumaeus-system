@@ -4,6 +4,7 @@ import React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { config } from '@/config/env';
+import { registerSessionCacheClearer } from '@/lib/sessionCache';
 
 // Configuração do QueryClient
 function createQueryClient() {
@@ -56,7 +57,10 @@ function getQueryClient() {
   } else {
     // Browser: cria o query client uma vez
     if (!clientQueryClient) {
-      clientQueryClient = createQueryClient();
+      const created = createQueryClient();
+      clientQueryClient = created;
+      // Dados de um estabelecimento não podem sobreviver à troca de conta na mesma aba.
+      registerSessionCacheClearer(() => created.clear());
     }
     return clientQueryClient;
   }

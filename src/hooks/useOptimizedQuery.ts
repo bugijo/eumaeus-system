@@ -1,8 +1,10 @@
+import { registerSessionCacheClearer } from '@/lib/sessionCache';
 import { useQuery, UseQueryOptions } from '@tanstack/react-query';
 import { useCallback, useRef } from 'react';
 
 // Cache simples no frontend para reduzir requisições
 const queryCache = new Map<string, { data: any; timestamp: number; ttl: number }>();
+registerSessionCacheClearer(() => queryCache.clear());
 
 interface OptimizedQueryOptions<T> extends Omit<UseQueryOptions<T>, 'queryKey' | 'queryFn'> {
   queryKey: string[];

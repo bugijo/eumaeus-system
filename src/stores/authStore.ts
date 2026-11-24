@@ -1,6 +1,7 @@
 // Em src/stores/authStore.ts
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { clearSessionCaches } from '@/lib/sessionCache';
 
 interface User {
   id: number;
@@ -26,20 +27,18 @@ export const useAuthStore = create<AuthState>()(
       token: null,
       refreshToken: null,
       user: null,
-      login: (accessToken, refreshToken, user) => set({ 
-        token: accessToken, 
-        refreshToken, 
-        user 
-      }),
+      login: (accessToken, refreshToken, user) => {
+        clearSessionCaches();
+        set({ token: accessToken, refreshToken, user });
+      },
       setTokens: (accessToken, refreshToken) => set({ 
         token: accessToken, 
         refreshToken 
       }),
-      logout: () => set({ 
-        token: null, 
-        refreshToken: null, 
-        user: null 
-      }),
+      logout: () => {
+        clearSessionCaches();
+        set({ token: null, refreshToken: null, user: null });
+      },
       isAuthenticated: () => !!get().token,
     }),
     {
