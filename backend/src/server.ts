@@ -164,6 +164,8 @@ const whatsappChannels = (() => {
 
 // Must precede express.json(): Meta signs the original request bytes.
 app.use('/webhooks/whatsapp', createWhatsAppWebhookRouter({ channels: whatsappChannels, store: whatsappPrismaStore }));
+// XML de NF-e com muitos itens passa de 100 KB (limite padrão); só estas rotas aceitam até 4 MB.
+app.use('/api/inventory/nfe', express.json({ limit: '4mb' }));
 app.use(express.json());
 
 type CheckStatus = 'ok' | 'error';

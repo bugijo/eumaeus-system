@@ -27,6 +27,7 @@ const TutorListPage = React.lazy(() => import("./pages/TutorListPage"));
 const TutorFormPage = React.lazy(() => import("./pages/TutorFormPage"));
 const TutorDetailPage = React.lazy(() => import("./pages/TutorDetailPage"));
 const ProductListPage = React.lazy(() => import("./pages/ProductListPage"));
+const ImportarNfePage = React.lazy(() => import("./pages/ImportarNfePage"));
 const ProductFormPage = React.lazy(() => import("./pages/ProductFormPage"));
 const InvoiceDetailPage = React.lazy(() => import("./pages/InvoiceDetailPage"));
 const MedicalRecordPage = React.lazy(() => import("./pages/MedicalRecordPage"));
@@ -161,6 +162,7 @@ function App() {
               <Route path="/estoque" element={
                 <Layout><ProductListPage /></Layout>
               } />
+              <Route path="/estoque/importar-nfe" element={<Layout><ImportarNfePage /></Layout>} />
               <Route path="/estoque/novo" element={
                 <Layout><ProductFormPage /></Layout>
               } />

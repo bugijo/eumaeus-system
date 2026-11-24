@@ -32,7 +32,7 @@ const PATH_RULES: Array<{ pattern: RegExp; anyOf: PermissionKey[] | null }> = [
   { pattern: /^\/(tutores|pets)/, anyOf: ['cadastros', 'atendimento', 'agenda'] },
   { pattern: /^\/assistencia/, anyOf: ['internacao'] },
   { pattern: /^\/especialistas/, anyOf: ['especialistas'] },
-  { pattern: /^\/estoque\/(novo|editar)/, anyOf: ['estoque_movimentar'] },
+  { pattern: /^\/estoque\/(novo|editar|importar-nfe)/, anyOf: ['estoque_movimentar'] },
   { pattern: /^\/estoque/, anyOf: ['estoque_ver', 'estoque_movimentar'] },
   { pattern: /^\/(financeiro|invoices)/, anyOf: ['financeiro'] },
   { pattern: /^\/operacao/, anyOf: ['pacotes', 'agenda'] },

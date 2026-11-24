@@ -153,6 +153,24 @@ Esse módulo faz parte dos planos com clínica.`,
     body: `Em Especialistas você cadastra profissionais que atendem no estabelecimento (Novo especialista) e os associa a agendamentos.`,
   },
   {
+    id: 'estoque-importar-nfe',
+    title: 'Dar entrada no estoque pelo XML da NF-e',
+    category: 'Gestão',
+    paths: ['/estoque', '/estoque/importar-nfe'],
+    keywords: ['nota fiscal', 'nfe', 'nf-e', 'xml', 'entrada', 'compra', 'fornecedor', 'importar', 'danfe', 'lote', 'validade', 'caixa com', 'embalagem'],
+    body: `1. Em Estoque, clique em Importar NF-e (XML).
+2. Escolha o arquivo XML da nota. Ele chega por e-mail do fornecedor ou pelo portal dele. O PDF (DANFE) não serve.
+3. Confira cada item: Vincular a um produto que você já tem, Criar produto novo ou Ignorar. Produtos com o mesmo código de barras já aparecem vinculados.
+4. Se o fornecedor vende em caixa e você vende por unidade, informe quantas unidades vêm em cada caixa. O sistema mostra quantas unidades vão entrar.
+5. Clique em Dar entrada. Lote e validade da nota entram junto.
+
+Na próxima nota do mesmo fornecedor, os vínculos e as unidades por caixa já vêm preenchidos.
+
+A mesma nota não entra duas vezes: o sistema reconhece a chave de acesso. Quem tem acesso ao Financeiro pode lançar o valor da nota como despesa na mesma hora. O XML original fica guardado na lista de notas importadas, para o contador.
+
+Notas de teste (homologação) e cupons de venda (NFC-e) são recusados.`,
+  },
+  {
     id: 'estoque',
     title: 'Cadastrar produtos e controlar o estoque',
     category: 'Gestão',

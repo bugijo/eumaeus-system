@@ -36,12 +36,12 @@ function buildDescription(metadata: ProductMetadata): string {
   });
 }
 
-const normalizeBarcode = (value?: string | null) => {
+export const normalizeBarcode = (value?: string | null) => {
   const code = String(value ?? '').replace(/\s+/g, '');
   return code ? code : null;
 };
 
-function inferCategory(name: string): string {
+export function inferCategory(name: string): string {
   return /vacina/i.test(name) ? 'Vacina' : 'Estoque';
 }
 

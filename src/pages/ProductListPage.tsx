@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Package, AlertTriangle, Calendar, Trash2, Edit } from 'lucide-react';
+import { Plus, Search, Package, AlertTriangle, Calendar, Trash2, Edit, FileUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -130,17 +130,23 @@ const ProductListPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="min-w-0">
           <h1 className="text-3xl font-bold tracking-tight">Gestão de Estoque</h1>
           <p className="text-muted-foreground">
             Gerencie produtos, controle estoque e monitore vencimentos
           </p>
         </div>
-        <Button onClick={() => navigate('/estoque/novo')} className="flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          Novo Produto
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" onClick={() => navigate('/estoque/importar-nfe')} className="flex items-center gap-2">
+            <FileUp className="h-4 w-4" />
+            Importar NF-e (XML)
+          </Button>
+          <Button onClick={() => navigate('/estoque/novo')} className="flex items-center gap-2">
+            <Plus className="h-4 w-4" />
+            Novo Produto
+          </Button>
+        </div>
       </div>
 
       {/* Cards de Estatísticas */}
