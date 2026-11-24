@@ -13,8 +13,8 @@ describe('🏥 Simulação: Uma Semana na Clínica VetCare', () => {
   // Dados realistas da clínica
   const dadosClinica = {
     veterinarios: [
-      { nome: 'Dr. Carlos Silva', email: 'carlos@vetcare.com', senha: '***REMOVIDO***' },
-      { nome: 'Dra. Ana Santos', email: 'ana@vetcare.com', senha: '***REMOVIDO***' }
+      { nome: 'Dr. Carlos Silva', email: 'carlos@vetcare.com', senha: Cypress.env('E2E_PASSWORD') },
+      { nome: 'Dra. Ana Santos', email: 'ana@vetcare.com', senha: Cypress.env('E2E_PASSWORD') }
     ],
     
     tutores: [

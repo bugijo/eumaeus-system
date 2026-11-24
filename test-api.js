@@ -90,16 +90,16 @@ async function runTests() {
   console.log('=' .repeat(60));
 
   // Teste 1: Login com credenciais inválidas
-  await testLogin('invalid@email.com', '***REMOVIDO***', 'Credenciais Inválidas');
+  await testLogin('invalid@email.com', process.env.E2E_PASSWORD, 'Credenciais Inválidas');
 
   // Teste 2: Login como Admin (User)
-  const adminResult = await testLogin('admin@clinic.local', '***REMOVIDO***', 'Admin User');
+  const adminResult = await testLogin('admin@clinic.local', process.env.E2E_PASSWORD, 'Admin User');
 
   // Teste 3: Login como Veterinário (User)
-  await testLogin('vet@clinic.local', '***REMOVIDO***', 'Veterinário User');
+  await testLogin('vet@clinic.local', process.env.E2E_PASSWORD, 'Veterinário User');
 
   // Teste 4: Login como Tutor
-  const tutorResult = await testLogin('tutor@example.com', '***REMOVIDO***', 'Tutor');
+  const tutorResult = await testLogin('tutor@example.com', process.env.E2E_PASSWORD, 'Tutor');
 
   // Teste 5: Refresh Token (se o login do admin foi bem-sucedido)
   if (adminResult.success && adminResult.data.refreshToken) {

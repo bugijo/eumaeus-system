@@ -14,7 +14,7 @@ describe('🏥 Simulação Completa de Clínica Veterinária', () => {
   const dadosClinica = {
     veterinario: {
       email: 'dr.silva@clinica.com',
-      senha: '***REMOVIDO***'
+      senha: Cypress.env('E2E_PASSWORD')
     },
     tutores: [
       {

@@ -5,7 +5,7 @@ Garantir a qualidade, estabilidade e consistência da UX de todo o Portal do Cli
 
 ## 📋 DADOS DE TESTE
 - **Email:** tutor@example.com
-- **Senha:** ***REMOVIDO***
+- **Senha:** (fora do repositório; defina localmente)
 - **Pets:** Rex (Golden Retriever), Mimi (Gato SRD)
 - **Agendamentos:** Consulta concluída e vacinação agendada
 

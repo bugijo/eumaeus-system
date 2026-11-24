@@ -1,10 +1,10 @@
 {
   "admin": {
     "email": "admin@clinic.local",
-    "password": "***REMOVIDO***"
+    "password": "<defina-localmente>"
   },
   "tutor": {
     "email": "tutor@example.com",
-    "password": "***REMOVIDO***"
+    "password": "<defina-localmente>"
   }
 }

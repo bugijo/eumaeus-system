@@ -27,7 +27,7 @@ describe('🚀 Eumaeus - Teste Manual Interativo', () => {
     
     // Fazer login
     cy.get('input[type="email"]').type('admin@Eumaeusystem.com');
-    cy.get('input[type="password"]').type('***REMOVIDO***');
+    cy.get('input[type="password"]').type(Cypress.env('E2E_PASSWORD'));
     cy.get('button').contains('Entrar').click();
     
     // Aguardar redirecionamento
@@ -143,7 +143,7 @@ describe('🚀 Eumaeus - Teste Manual Interativo', () => {
     // Login
     cy.visit(`${baseUrl}/login`);
     cy.get('input[type="email"]').type('admin@Eumaeusystem.com');
-    cy.get('input[type="password"]').type('***REMOVIDO***');
+    cy.get('input[type="password"]').type(Cypress.env('E2E_PASSWORD'));
     cy.get('button').contains('Entrar').click();
     cy.url({ timeout: 10000 }).should('eq', `${baseUrl}/`);
     
@@ -188,7 +188,7 @@ describe('🚀 Eumaeus - Teste Manual Interativo', () => {
     // Login
     cy.visit(`${baseUrl}/login`);
     cy.get('input[type="email"]').type('admin@Eumaeusystem.com');
-    cy.get('input[type="password"]').type('***REMOVIDO***');
+    cy.get('input[type="password"]').type(Cypress.env('E2E_PASSWORD'));
     cy.get('button').contains('Entrar').click();
     cy.url({ timeout: 10000 }).should('eq', `${baseUrl}/`);
     

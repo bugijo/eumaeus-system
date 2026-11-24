@@ -16,7 +16,7 @@
 
 #### ✅ Login
 - **Status:** ✅ FUNCIONANDO
-- **Credenciais testadas:** admin@Eumaeusystem.com / ***REMOVIDO***
+- **Credenciais testadas:** admin@Eumaeusystem.com / (senha fora do repositório)
 - **Redirecionamento:** ✅ Funcional (login → dashboard)
 - **Validação de campos:** ✅ Implementada
 - **Feedback visual:** ✅ Presente

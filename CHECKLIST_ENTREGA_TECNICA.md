@@ -48,11 +48,11 @@
 
 ### Admin
 - **Email:** admin@Eumaeusystem.com
-- **Senha:** ***REMOVIDO***
+- **Senha:** (fora do repositório; defina localmente)
 
 ### Veterinário
 - **Email:** vet@Eumaeusystem.com
-- **Senha:** ***REMOVIDO***
+- **Senha:** (fora do repositório; defina localmente)
 
 ### Tutor (Cliente)
 - **Email:** tutor@Eumaeusystem.com

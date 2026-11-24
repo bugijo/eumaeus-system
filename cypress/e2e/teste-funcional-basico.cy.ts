@@ -24,7 +24,7 @@ describe('🚀 Eumaeus - Testes Funcionais Básicos', () => {
       cy.visit(`${baseUrl}/login`);
       
       cy.get('input[type="email"]').type('admin@Eumaeusystem.com');
-      cy.get('input[type="password"]').type('***REMOVIDO***');
+      cy.get('input[type="password"]').type(Cypress.env('E2E_PASSWORD'));
       cy.get('button').contains('Entrar').click();
       
       // Aguardar redirecionamento
@@ -40,7 +40,7 @@ describe('🚀 Eumaeus - Testes Funcionais Básicos', () => {
       // Login antes de cada teste
       cy.visit(`${baseUrl}/login`);
       cy.get('input[type="email"]').type('admin@Eumaeusystem.com');
-      cy.get('input[type="password"]').type('***REMOVIDO***');
+      cy.get('input[type="password"]').type(Cypress.env('E2E_PASSWORD'));
       cy.get('button').contains('Entrar').click();
       cy.url({ timeout: 10000 }).should('eq', `${baseUrl}/`);
     });
@@ -86,7 +86,7 @@ describe('🚀 Eumaeus - Testes Funcionais Básicos', () => {
     beforeEach(() => {
       cy.visit(`${baseUrl}/login`);
       cy.get('input[type="email"]').type('admin@Eumaeusystem.com');
-      cy.get('input[type="password"]').type('***REMOVIDO***');
+      cy.get('input[type="password"]').type(Cypress.env('E2E_PASSWORD'));
       cy.get('button').contains('Entrar').click();
       cy.url({ timeout: 10000 }).should('eq', `${baseUrl}/`);
     });
@@ -115,7 +115,7 @@ describe('🚀 Eumaeus - Testes Funcionais Básicos', () => {
     beforeEach(() => {
       cy.visit(`${baseUrl}/login`);
       cy.get('input[type="email"]').type('admin@Eumaeusystem.com');
-      cy.get('input[type="password"]').type('***REMOVIDO***');
+      cy.get('input[type="password"]').type(Cypress.env('E2E_PASSWORD'));
       cy.get('button').contains('Entrar').click();
       cy.url({ timeout: 10000 }).should('eq', `${baseUrl}/`);
       cy.contains('Tutores').click();
@@ -135,7 +135,7 @@ describe('🚀 Eumaeus - Testes Funcionais Básicos', () => {
     beforeEach(() => {
       cy.visit(`${baseUrl}/login`);
       cy.get('input[type="email"]').type('admin@Eumaeusystem.com');
-      cy.get('input[type="password"]').type('***REMOVIDO***');
+      cy.get('input[type="password"]').type(Cypress.env('E2E_PASSWORD'));
       cy.get('button').contains('Entrar').click();
       cy.url({ timeout: 10000 }).should('eq', `${baseUrl}/`);
       cy.contains('Pets').click();
@@ -151,7 +151,7 @@ describe('🚀 Eumaeus - Testes Funcionais Básicos', () => {
     beforeEach(() => {
       cy.visit(`${baseUrl}/login`);
       cy.get('input[type="email"]').type('admin@Eumaeusystem.com');
-      cy.get('input[type="password"]').type('***REMOVIDO***');
+      cy.get('input[type="password"]').type(Cypress.env('E2E_PASSWORD'));
       cy.get('button').contains('Entrar').click();
       cy.url({ timeout: 10000 }).should('eq', `${baseUrl}/`);
       cy.contains('Agendamentos').click();
@@ -167,7 +167,7 @@ describe('🚀 Eumaeus - Testes Funcionais Básicos', () => {
     beforeEach(() => {
       cy.visit(`${baseUrl}/login`);
       cy.get('input[type="email"]').type('admin@Eumaeusystem.com');
-      cy.get('input[type="password"]').type('***REMOVIDO***');
+      cy.get('input[type="password"]').type(Cypress.env('E2E_PASSWORD'));
       cy.get('button').contains('Entrar').click();
       cy.url({ timeout: 10000 }).should('eq', `${baseUrl}/`);
       cy.contains('Estoque').click();
@@ -188,7 +188,7 @@ describe('🚀 Eumaeus - Testes Funcionais Básicos', () => {
       cy.get('input[type="password"]').should('be.visible');
       
       cy.get('input[type="email"]').type('admin@Eumaeusystem.com');
-      cy.get('input[type="password"]').type('***REMOVIDO***');
+      cy.get('input[type="password"]').type(Cypress.env('E2E_PASSWORD'));
       cy.get('button').contains('Entrar').click();
       
       cy.url({ timeout: 10000 }).should('eq', `${baseUrl}/`);
@@ -199,7 +199,7 @@ describe('🚀 Eumaeus - Testes Funcionais Básicos', () => {
       cy.visit(`${baseUrl}/login`);
       
       cy.get('input[type="email"]').type('admin@Eumaeusystem.com');
-      cy.get('input[type="password"]').type('***REMOVIDO***');
+      cy.get('input[type="password"]').type(Cypress.env('E2E_PASSWORD'));
       cy.get('button').contains('Entrar').click();
       
       cy.url({ timeout: 10000 }).should('eq', `${baseUrl}/`);

@@ -87,7 +87,7 @@ model Tutor {
 // POST /api/auth/login
 {
   "email": "usuario@email.com",
-  "password": "***REMOVIDO***"
+  "password": "<sua-senha>"
 }
 ```
 

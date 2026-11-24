@@ -55,7 +55,7 @@ describe('🚀 Eumaeus System - Teste Completo', () => {
     it('Deve fazer login com sucesso', () => {
       cy.visit(`${baseUrl}/login`);
       cy.get('input[type="email"]').type('admin@Eumaeusystem.com');
-      cy.get('input[type="password"]').type('***REMOVIDO***');
+      cy.get('input[type="password"]').type(Cypress.env('E2E_PASSWORD'));
       cy.get('button[type="submit"]').click();
       
       // Verificar redirecionamento para dashboard
@@ -66,7 +66,7 @@ describe('🚀 Eumaeus System - Teste Completo', () => {
     it('Deve rejeitar credenciais inválidas', () => {
       cy.visit(`${baseUrl}/login`);
       cy.get('input[type="email"]').type('invalid@email.com');
-      cy.get('input[type="password"]').type('***REMOVIDO***');
+      cy.get('input[type="password"]').type(Cypress.env('E2E_PASSWORD'));
       cy.get('button[type="submit"]').click();
       
       // Verificar mensagem de erro
@@ -79,7 +79,7 @@ describe('🚀 Eumaeus System - Teste Completo', () => {
       // Login antes de cada teste
       cy.visit(`${baseUrl}/login`);
       cy.get('input[type="email"]').type('admin@Eumaeusystem.com');
-      cy.get('input[type="password"]').type('***REMOVIDO***');
+      cy.get('input[type="password"]').type(Cypress.env('E2E_PASSWORD'));
       cy.get('button[type="submit"]').click();
       cy.url().should('include', '/');
     });
@@ -105,7 +105,7 @@ describe('🚀 Eumaeus System - Teste Completo', () => {
     beforeEach(() => {
       cy.visit(`${baseUrl}/login`);
       cy.get('input[type="email"]').type('admin@Eumaeusystem.com');
-      cy.get('input[type="password"]').type('***REMOVIDO***');
+      cy.get('input[type="password"]').type(Cypress.env('E2E_PASSWORD'));
       cy.get('button[type="submit"]').click();
     });
 
@@ -137,7 +137,7 @@ describe('🚀 Eumaeus System - Teste Completo', () => {
     beforeEach(() => {
       cy.visit(`${baseUrl}/login`);
       cy.get('input[type="email"]').type('admin@Eumaeusystem.com');
-      cy.get('input[type="password"]').type('***REMOVIDO***');
+      cy.get('input[type="password"]').type(Cypress.env('E2E_PASSWORD'));
       cy.get('button[type="submit"]').click();
       cy.get('[href="/tutores"]').click();
     });
@@ -182,7 +182,7 @@ describe('🚀 Eumaeus System - Teste Completo', () => {
     beforeEach(() => {
       cy.visit(`${baseUrl}/login`);
       cy.get('input[type="email"]').type('admin@Eumaeusystem.com');
-      cy.get('input[type="password"]').type('***REMOVIDO***');
+      cy.get('input[type="password"]').type(Cypress.env('E2E_PASSWORD'));
       cy.get('button[type="submit"]').click();
       cy.get('[href="/pets"]').click();
     });
@@ -202,7 +202,7 @@ describe('🚀 Eumaeus System - Teste Completo', () => {
     beforeEach(() => {
       cy.visit(`${baseUrl}/login`);
       cy.get('input[type="email"]').type('admin@Eumaeusystem.com');
-      cy.get('input[type="password"]').type('***REMOVIDO***');
+      cy.get('input[type="password"]').type(Cypress.env('E2E_PASSWORD'));
       cy.get('button[type="submit"]').click();
       cy.get('[href="/agendamentos"]').click();
     });
@@ -222,7 +222,7 @@ describe('🚀 Eumaeus System - Teste Completo', () => {
     beforeEach(() => {
       cy.visit(`${baseUrl}/login`);
       cy.get('input[type="email"]').type('admin@Eumaeusystem.com');
-      cy.get('input[type="password"]').type('***REMOVIDO***');
+      cy.get('input[type="password"]').type(Cypress.env('E2E_PASSWORD'));
       cy.get('button[type="submit"]').click();
       cy.get('[href="/estoque"]').click();
     });
@@ -249,7 +249,7 @@ describe('🚀 Eumaeus System - Teste Completo', () => {
     beforeEach(() => {
       cy.visit(`${baseUrl}/login`);
       cy.get('input[type="email"]').type('admin@Eumaeusystem.com');
-      cy.get('input[type="password"]').type('***REMOVIDO***');
+      cy.get('input[type="password"]').type(Cypress.env('E2E_PASSWORD'));
       cy.get('button[type="submit"]').click();
       cy.get('[href="/prontuarios"]').click();
     });
@@ -264,7 +264,7 @@ describe('🚀 Eumaeus System - Teste Completo', () => {
     beforeEach(() => {
       cy.visit(`${baseUrl}/login`);
       cy.get('input[type="email"]').type('admin@Eumaeusystem.com');
-      cy.get('input[type="password"]').type('***REMOVIDO***');
+      cy.get('input[type="password"]').type(Cypress.env('E2E_PASSWORD'));
       cy.get('button[type="submit"]').click();
       cy.get('[href="/financeiro"]').click();
     });
@@ -289,7 +289,7 @@ describe('🚀 Eumaeus System - Teste Completo', () => {
         cy.visit(`${baseUrl}/login`);
         
         cy.get('input[type="email"]').type('admin@Eumaeusystem.com');
-        cy.get('input[type="password"]').type('***REMOVIDO***');
+        cy.get('input[type="password"]').type(Cypress.env('E2E_PASSWORD'));
         cy.get('button[type="submit"]').click();
         
         // Verificar se o layout se adapta
@@ -319,7 +319,7 @@ describe('🚀 Eumaeus System - Teste Completo', () => {
     it('Deve navegar entre páginas rapidamente', () => {
       cy.visit(`${baseUrl}/login`);
       cy.get('input[type="email"]').type('admin@Eumaeusystem.com');
-      cy.get('input[type="password"]').type('***REMOVIDO***');
+      cy.get('input[type="password"]').type(Cypress.env('E2E_PASSWORD'));
       cy.get('button[type="submit"]').click();
       
       const start = Date.now();
