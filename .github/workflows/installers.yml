@@ -1,0 +1,78 @@
+name: Instaladores
+
+# Gera os instaladores de desktop e mobile. Disparo manual ou por tag v*.
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: desktop } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm, cache-dependency-path: desktop/package-lock.json }
+      - run: npm ci
+      - run: npx electron-builder --linux AppImage
+      - uses: actions/upload-artifact@v4
+        with: { name: eumaeus-linux, path: desktop/release/*.AppImage }
+
+  windows:
+    runs-on: windows-latest
+    defaults: { run: { working-directory: desktop } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm, cache-dependency-path: desktop/package-lock.json }
+      - run: npm ci
+      - run: npx electron-builder --win nsis
+      - uses: actions/upload-artifact@v4
+        with: { name: eumaeus-windows, path: desktop/release/*.exe }
+
+  macos:
+    runs-on: macos-latest
+    defaults: { run: { working-directory: desktop } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm, cache-dependency-path: desktop/package-lock.json }
+      - run: npm ci
+      # Sem certificado Apple, o .dmg não é assinado nem notarizado: o macOS pede confirmação ao abrir.
+      - run: npx electron-builder --mac dmg -c.mac.identity=null
+      - uses: actions/upload-artifact@v4
+        with: { name: eumaeus-macos, path: desktop/release/*.dmg }
+
+  android:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: mobile } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm, cache-dependency-path: mobile/package-lock.json }
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 21 }
+      - run: npm ci
+      - run: npx cap sync android
+      - working-directory: mobile/android
+        run: chmod +x gradlew && ./gradlew assembleDebug
+      - uses: actions/upload-artifact@v4
+        with: { name: eumaeus-android, path: mobile/android/app/build/outputs/apk/debug/*.apk }
+
+  ios:
+    runs-on: macos-latest
+    defaults: { run: { working-directory: mobile } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm, cache-dependency-path: mobile/package-lock.json }
+      - run: npm ci
+      - run: npx cap sync ios
+      # Compila para simulador (sem assinatura). Instalar em iPhone/iPad exige conta Apple Developer.
+      - run: |
+          xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Debug \
+            -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build

@@ -1,0 +1,17 @@
+{
+  "name": "eumaeus-mobile",
+  "version": "1.0.0",
+  "private": true,
+  "description": "App Android e iOS do Eumaeus (Capacitor, carrega o sistema publicado em eumaeus.com.br)",
+  "scripts": {
+    "sync": "cap sync",
+    "android:add": "cap add android",
+    "ios:add": "cap add ios"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.6.2",
+    "@capacitor/cli": "^8.6.2",
+    "@capacitor/core": "^8.6.2",
+    "@capacitor/ios": "^8.6.2"
+  }
+}

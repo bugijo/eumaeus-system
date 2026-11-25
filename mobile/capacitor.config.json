@@ -1,0 +1,12 @@
+{
+  "appId": "br.com.eumaeus.app",
+  "appName": "Eumaeus",
+  "webDir": "www",
+  "server": {
+    "url": "https://eumaeus.com.br/",
+    "cleartext": false,
+    "allowNavigation": ["eumaeus.com.br"]
+  },
+  "android": { "allowMixedContent": false },
+  "ios": { "contentInset": "always" }
+}
