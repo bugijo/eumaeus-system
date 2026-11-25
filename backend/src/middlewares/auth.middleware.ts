@@ -3,6 +3,7 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 import { config } from '../config/env';
 import { runWithClinic, runWithUser } from '../tenantContext';
 import { prisma } from '../lib/prisma';
+import { billingService } from '../services/billing.service';
 
 export const ROLE = {
   DONO: 'DONO',
@@ -144,6 +145,12 @@ const buildRoleGuard = (strict: boolean, allowedRoles: AppRole[]) => {
           const currentRole = roleAlias[String(record.roleName || '').toUpperCase()] || String(record.roleName || '').toUpperCase();
           if (!moduleGranted && !normalizedAllowedRoles.includes(currentRole)) {
             return res.status(403).json({ message: 'Permissão insuficiente para esta operação' });
+          }
+          if (await billingService.isClinicBlocked(req.user!.clinicId!)) {
+            return res.status(402).json({
+              message: 'Acesso suspenso: a assinatura está pausada, cancelada ou com pagamento em atraso. Fale com a equipe pelo WhatsApp.',
+              code: 'SUBSCRIPTION_BLOCKED',
+            });
           }
           return next();
         } catch { return res.status(401).json({ message: 'Acesso revogado' }); }

@@ -119,6 +119,21 @@ describe('API Client', () => {
       await expect(apiClient.get('/test')).rejects.toThrow();
     });
 
+    it('assinatura bloqueada (402) leva à tela de acesso suspenso', async () => {
+      const assign = vi.fn();
+      const original = window.location;
+      Object.defineProperty(window, 'location', { configurable: true, value: { ...original, pathname: '/dashboard', assign } });
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 402,
+        json: async () => ({ message: 'Acesso suspenso', code: 'SUBSCRIPTION_BLOCKED' })
+      });
+
+      await expect(apiClient.get('/test')).rejects.toThrow();
+      expect(assign).toHaveBeenCalledWith('/acesso-suspenso');
+      Object.defineProperty(window, 'location', { configurable: true, value: original });
+    });
+
     it('deve lidar com erro 500 (servidor)', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,

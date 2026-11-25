@@ -25,6 +25,7 @@ const LandingPage = React.lazy(() => import("./pages/LandingPage"));
 const AssinarPage = React.lazy(() => import("./pages/AssinarPage"));
 const ContratacaoRetornoPage = React.lazy(() => import("./pages/ContratacaoRetornoPage"));
 const ConfirmarEmailPage = React.lazy(() => import("./pages/ConfirmarEmailPage"));
+const AcessoSuspensoPage = React.lazy(() => import("./pages/AcessoSuspensoPage"));
 const NotFound = React.lazy(() => import("./pages/NotFound"));
 const TutorListPage = React.lazy(() => import("./pages/TutorListPage"));
 const TutorFormPage = React.lazy(() => import("./pages/TutorFormPage"));
@@ -132,6 +133,7 @@ function App() {
             <Route path="/assinar/retorno" element={<ContratacaoRetornoPage />} />
             <Route path="/cadastro" element={<ContratacaoRetornoPage />} />
             <Route path="/confirmar-email" element={<ConfirmarEmailPage />} />
+            <Route path="/acesso-suspenso" element={<AcessoSuspensoPage />} />
             
             {/* Rotas protegidas */}
             <Route path="/" element={<RootPage />} />

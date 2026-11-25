@@ -19,6 +19,8 @@ const makeEmail = (configured = true) => ({
 });
 const makeMp = (overrides: Record<string, jest.Mock> = {}) => ({
   createPreference: jest.fn().mockResolvedValue({ id: 'pref-1', init_point: 'https://mp.example/checkout' }),
+  createPreapproval: jest.fn().mockResolvedValue({ id: 'preap0001abc', status: 'pending', init_point: 'https://mp.example/assinatura' }),
+  getPreapproval: jest.fn(),
   getPayment: jest.fn(),
   searchPaymentsByReference: jest.fn().mockResolvedValue([]),
   ...overrides,
@@ -47,16 +49,19 @@ describe('Contratação: checkout', () => {
     const result = await service.createCheckout({ plan: 'petshop', email: ' Dono@Example.invalid ' });
 
     expect(db.signupCheckout.create.mock.calls[0][0].data).toEqual(expect.objectContaining({ plan: 'PETSHOP', amountCents: 7900, contactEmail: 'dono@example.invalid' }));
-    const [preference, idempotency] = mp.createPreference.mock.calls[0];
-    expect(preference.items[0].unit_price).toBe(79);
-    expect(preference.external_reference).toBe(CHECKOUT_ID);
-    expect(preference.notification_url).toBe('https://eumaeus.example/webhooks/mercadopago');
+    const [preapproval, idempotency] = mp.createPreapproval.mock.calls[0];
+    // Assinatura mensal no preço promocional, com o checkout como referência.
+    expect(preapproval.auto_recurring).toEqual({ frequency: 1, frequency_type: 'months', transaction_amount: 79, currency_id: 'BRL' });
+    expect(preapproval.status).toBe('pending');
+    expect(preapproval.payer_email).toBe('dono@example.invalid');
+    expect(preapproval.external_reference).toBe(CHECKOUT_ID);
     expect(idempotency).toBe(CHECKOUT_ID);
-    expect(result.redirectUrl).toBe('https://mp.example/checkout');
+    expect(result.redirectUrl).toBe('https://mp.example/assinatura');
+    expect(db.signupCheckout.update).toHaveBeenCalledWith({ where: { id: CHECKOUT_ID }, data: { mpPreapprovalId: 'preap0001abc' } });
     // O segredo devolvido ao navegador não é o que fica no banco.
     expect(db.signupCheckout.create.mock.calls[0][0].data.browserTokenHash).toBe(hashSecret(result.token));
     // O retorno leva o token: o cadastro funciona mesmo se o Mercado Pago devolver em outro navegador.
-    expect(preference.back_urls.success).toBe(`https://eumaeus.example/assinar/retorno?checkout=${CHECKOUT_ID}&token=${result.token}`);
+    expect(preapproval.back_url).toBe(`https://eumaeus.example/assinar/retorno?checkout=${CHECKOUT_ID}&token=${result.token}`);
   });
 
   it('recusa plano desconhecido e responde 503 sem credencial', async () => {

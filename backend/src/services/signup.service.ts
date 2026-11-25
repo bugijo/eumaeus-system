@@ -4,9 +4,11 @@ import { prisma } from '../lib/prisma';
 import { runWithClinic } from '../tenantContext';
 import { emailService as defaultEmailService } from './emailService';
 import { UserServiceError, validateStaffPassword } from './user.service';
+import { priceRaiseDate } from './billing.service';
 import {
   MercadoPagoClient,
   MercadoPagoPayment,
+  MercadoPagoPreapproval,
   MercadoPagoSettings,
   createMercadoPagoClient,
   loadMercadoPagoSettings,
@@ -80,12 +82,28 @@ export const createSignupService = (deps: SignupServiceDeps = {}) => {
     return checkout;
   };
 
+  /** Marca o checkout como pago (uma vez) e envia o link de cadastro por e-mail. */
+  const markPaid = async (checkout: any, data: Record<string, unknown>) => {
+    const emailToken = newSecret();
+    const updated = await db.signupCheckout.updateMany({
+      where: { id: checkout.id, status: { in: ['PENDING', 'REJECTED'] } },
+      data: { status: 'PAID', emailTokenHash: hashSecret(emailToken), ...data },
+    });
+    if (updated.count === 1) {
+      const link = `${settings().publicBaseUrl}/cadastro?checkout=${checkout.id}&token=${emailToken}`;
+      await email.sendSignupLink(checkout.contactEmail, { planName: PLAN_PRICES[checkout.plan as SignupPlan]?.name ?? checkout.plan, link })
+        .catch(() => false);
+    }
+    return updated.count === 1;
+  };
+
   /** Aplica um pagamento consultado na API ao checkout correspondente. Idempotente. */
   const applyPayment = async (payment: MercadoPagoPayment): Promise<string> => {
     const reference = String(payment.external_reference ?? '');
     if (!UUID.test(reference)) return 'ignored';
     const checkout = await db.signupCheckout.findUnique({ where: { id: reference } });
-    if (!checkout) return 'ignored';
+    // Depois do cadastro, as cobranças mensais são tratadas pela assinatura (billing.service).
+    if (!checkout || checkout.status === 'COMPLETED') return 'ignored';
 
     const paidCents = Math.round(Number(payment.transaction_amount) * 100);
     if (payment.currency_id !== 'BRL' || paidCents !== checkout.amountCents) {
@@ -94,22 +112,12 @@ export const createSignupService = (deps: SignupServiceDeps = {}) => {
     }
 
     if (payment.status === 'approved') {
-      const emailToken = newSecret();
-      const updated = await db.signupCheckout.updateMany({
-        where: { id: checkout.id, status: { in: ['PENDING', 'REJECTED'] } },
-        data: {
-          status: 'PAID',
-          paidAt: payment.date_approved ? new Date(payment.date_approved) : now(),
-          mpPaymentId: String(payment.id),
-          mpPaymentStatus: payment.status,
-          emailTokenHash: hashSecret(emailToken),
-        },
+      const first = await markPaid(checkout, {
+        paidAt: payment.date_approved ? new Date(payment.date_approved) : now(),
+        mpPaymentId: String(payment.id),
+        mpPaymentStatus: payment.status,
       });
-      if (updated.count === 1) {
-        const link = `${settings().publicBaseUrl}/cadastro?checkout=${checkout.id}&token=${emailToken}`;
-        await email.sendSignupLink(checkout.contactEmail, { planName: PLAN_PRICES[checkout.plan as SignupPlan]?.name ?? checkout.plan, link })
-          .catch(() => false);
-      } else if (checkout.mpPaymentId && checkout.mpPaymentId !== String(payment.id)) {
+      if (!first && checkout.mpPaymentId && checkout.mpPaymentId !== String(payment.id)) {
         console.warn(`Checkout ${checkout.id} recebeu um segundo pagamento aprovado (${payment.id}); avaliar estorno.`);
       }
       return 'paid';
@@ -127,6 +135,31 @@ export const createSignupService = (deps: SignupServiceDeps = {}) => {
       where: { id: checkout.id, status: 'PENDING' },
       data: { mpPaymentStatus: payment.status },
     });
+    return 'pending';
+  };
+
+  /** Assinatura autorizada no Mercado Pago libera o cadastro. Confere valor e vínculo com o checkout. */
+  const applyPreapproval = async (preapproval: MercadoPagoPreapproval): Promise<string> => {
+    const reference = String(preapproval.external_reference ?? '');
+    if (!UUID.test(reference)) return 'ignored';
+    const checkout = await db.signupCheckout.findUnique({ where: { id: reference } });
+    if (!checkout || checkout.status === 'COMPLETED') return 'ignored';
+    if (checkout.mpPreapprovalId && checkout.mpPreapprovalId !== String(preapproval.id)) return 'ignored';
+
+    const amountCents = Math.round(Number(preapproval.auto_recurring?.transaction_amount) * 100);
+    if (preapproval.auto_recurring?.currency_id !== 'BRL' || amountCents !== checkout.amountCents) {
+      console.warn(`Assinatura ${preapproval.id} com valor divergente do checkout ${checkout.id}; ignorada.`);
+      return 'amount-mismatch';
+    }
+
+    if (preapproval.status === 'authorized') {
+      await markPaid(checkout, { paidAt: now(), mpPreapprovalId: String(preapproval.id), mpPaymentStatus: 'authorized' });
+      return 'paid';
+    }
+    if (preapproval.status === 'cancelled') {
+      await db.signupCheckout.updateMany({ where: { id: checkout.id, status: 'PENDING' }, data: { status: 'REJECTED', mpPaymentStatus: 'cancelled' } });
+      return 'rejected';
+    }
     return 'pending';
   };
 
@@ -152,32 +185,30 @@ export const createSignupService = (deps: SignupServiceDeps = {}) => {
       // O token vai no retorno: no celular o Mercado Pago pode devolver o cliente em outro navegador
       // (sem o localStorage da compra). Ele só consulta esta contratação e cria a conta uma vez.
       const returnUrl = `${current.publicBaseUrl}/assinar/retorno?checkout=${checkout.id}&token=${browserToken}`;
-      const preference: Record<string, unknown> = {
-        items: [{
-          id: `eumaeus-${plan.toLowerCase()}`,
-          title: `Eumaeus - Plano ${price.name} (1º mês promocional)`,
-          quantity: 1,
-          currency_id: 'BRL',
-          unit_price: price.promoCents / 100,
-        }],
-        payer: { email: contactEmail },
+      // Assinatura mensal sem plano, com pagamento pendente: o cliente escolhe Pix ou cartão no
+      // Mercado Pago (pode pagar sem conta). As notificações vêm pelo webhook configurado no painel.
+      const preapproval = {
+        reason: `Eumaeus - Plano ${price.name}`,
         external_reference: checkout.id,
-        back_urls: { success: returnUrl, pending: returnUrl, failure: returnUrl },
-        auto_return: 'approved',
-        statement_descriptor: 'EUMAEUS',
+        payer_email: contactEmail,
+        auto_recurring: {
+          frequency: 1,
+          frequency_type: 'months',
+          transaction_amount: price.promoCents / 100,
+          currency_id: 'BRL',
+        },
+        back_url: returnUrl,
+        status: 'pending',
       };
-      // O Mercado Pago só aceita notificação em endereço público com HTTPS.
-      if (current.publicBaseUrl.startsWith('https://')) {
-        preference.notification_url = `${current.publicBaseUrl}/webhooks/mercadopago`;
-      }
 
-      let created: { id: string; init_point: string };
+      let created: { id: string; init_point?: string };
       try {
-        created = await mercadoPago(current).createPreference(preference, checkout.id);
+        created = await mercadoPago(current).createPreapproval(preapproval, checkout.id);
       } catch {
         throw new SignupError('Não foi possível iniciar o pagamento. Tente de novo em instantes.', 502, 'CHECKOUT_FAILED');
       }
-      await db.signupCheckout.update({ where: { id: checkout.id }, data: { mpPreferenceId: String(created.id) } });
+      if (!created.init_point) throw new SignupError('Não foi possível iniciar o pagamento. Tente de novo em instantes.', 502, 'CHECKOUT_FAILED');
+      await db.signupCheckout.update({ where: { id: checkout.id }, data: { mpPreapprovalId: String(created.id) } });
       return { checkoutId: checkout.id, token: browserToken, redirectUrl: created.init_point };
     },
 
@@ -189,17 +220,27 @@ export const createSignupService = (deps: SignupServiceDeps = {}) => {
 
     applyPayment,
 
-    /** Situação do checkout para a tela de retorno. Sem webhook, consulta a API pelo external_reference. */
+    /** Notificação de assinatura: consulta na API e libera o cadastro quando autorizada. */
+    async handlePreapprovalNotification(preapprovalId: string) {
+      return applyPreapproval(await mercadoPago(settings()).getPreapproval(preapprovalId));
+    },
+
+    applyPreapproval,
+
+    /** Situação do checkout para a tela de retorno. Sem webhook, consulta a API diretamente. */
     async getCheckoutStatus(input: { checkoutId: unknown; token: unknown }) {
       let checkout = await findAuthorizedCheckout(input.checkoutId, input.token);
       if (checkout.status === 'PENDING' && settings().accessToken) {
         try {
-          const payments = await mercadoPago(settings()).searchPaymentsByReference(checkout.id);
-          const best = payments.find((p) => p.status === 'approved') ?? payments[0];
-          if (best) {
-            await applyPayment(best);
-            checkout = await db.signupCheckout.findUnique({ where: { id: checkout.id } });
+          const client = mercadoPago(settings());
+          if (checkout.mpPreapprovalId) {
+            await applyPreapproval(await client.getPreapproval(checkout.mpPreapprovalId));
+          } else {
+            const payments = await client.searchPaymentsByReference(checkout.id);
+            const best = payments.find((p) => p.status === 'approved') ?? payments[0];
+            if (best) await applyPayment(best);
           }
+          checkout = await db.signupCheckout.findUnique({ where: { id: checkout.id } });
         } catch { /* consulta opcional: segue com o estado salvo */ }
       }
       const price = PLAN_PRICES[checkout.plan as SignupPlan];
@@ -281,6 +322,25 @@ export const createSignupService = (deps: SignupServiceDeps = {}) => {
               emailFromName: clinicName,
             },
           });
+          if (checkout.mpPreapprovalId) {
+            const startedAt = checkout.paidAt ? new Date(checkout.paidAt) : now();
+            const price = PLAN_PRICES[plan];
+            await tx.subscription.create({
+              data: {
+                clinicId: clinic.id,
+                plan,
+                mpPreapprovalId: checkout.mpPreapprovalId,
+                status: 'ACTIVE',
+                mpStatus: 'authorized',
+                promoCents: checkout.amountCents,
+                fullCents: price.fullCents,
+                startedAt,
+                priceRaiseAt: priceRaiseDate(startedAt),
+                lastPaymentAt: startedAt,
+                lastPaymentStatus: 'approved',
+              },
+            });
+          }
         }, { isolationLevel: 'Serializable' }));
       } catch (error) {
         await db.clinic.delete({ where: { id: clinic.id } }).catch(() => undefined);

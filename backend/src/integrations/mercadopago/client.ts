@@ -32,6 +32,26 @@ export type MercadoPagoPayment = {
   date_approved?: string | null;
 };
 
+/** Assinatura (preapproval). Status: pending | authorized | paused | cancelled. */
+export type MercadoPagoPreapproval = {
+  id: string;
+  status: string;
+  external_reference?: string | null;
+  init_point?: string;
+  auto_recurring?: { transaction_amount?: number; currency_id?: string };
+};
+
+/** Cobrança de uma assinatura (authorized_payment). */
+export type MercadoPagoAuthorizedPayment = {
+  id: number | string;
+  preapproval_id?: string;
+  status?: string; // scheduled | processed | recycling | cancelled
+  date_created?: string;
+  payment?: { id?: number | string; status?: string; status_detail?: string } | null;
+};
+
+const PREAPPROVAL_ID = /^[a-z0-9]{8,64}$/i;
+
 type Fetcher = typeof fetch;
 
 const call = async <T>(fetcher: Fetcher, accessToken: string, path: string, init: RequestInit = {}): Promise<T> => {
@@ -68,7 +88,36 @@ export const createMercadoPagoClient = (settings: MercadoPagoSettings, fetcher: 
     const result = await call<{ results?: MercadoPagoPayment[] }>(fetcher, settings.accessToken, `/v1/payments/search?${query}`);
     return result.results || [];
   },
+
+  createPreapproval: (body: Record<string, unknown>, idempotencyKey: string) =>
+    call<MercadoPagoPreapproval>(fetcher, settings.accessToken, '/preapproval', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Idempotency-Key': idempotencyKey },
+      body: JSON.stringify(body),
+    }),
+
+  getPreapproval: (preapprovalId: string) => {
+    if (!PREAPPROVAL_ID.test(preapprovalId)) throw new MercadoPagoError('Identificador de assinatura inválido');
+    return call<MercadoPagoPreapproval>(fetcher, settings.accessToken, `/preapproval/${preapprovalId}`);
+  },
+
+  /** Muda o valor das próximas cobranças da assinatura. */
+  updatePreapprovalAmount: (preapprovalId: string, amountCents: number) => {
+    if (!PREAPPROVAL_ID.test(preapprovalId)) throw new MercadoPagoError('Identificador de assinatura inválido');
+    return call<MercadoPagoPreapproval>(fetcher, settings.accessToken, `/preapproval/${preapprovalId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ auto_recurring: { transaction_amount: amountCents / 100, currency_id: 'BRL' } }),
+    });
+  },
+
+  getAuthorizedPayment: (authorizedPaymentId: string) => {
+    if (!/^\d{1,20}$/.test(authorizedPaymentId)) throw new MercadoPagoError('Identificador de cobrança inválido');
+    return call<MercadoPagoAuthorizedPayment>(fetcher, settings.accessToken, `/authorized_payments/${authorizedPaymentId}`);
+  },
 });
+
+export const isPreapprovalId = (value: string) => PREAPPROVAL_ID.test(value);
 
 export type MercadoPagoClient = ReturnType<typeof createMercadoPagoClient>;
 

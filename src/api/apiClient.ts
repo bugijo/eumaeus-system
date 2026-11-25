@@ -589,9 +589,18 @@ apiClient.interceptors.response.use(
       throw error;
     }
 
+    // Assinatura pausada, cancelada ou em atraso: leva à tela de acesso suspenso.
+    const code = (error.response?.data as { code?: string } | undefined)?.code;
+    if (status === 402 && code === 'SUBSCRIPTION_BLOCKED' && typeof window !== 'undefined'
+      && window.location.pathname !== SUSPENDED_PATH) {
+      window.location.assign(SUSPENDED_PATH);
+    }
+
     throw error;
   }
 );
+
+export const SUSPENDED_PATH = '/acesso-suspenso';
 
 export { apiClient };
 export default apiClient;

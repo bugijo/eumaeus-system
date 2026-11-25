@@ -35,8 +35,8 @@ export default function AssinarPage() {
       <Link to="/" className="mb-6 text-sm text-primary hover:underline">← Voltar</Link>
       <h1 className="text-2xl font-semibold tracking-tight">Contratar o Eumaeus</h1>
       <p className="mt-2 text-sm text-muted-foreground">
-        Preço promocional nos 3 primeiros meses. O pagamento é feito no Mercado Pago (Pix ou cartão).
-        Depois da confirmação, você cria a conta do estabelecimento.
+        Assinatura mensal com preço promocional nos 3 primeiros meses. O pagamento é feito no Mercado Pago
+        (Pix ou cartão), sem precisar de conta lá. Depois da confirmação, você cria a conta do estabelecimento.
       </p>
 
       <form onSubmit={submit} className="mt-6 space-y-5">
@@ -70,7 +70,8 @@ export default function AssinarPage() {
           {loading ? 'Abrindo o pagamento…' : 'Ir para o pagamento'}
         </Button>
         <p className="text-xs text-muted-foreground">
-          O valor cobrado agora é o do primeiro mês. Dúvidas antes de contratar? Fale com a equipe pelo WhatsApp na página inicial.
+          A assinatura é cobrada todo mês pelo Mercado Pago; a partir do 4º mês vale o preço cheio.
+          Para cancelar ou tirar dúvidas, fale com a equipe pelo WhatsApp na página inicial.
         </p>
       </form>
     </main>

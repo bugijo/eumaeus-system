@@ -286,12 +286,12 @@ model AuthProfile {
 
 // Modelo User (funcionário) modificado
 model User {
-  id        Int      @id @default(autoincrement())
-  name      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  clinicId  Int      @default(1) // Essencial para a V2 Multi-Tenant no futuro
-  active    Boolean  @default(true)
+  id          Int      @id @default(autoincrement())
+  name        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  clinicId    Int      @default(1) // Essencial para a V2 Multi-Tenant no futuro
+  active      Boolean  @default(true)
   // Lista de módulos escolhida pelo dono. null = padrão do cargo.
   permissions Json?
 
@@ -533,15 +533,15 @@ model AllocationRule {
 
 // Venda de balcão (PDV / caixa)
 model Sale {
-  id               Int           @id @default(autoincrement())
-  createdAt        DateTime      @default(now())
+  id               Int              @id @default(autoincrement())
+  createdAt        DateTime         @default(now())
   clinicId         Int
   number           Int
-  status           String        @default("COMPLETED") // COMPLETED | CANCELLED
-  subtotal         Decimal       @db.Decimal(12, 2)
-  discount         Decimal       @default(0) @db.Decimal(12, 2)
-  total            Decimal       @db.Decimal(12, 2)
-  change           Decimal       @default(0) @db.Decimal(12, 2)
+  status           String           @default("COMPLETED") // COMPLETED | CANCELLED
+  subtotal         Decimal          @db.Decimal(12, 2)
+  discount         Decimal          @default(0) @db.Decimal(12, 2)
+  total            Decimal          @db.Decimal(12, 2)
+  change           Decimal          @default(0) @db.Decimal(12, 2)
   resultCenterId   Int?
   tutorId          Int?
   soldByUserId     Int?
@@ -552,8 +552,8 @@ model Sale {
   cashSessionId    Int?
   items            SaleItem[]
   payments         SalePayment[]
-  resultCenter     ResultCenter? @relation(fields: [resultCenterId], references: [id], onDelete: SetNull)
-  cashSession      CashSession?  @relation(fields: [cashSessionId], references: [id], onDelete: SetNull)
+  resultCenter     ResultCenter?    @relation(fields: [resultCenterId], references: [id], onDelete: SetNull)
+  cashSession      CashSession?     @relation(fields: [cashSessionId], references: [id], onDelete: SetNull)
   packageContract  PackageContract?
 
   @@unique([clinicId, idempotencyKey])
@@ -1170,10 +1170,35 @@ model SupplierProductLink {
 
 // Estabelecimento (tenant). O id é o clinicId gravado nas demais tabelas.
 model Clinic {
-  id        Int              @id @default(autoincrement())
-  name      String
-  createdAt DateTime         @default(now())
-  checkouts SignupCheckout[]
+  id           Int              @id @default(autoincrement())
+  name         String
+  createdAt    DateTime         @default(now())
+  checkouts    SignupCheckout[]
+  subscription Subscription?
+}
+
+// Assinatura mensal no Mercado Pago (preapproval). Não é tabela de tenant: webhooks e a
+// tarefa diária consultam todas. Estabelecimento sem assinatura (contrato manual) nunca é bloqueado.
+model Subscription {
+  id                Int       @id @default(autoincrement())
+  clinicId          Int       @unique
+  clinic            Clinic    @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  plan              String
+  mpPreapprovalId   String    @unique
+  status            String    @default("ACTIVE") // ACTIVE | PAST_DUE | PAUSED | CANCELLED
+  mpStatus          String?
+  promoCents        Int
+  fullCents         Int
+  startedAt         DateTime
+  priceRaiseAt      DateTime // depois da 3ª cobrança e antes da 4ª
+  priceRaisedAt     DateTime?
+  lastPaymentAt     DateTime?
+  lastPaymentStatus String?
+  pastDueSince      DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([status, priceRaiseAt])
 }
 
 // Contratação pela landing: pagamento no Mercado Pago e cadastro do dono.
@@ -1187,6 +1212,7 @@ model SignupCheckout {
   browserTokenHash String    @unique // segredo guardado no navegador que iniciou a compra
   emailTokenHash   String?   @unique // segredo enviado por e-mail após o pagamento
   mpPreferenceId   String?   @unique
+  mpPreapprovalId  String?   @unique // assinatura criada para esta contratação
   mpPaymentId      String?   @unique
   mpPaymentStatus  String?
   paidAt           DateTime?

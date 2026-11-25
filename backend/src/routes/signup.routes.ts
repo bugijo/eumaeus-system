@@ -1,8 +1,10 @@
 import { Router, Request, Response } from 'express';
 import { SignupError, signupService as defaultService } from '../services/signup.service';
-import { MercadoPagoError, loadMercadoPagoSettings, verifyWebhookSignature } from '../integrations/mercadopago/client';
+import { MercadoPagoError, isPreapprovalId, loadMercadoPagoSettings, verifyWebhookSignature } from '../integrations/mercadopago/client';
+import { billingService as defaultBilling } from '../services/billing.service';
 
 type Service = typeof defaultService;
+type Billing = Pick<typeof defaultBilling, 'handlePreapprovalNotification' | 'handleAuthorizedPaymentNotification'>;
 
 const respond = (res: Response, error: unknown) => {
   if (error instanceof SignupError) {
@@ -40,7 +42,11 @@ let warnedMissingSecret = false;
  * Com MP_WEBHOOK_SECRET a assinatura é obrigatória. Em qualquer caso o pagamento é
  * consultado na API antes de mudar o checkout, então uma notificação forjada não libera nada.
  */
-export const createMercadoPagoWebhookRouter = (service: Service = defaultService, settings = loadMercadoPagoSettings) => {
+export const createMercadoPagoWebhookRouter = (
+  service: Service = defaultService,
+  settings = loadMercadoPagoSettings,
+  billing: Billing = defaultBilling,
+) => {
   const router = Router();
   router.post('/', async (req: Request, res: Response) => {
     const query = req.query as Record<string, unknown>;
@@ -62,9 +68,24 @@ export const createMercadoPagoWebhookRouter = (service: Service = defaultService
       console.warn('MP_WEBHOOK_SECRET ausente: notificações aceitas sem assinatura (o pagamento ainda é conferido na API).');
     }
 
-    if (type !== 'payment' || !/^\d{1,20}$/.test(dataId)) return res.status(200).json({ ignored: true });
+    const handlers: Record<string, { valid: (id: string) => boolean; run: (id: string) => Promise<unknown> }> = {
+      payment: { valid: (id) => /^\d{1,20}$/.test(id), run: (id) => service.handlePaymentNotification(id) },
+      // Assinatura criada/atualizada: libera o cadastro e reflete pausa ou cancelamento.
+      subscription_preapproval: {
+        valid: isPreapprovalId,
+        run: async (id) => {
+          const signup = await service.handlePreapprovalNotification(id);
+          const subscription = await billing.handlePreapprovalNotification(id);
+          return { signup, subscription };
+        },
+      },
+      // Cada cobrança mensal da assinatura.
+      subscription_authorized_payment: { valid: (id) => /^\d{1,20}$/.test(id), run: (id) => billing.handleAuthorizedPaymentNotification(id) },
+    };
+    const handler = handlers[type];
+    if (!handler || !handler.valid(dataId)) return res.status(200).json({ ignored: true });
     try {
-      const result = await service.handlePaymentNotification(dataId);
+      const result = await handler.run(dataId);
       return res.status(200).json({ result });
     } catch (error) {
       // Pagamento inexistente (ex.: "Simular notificação" do painel): confirma e ignora; repetir não adianta.

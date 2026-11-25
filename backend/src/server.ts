@@ -3,6 +3,7 @@ import { accessGate } from './access/accessGate';
 import compression from 'compression';
 import jwt from 'jsonwebtoken';
 import cron from 'node-cron';
+import { billingService } from './services/billing.service';
 import http from 'http';
 import { config } from './config/env';
 import { tutorRoutes } from './routes/tutor.routes';
@@ -304,7 +305,19 @@ const scheduleReminderJobs = () => {
     timezone: 'America/Sao_Paulo',
   });
 
-  scheduledTasks = [heartbeat, reminderDispatch, reminderCheck];
+  // Assinaturas: passa ao preço cheio quem já teve as 3 cobranças promocionais.
+  const subscriptionPrices = cron.schedule('0 6 * * *', async () => {
+    try {
+      const result = await billingService.raiseDuePrices();
+      if (result.due) console.log(`[Eumaeus] Assinaturas no preço cheio: ${result.raised}/${result.due}.`);
+    } catch {
+      console.error('[Eumaeus] Falha na troca de preço das assinaturas.');
+    }
+  }, {
+    timezone: 'America/Sao_Paulo',
+  });
+
+  scheduledTasks = [heartbeat, reminderDispatch, reminderCheck, subscriptionPrices];
 };
 
 interface StartServerOptions {
