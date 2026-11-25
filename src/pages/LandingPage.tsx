@@ -65,15 +65,15 @@ const TOUR: Tour[] = [
 /** Proposta de preços: precisa da aprovação do dono do produto antes de publicar. */
 const PLANS = [
   {
-    name: 'Pet Shop', price: 99, note: 'Para banho e tosa e loja.',
+    name: 'Pet Shop', price: 99, promoPrice: 79, note: 'Para banho e tosa e loja.',
     items: ['Agenda de banho e tosa e serviços', 'Tutores e pets', 'Caixa com leitor de código de barras', 'Estoque por lote e validade', 'Financeiro e relatório para o contador', 'Lembretes aos tutores', 'Acessos por funcionário'],
   },
   {
-    name: 'Clínica', price: 149, note: 'Para a clínica veterinária.',
+    name: 'Clínica', price: 149, promoPrice: 129, note: 'Para a clínica veterinária.',
     items: ['Tudo do dia a dia: agenda, tutores, caixa e estoque', 'Prontuário com medicamentos aplicados', 'Receitas e vacinas', 'Internação e cirurgia', 'Especialistas', 'Financeiro e relatório para o contador', 'Acessos por funcionário'],
   },
   {
-    name: 'Clínica + Pet Shop', price: 199, note: 'Os dois negócios no mesmo sistema.', featured: true,
+    name: 'Clínica + Pet Shop', price: 199, promoPrice: 149, note: 'Os dois negócios no mesmo sistema.', featured: true,
     items: ['Tudo do plano Clínica', 'Tudo do plano Pet Shop', 'Contas separadas por unidade ou tudo junto, você escolhe', 'Aluguel e energia divididos entre as unidades pela regra que você cadastrar'],
   },
 ];
@@ -184,8 +184,11 @@ export default function LandingPage() {
                   <h3 className="text-xl font-semibold">{plan.name}</h3>
                   <p className={`mt-1 text-sm ${plan.featured ? 'text-primary-foreground/75' : 'text-foreground/60'}`}>{plan.note}</p>
                   <p className="mt-6 flex items-baseline gap-1">
-                    <span className="text-4xl font-semibold tracking-tight">{brl(plan.price)}</span>
+                    <span className="text-4xl font-semibold tracking-tight">{brl(plan.promoPrice)}</span>
                     <span className={plan.featured ? 'text-primary-foreground/75' : 'text-foreground/60'}>/mês</span>
+                  </p>
+                  <p className={`mt-2 text-sm ${plan.featured ? 'text-primary-foreground/75' : 'text-foreground/60'}`}>
+                    Promoção de 3 meses. Depois, {brl(plan.price)}/mês.
                   </p>
                   <ul className="mt-6 space-y-2.5 text-[15px]">
                     {plan.items.map((feature) => (
