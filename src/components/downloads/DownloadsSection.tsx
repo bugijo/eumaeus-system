@@ -20,7 +20,7 @@ export const DOWNLOAD_ITEMS: Item[] = [
   { icon: Smartphone, title: 'Android', detail: 'Pelo Chrome, toque em "Instalar aplicativo" no menu. APK em breve.', status: 'em-breve' },
   { icon: Apple, title: 'iPhone e iPad', detail: 'Pelo Safari: Compartilhar → "Adicionar à Tela de Início". App na App Store em breve.', status: 'em-breve' },
   { icon: Monitor, title: 'Windows', detail: 'Instalador .exe. Pelo Chrome ou Edge, use "Instalar Eumaeus" no endereço.', ...installer('Eumaeus-windows.exe') },
-  { icon: Apple, title: 'macOS', detail: 'Instalador .dmg. Pelo Chrome ou Safari, use "Adicionar ao Dock".', ...installer('Eumaeus-macos.dmg') },
+  { icon: Apple, title: 'macOS', detail: 'Instalador .dmg. Pelo Chrome ou Safari, use "Adicionar ao Dock".', ...installer('Eumaeus-mac.dmg') },
   { icon: Terminal, title: 'Linux', detail: 'Pacote AppImage. Pelo Chrome, use "Instalar Eumaeus" no endereço.', ...installer('Eumaeus-linux.AppImage') },
 ];
 
