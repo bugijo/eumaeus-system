@@ -7,6 +7,16 @@ import { MEDICATION_CATALOG } from '@/data/medicationCatalog';
 
 const MAIN_ACTION = 'Entrar no sistema';
 
+// Vendas e suporte atendidos pelo mesmo WhatsApp (DDI 55 + DDD 16).
+const SALES_WHATSAPP = '5516991702781';
+
+function whatsappLink(message: string) {
+  return `https://wa.me/${SALES_WHATSAPP}?text=${encodeURIComponent(message)}`;
+}
+
+const BTN_PRIMARY = 'lp-press inline-flex h-12 items-center justify-center rounded-xl bg-primary px-6 text-[15px] font-semibold text-primary-foreground hover:bg-primary/90';
+const BTN_SECONDARY = 'lp-press lp-link inline-flex h-12 items-center justify-center rounded-xl px-5 text-[15px] font-medium text-primary ring-1 ring-inset ring-primary/25 hover:bg-primary/5';
+
 type Tour = { id: string; title: string; text: string[]; shot: string; alt: string; height?: number };
 
 const TOUR: Tour[] = [
@@ -79,17 +89,6 @@ const QUESTIONS = [
 
 const brl = (value: number) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 0 });
 
-function MainAction({ tone = 'primary', className = '' }: { tone?: 'primary' | 'light'; className?: string }) {
-  const look = tone === 'light'
-    ? 'bg-white text-primary hover:bg-white/90'
-    : 'bg-primary text-primary-foreground hover:bg-primary/90';
-  return (
-    <Link to="/login" className={`lp-press inline-flex h-12 items-center justify-center rounded-xl px-6 text-[15px] font-semibold ${look} ${className}`}>
-      {MAIN_ACTION}
-    </Link>
-  );
-}
-
 export default function LandingPage() {
   const year = new Date().getFullYear();
   return (
@@ -108,6 +107,9 @@ export default function LandingPage() {
             <a href="#telas" className="lp-link hidden rounded-lg px-3 py-2 text-sm text-foreground/75 md:inline-block">Telas</a>
             <a href="#planos" className="lp-link hidden rounded-lg px-3 py-2 text-sm text-foreground/75 md:inline-block">Planos</a>
             <a href="#perguntas" className="lp-link hidden rounded-lg px-3 py-2 text-sm text-foreground/75 md:inline-block">Perguntas</a>
+            <a href={whatsappLink('Olá! Quero falar com o time de vendas do Eumaeus.')} target="_blank" rel="noopener noreferrer" className="lp-press lp-link ml-2 hidden h-10 items-center rounded-xl px-4 text-sm font-medium text-primary ring-1 ring-inset ring-primary/25 hover:bg-primary/5 sm:inline-flex">
+              Falar com vendas
+            </a>
             <Link to="/login" className="lp-press ml-2 inline-flex h-10 items-center rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary/90">
               {MAIN_ACTION}
             </Link>
@@ -127,9 +129,14 @@ export default function LandingPage() {
                 Agenda, prontuário com os medicamentos aplicados, estoque que baixa sozinho, caixa com leitor de código de barras e financeiro. Direto no navegador.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-                <MainAction />
-                <a href="#telas" className="lp-press lp-link inline-flex h-12 items-center justify-center rounded-xl px-5 text-[15px] font-medium text-primary ring-1 ring-inset ring-primary/25 hover:bg-primary/5">
+                <a href={whatsappLink('Olá! Quero contratar o Eumaeus.')} target="_blank" rel="noopener noreferrer" className={BTN_PRIMARY}>
+                  Contratar
+                </a>
+                <a href="#telas" className={BTN_SECONDARY}>
                   Ver as telas do sistema
+                </a>
+                <a href={whatsappLink('Olá! Quero falar com o time de vendas do Eumaeus.')} target="_blank" rel="noopener noreferrer" className={BTN_SECONDARY}>
+                  Falar com vendas
                 </a>
               </div>
             </div>
@@ -188,6 +195,14 @@ export default function LandingPage() {
                       </li>
                     ))}
                   </ul>
+                  <a
+                    href={whatsappLink(`Olá! Quero contratar o plano ${plan.name} do Eumaeus.`)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`mt-8 inline-flex h-12 items-center justify-center rounded-xl text-[15px] font-semibold ${plan.featured ? 'lp-press bg-white text-primary hover:bg-white/90' : BTN_PRIMARY}`}
+                  >
+                    Contratar {plan.name}
+                  </a>
                 </article>
               ))}
             </div>
@@ -227,7 +242,14 @@ export default function LandingPage() {
         <section className="bg-primary py-24 text-primary-foreground sm:py-28">
           <div className="lp-wrap flex flex-col items-start justify-between gap-8 md:flex-row md:items-end">
             <h2 className="lp-h2 max-w-[30rem] text-[2rem] font-semibold leading-[1.1] sm:text-[2.75rem]">Sua clínica e seu pet shop no Eumaeus</h2>
-            <MainAction tone="light" />
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <a href={whatsappLink('Olá! Quero contratar o Eumaeus.')} target="_blank" rel="noopener noreferrer" className="lp-press inline-flex h-12 items-center justify-center rounded-xl bg-white px-6 text-[15px] font-semibold text-primary hover:bg-white/90">
+                Contratar
+              </a>
+              <a href={whatsappLink('Olá! Quero falar com o time de vendas do Eumaeus.')} target="_blank" rel="noopener noreferrer" className="lp-press inline-flex h-12 items-center justify-center rounded-xl px-6 text-[15px] font-medium text-primary-foreground ring-1 ring-inset ring-primary-foreground/40 hover:bg-primary-foreground/10">
+                Falar com vendas
+              </a>
+            </div>
           </div>
         </section>
       </main>
@@ -235,6 +257,7 @@ export default function LandingPage() {
       <footer className="lp-wrap flex flex-col gap-2 py-8 text-sm text-foreground/60 sm:flex-row sm:items-center sm:justify-between">
         <span>© {year} Eumaeus</span>
         <span>As telas desta página usam dados de exemplo.</span>
+        <a href={whatsappLink('Olá! Preciso de suporte no Eumaeus.')} target="_blank" rel="noopener noreferrer" className="lp-link rounded-md">Suporte pelo WhatsApp</a>
       </footer>
     </div>
   );
