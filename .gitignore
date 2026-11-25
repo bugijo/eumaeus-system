@@ -121,3 +121,4 @@ lerna-debug.log*
 dist-ssr
 *.local
 .claude-backup/
+docs/marketing/
