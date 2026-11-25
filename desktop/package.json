@@ -27,18 +27,21 @@
       ],
       "category": "Office",
       "desktopName": "eumaeus.desktop",
-      "syncDesktopName": true
+      "syncDesktopName": true,
+      "artifactName": "Eumaeus-linux.${ext}"
     },
     "win": {
       "target": [
         "nsis"
-      ]
+      ],
+      "artifactName": "Eumaeus-windows.${ext}"
     },
     "mac": {
       "target": [
         "dmg"
       ],
-      "category": "public.app-category.business"
+      "category": "public.app-category.business",
+      "artifactName": "Eumaeus-macos.${ext}"
     }
   },
   "devDependencies": {
