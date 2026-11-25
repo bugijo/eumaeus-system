@@ -25,10 +25,7 @@
       "target": [
         "AppImage"
       ],
-      "category": "Office",
-      "desktopName": "eumaeus.desktop",
-      "syncDesktopName": true,
-      "artifactName": "Eumaeus-linux.${ext}"
+      "category": "Office"
     },
     "win": {
       "target": [
