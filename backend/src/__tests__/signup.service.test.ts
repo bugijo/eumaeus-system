@@ -55,6 +55,8 @@ describe('Contratação: checkout', () => {
     expect(result.redirectUrl).toBe('https://mp.example/checkout');
     // O segredo devolvido ao navegador não é o que fica no banco.
     expect(db.signupCheckout.create.mock.calls[0][0].data.browserTokenHash).toBe(hashSecret(result.token));
+    // O retorno leva o token: o cadastro funciona mesmo se o Mercado Pago devolver em outro navegador.
+    expect(preference.back_urls.success).toBe(`https://eumaeus.example/assinar/retorno?checkout=${CHECKOUT_ID}&token=${result.token}`);
   });
 
   it('recusa plano desconhecido e responde 503 sem credencial', async () => {

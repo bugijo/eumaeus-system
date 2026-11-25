@@ -149,7 +149,9 @@ export const createSignupService = (deps: SignupServiceDeps = {}) => {
         select: { id: true },
       });
 
-      const returnUrl = `${current.publicBaseUrl}/assinar/retorno?checkout=${checkout.id}`;
+      // O token vai no retorno: no celular o Mercado Pago pode devolver o cliente em outro navegador
+      // (sem o localStorage da compra). Ele só consulta esta contratação e cria a conta uma vez.
+      const returnUrl = `${current.publicBaseUrl}/assinar/retorno?checkout=${checkout.id}&token=${browserToken}`;
       const preference: Record<string, unknown> = {
         items: [{
           id: `eumaeus-${plan.toLowerCase()}`,
