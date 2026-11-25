@@ -8,7 +8,7 @@ type Item = { icon: React.ElementType; title: string; detail: string; status: 'd
 // Instaladores publicados em GitHub Releases (último release). Os nomes fixos vêm do workflow installers.yml.
 const RELEASES = 'https://github.com/bugijo/eumaeus-system/releases/latest/download';
 // Só vira true depois de o release existir com os arquivos; antes disso o link não pode aparecer.
-const INSTALLERS_PUBLISHED = false;
+const INSTALLERS_PUBLISHED = true;
 const installer = (file: string) => (INSTALLERS_PUBLISHED ? { status: 'disponivel' as const, href: `${RELEASES}/${file}`, cta: 'Baixar' } : { status: 'em-breve' as const });
 
 /**
