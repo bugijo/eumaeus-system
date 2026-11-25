@@ -9,7 +9,7 @@
 		-Server
 	}
 
-	@api path /api/* /health
+	@api path /api/* /health /webhooks/*
 	handle @api {
 		reverse_proxy api:3333 {
 			# Nunca repassa o X-Forwarded-For enviado pelo cliente: a API usa este valor como IP no limitador.
