@@ -67,6 +67,11 @@ export default {
         return res.status(401).json({ message: 'Credenciais inválidas' });
       }
 
+      // Conta criada pela contratação online ainda sem o e-mail confirmado (só depois da senha certa).
+      if ((authProfile as { emailVerifiedAt?: Date | null }).emailVerifiedAt === null) {
+        return res.status(403).json({ message: 'Confirme seu e-mail para entrar. Enviamos o link na criação da conta.', code: 'EMAIL_NOT_VERIFIED' });
+      }
+
       // O resto da nossa lógica condicional, agora com 100% de certeza dos tipos.
       let tokenPayload;
       let userPayload;

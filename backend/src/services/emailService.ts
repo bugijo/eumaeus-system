@@ -222,6 +222,53 @@ class EmailService {
     return this.sendEmail({ to: email, subject, html, text });
   }
 
+  /** true quando há SMTP configurado; sem isso nenhum e-mail sai. */
+  isConfigured(): boolean {
+    return Boolean(this.transporter);
+  }
+
+  private accountEmail(title: string, paragraphs: string[], link: string, linkLabel: string) {
+    const safeLink = escapeHtml(link);
+    const body = paragraphs.map((p) => `<p style="margin: 0 0 14px 0; color: #374151; font-size: 15px;">${escapeHtml(p)}</p>`).join('');
+    return `
+      <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 24px;">
+        <h1 style="color: #1e293b; font-size: 20px; margin: 0 0 18px 0;">${escapeHtml(title)}</h1>
+        ${body}
+        <p style="margin: 22px 0;"><a href="${safeLink}" style="background: #2563eb; color: #fff; padding: 12px 20px; border-radius: 8px; text-decoration: none; font-weight: bold;">${escapeHtml(linkLabel)}</a></p>
+        <p style="margin: 0; color: #64748b; font-size: 13px;">Se o botão não abrir, copie este endereço: ${safeLink}</p>
+      </div>`;
+  }
+
+  /** Link para criar a conta depois do pagamento confirmado. */
+  async sendSignupLink(email: string, data: { planName: string; link: string }): Promise<boolean> {
+    const paragraphs = [
+      `Recebemos o pagamento do plano ${data.planName}. Obrigado!`,
+      'Falta só criar a conta do estabelecimento: nome, responsável e senha de acesso.',
+      'O link vale para um único cadastro. Não compartilhe.',
+    ];
+    return this.sendEmail({
+      to: email,
+      subject: 'Eumaeus: pagamento confirmado, crie sua conta',
+      html: this.accountEmail('Pagamento confirmado', paragraphs, data.link, 'Criar minha conta'),
+      text: `${paragraphs.join('\n')}\n\n${data.link}`,
+    });
+  }
+
+  /** Confirmação do e-mail do dono cadastrado pela contratação online. */
+  async sendEmailVerification(email: string, data: { name: string; link: string }): Promise<boolean> {
+    const paragraphs = [
+      `Olá, ${data.name}.`,
+      'Confirme este e-mail para liberar o acesso ao Eumaeus. O link vale por 48 horas.',
+      'Se você não criou esta conta, ignore esta mensagem.',
+    ];
+    return this.sendEmail({
+      to: email,
+      subject: 'Eumaeus: confirme seu e-mail',
+      html: this.accountEmail('Confirme seu e-mail', paragraphs, data.link, 'Confirmar e-mail'),
+      text: `${paragraphs.join('\n')}\n\n${data.link}`,
+    });
+  }
+
   async testConnection(): Promise<boolean> {
     if (!this.transporter) {
       return false;

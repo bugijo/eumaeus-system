@@ -12,12 +12,22 @@ describe('Página de venda', () => {
     expect(screen.getByRole('heading', { name: 'Aplicativos' })).toBeInTheDocument();
   });
 
-  it('não publica link de download antes do instalador existir', () => {
+  it('só publica link de download para instalador que existe no release', () => {
     const available = DOWNLOAD_ITEMS.filter((item) => item.status === 'disponivel');
-    const withHref = DOWNLOAD_ITEMS.filter((item) => item.href);
-    expect(available.map((item) => item.title)).toEqual(['Navegador (todos os aparelhos)']);
-    expect(withHref).toHaveLength(1);
+    expect(available.map((item) => item.title)).toEqual(['Navegador (todos os aparelhos)', 'Windows', 'macOS', 'Linux']);
+    const installers = available.filter((item) => item.title !== 'Navegador (todos os aparelhos)');
+    expect(installers.map((item) => item.href)).toEqual([
+      'https://github.com/bugijo/eumaeus-system/releases/latest/download/Eumaeus-windows.exe',
+      'https://github.com/bugijo/eumaeus-system/releases/latest/download/Eumaeus-mac.dmg',
+      'https://github.com/bugijo/eumaeus-system/releases/latest/download/Eumaeus-linux.AppImage',
+    ]);
     expect(DOWNLOAD_ITEMS.filter((item) => item.status === 'em-breve').every((item) => !item.href)).toBe(true);
+  });
+
+  it('os botões Contratar levam à contratação online com o plano escolhido', () => {
+    render(<MemoryRouter><LandingPage /></MemoryRouter>);
+    const hrefs = screen.getAllByRole('link', { name: /^Contratar/ }).map((link) => link.getAttribute('href'));
+    expect(hrefs).toEqual(expect.arrayContaining(['/assinar', '/assinar?plano=PETSHOP', '/assinar?plano=CLINICA', '/assinar?plano=CLINICA_PETSHOP']));
   });
 
   it('mostra os três planos e as telas reais do sistema', () => {

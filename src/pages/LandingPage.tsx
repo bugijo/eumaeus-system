@@ -65,15 +65,15 @@ const TOUR: Tour[] = [
 /** Proposta de preços: precisa da aprovação do dono do produto antes de publicar. */
 const PLANS = [
   {
-    name: 'Pet Shop', price: 99, promoPrice: 79, note: 'Para banho e tosa e loja.',
+    key: 'PETSHOP', name: 'Pet Shop', price: 99, promoPrice: 79, note: 'Para banho e tosa e loja.',
     items: ['Agenda de banho e tosa e serviços', 'Tutores e pets', 'Caixa com leitor de código de barras', 'Estoque por lote e validade', 'Financeiro e relatório para o contador', 'Lembretes aos tutores', 'Acessos por funcionário'],
   },
   {
-    name: 'Clínica', price: 149, promoPrice: 129, note: 'Para a clínica veterinária.',
+    key: 'CLINICA', name: 'Clínica', price: 149, promoPrice: 129, note: 'Para a clínica veterinária.',
     items: ['Tudo do dia a dia: agenda, tutores, caixa e estoque', 'Prontuário com medicamentos aplicados', 'Receitas e vacinas', 'Internação e cirurgia', 'Especialistas', 'Financeiro e relatório para o contador', 'Acessos por funcionário'],
   },
   {
-    name: 'Clínica + Pet Shop', price: 199, promoPrice: 149, note: 'Os dois negócios no mesmo sistema.', featured: true,
+    key: 'CLINICA_PETSHOP', name: 'Clínica + Pet Shop', price: 199, promoPrice: 149, note: 'Os dois negócios no mesmo sistema.', featured: true,
     items: ['Tudo do plano Clínica', 'Tudo do plano Pet Shop', 'Contas separadas por unidade ou tudo junto, você escolhe', 'Aluguel e energia divididos entre as unidades pela regra que você cadastrar'],
   },
 ];
@@ -129,7 +129,7 @@ export default function LandingPage() {
                 Agenda, prontuário com os medicamentos aplicados, estoque que baixa sozinho, caixa com leitor de código de barras e financeiro. Direto no navegador.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-                <a href={whatsappLink('Olá! Quero contratar o Eumaeus.')} target="_blank" rel="noopener noreferrer" className={BTN_PRIMARY}>
+                <a href="/assinar" className={BTN_PRIMARY}>
                   Contratar
                 </a>
                 <a href="#telas" className={BTN_SECONDARY}>
@@ -199,9 +199,7 @@ export default function LandingPage() {
                     ))}
                   </ul>
                   <a
-                    href={whatsappLink(`Olá! Quero contratar o plano ${plan.name} do Eumaeus.`)}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    href={`/assinar?plano=${plan.key}`}
                     className={`mt-8 inline-flex h-12 items-center justify-center rounded-xl text-[15px] font-semibold ${plan.featured ? 'lp-press bg-white text-primary hover:bg-white/90' : BTN_PRIMARY}`}
                   >
                     Contratar {plan.name}
@@ -246,7 +244,7 @@ export default function LandingPage() {
           <div className="lp-wrap flex flex-col items-start justify-between gap-8 md:flex-row md:items-end">
             <h2 className="lp-h2 max-w-[30rem] text-[2rem] font-semibold leading-[1.1] sm:text-[2.75rem]">Sua clínica e seu pet shop no Eumaeus</h2>
             <div className="flex flex-col gap-3 sm:flex-row">
-              <a href={whatsappLink('Olá! Quero contratar o Eumaeus.')} target="_blank" rel="noopener noreferrer" className="lp-press inline-flex h-12 items-center justify-center rounded-xl bg-white px-6 text-[15px] font-semibold text-primary hover:bg-white/90">
+              <a href="/assinar" className="lp-press inline-flex h-12 items-center justify-center rounded-xl bg-white px-6 text-[15px] font-semibold text-primary hover:bg-white/90">
                 Contratar
               </a>
               <a href={whatsappLink('Olá! Quero falar com o time de vendas do Eumaeus.')} target="_blank" rel="noopener noreferrer" className="lp-press inline-flex h-12 items-center justify-center rounded-xl px-6 text-[15px] font-medium text-primary-foreground ring-1 ring-inset ring-primary-foreground/40 hover:bg-primary-foreground/10">

@@ -28,6 +28,7 @@ import userRoutes from './routes/user.routes';
 import specialistRoutes from './routes/specialist.routes';
 import clinicSettingsRoutes from './routes/clinicSettings.routes';
 import careRoutes from './routes/care.routes';
+import { createSignupRouter, createMercadoPagoWebhookRouter } from './routes/signup.routes';
 import createWhatsAppWebhookRouter from './routes/whatsappWebhook.routes';
 import { loadWhatsAppLocalConfig } from './integrations/whatsapp/config';
 import { whatsappPrismaStore } from './integrations/whatsapp/prisma.store';
@@ -262,6 +263,8 @@ app.use('/api/users', userRoutes);
 app.use('/api/specialists', specialistRoutes);
 app.use('/api/settings', clinicSettingsRoutes);
 app.use('/api/care', careRoutes);
+app.use('/api/signup', createSignupRouter());
+app.use('/webhooks/mercadopago', createMercadoPagoWebhookRouter());
 
 let server: http.Server | undefined;
 let scheduledTasks: Array<ReturnType<typeof cron.schedule>> = [];

@@ -34,8 +34,16 @@ services:
       JWT_SECRET: ${JWT_SECRET:?defina JWT_SECRET}
       REFRESH_TOKEN_SECRET: ${REFRESH_TOKEN_SECRET:?defina REFRESH_TOKEN_SECRET}
       ALLOW_TEST_DATA_MUTATION: "false"
+      EMAIL_HOST: ${EMAIL_HOST:-smtp.gmail.com}
+      EMAIL_PORT: ${EMAIL_PORT:-587}
+      EMAIL_SECURE: ${EMAIL_SECURE:-false}
+      EMAIL_FROM: ${EMAIL_FROM:-}
       EMAIL_USER: ${EMAIL_USER:-}
       EMAIL_PASSWORD: ${EMAIL_PASSWORD:-}
+      # Contratação online (Mercado Pago). Sem MP_ACCESS_TOKEN o botão Contratar avisa que está indisponível.
+      MP_ACCESS_TOKEN: ${MP_ACCESS_TOKEN:-}
+      MP_WEBHOOK_SECRET: ${MP_WEBHOOK_SECRET:-}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-https://eumaeus.com.br}
       # Assistente de suporte (opcional): sem chave, o chat fica desligado e a central de ajuda continua funcionando.
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       HELP_ASSISTANT_MODEL: ${HELP_ASSISTANT_MODEL:-claude-haiku-5-5}

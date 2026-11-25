@@ -271,6 +271,12 @@ model AuthProfile {
   refreshToken String?  @unique
   createdAt    DateTime @default(now())
 
+  // Confirmação de e-mail. Contas criadas pela equipe nascem confirmadas (padrão now());
+  // só o cadastro pela contratação online grava null e exige o link enviado por e-mail.
+  emailVerifiedAt            DateTime? @default(now())
+  emailVerificationTokenHash String?   @unique
+  emailVerificationExpiresAt DateTime?
+
   // A que tipo de perfil este login pertence?
   // A relação é opcional em ambos os lados, pois um AuthProfile
   // pertence a um User OU a um Tutor, nunca aos dois.
@@ -1160,4 +1166,35 @@ model SupplierProductLink {
 
   @@unique([clinicId, supplierDocument, supplierCode])
   @@index([clinicId, productId])
+}
+
+// Estabelecimento (tenant). O id é o clinicId gravado nas demais tabelas.
+model Clinic {
+  id        Int              @id @default(autoincrement())
+  name      String
+  createdAt DateTime         @default(now())
+  checkouts SignupCheckout[]
+}
+
+// Contratação pela landing: pagamento no Mercado Pago e cadastro do dono.
+// Não é tabela de tenant: existe antes de o estabelecimento existir.
+model SignupCheckout {
+  id               String    @id @default(uuid())
+  plan             String // CLINICA | PETSHOP | CLINICA_PETSHOP
+  amountCents      Int // valor cobrado, definido pelo servidor
+  contactEmail     String
+  status           String    @default("PENDING") // PENDING | PAID | REJECTED | COMPLETED
+  browserTokenHash String    @unique // segredo guardado no navegador que iniciou a compra
+  emailTokenHash   String?   @unique // segredo enviado por e-mail após o pagamento
+  mpPreferenceId   String?   @unique
+  mpPaymentId      String?   @unique
+  mpPaymentStatus  String?
+  paidAt           DateTime?
+  completedAt      DateTime?
+  clinicId         Int?
+  clinic           Clinic?   @relation(fields: [clinicId], references: [id])
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([status, createdAt])
 }

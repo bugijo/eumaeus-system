@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { authApi } from '../api/authApi';
+import { signupApi } from '../api/signupApi';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,6 +15,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [resent, setResent] = useState(false);
   const navigate = useNavigate();
   const login = useAuthStore((state) => state.login);
 
@@ -115,6 +117,16 @@ export default function LoginPage() {
 
             {/* Exibição de Erro */}
             {error && <p role="alert" className="rounded-md bg-destructive/10 px-3 py-2 text-center text-sm text-destructive">{error}</p>}
+            {error.startsWith('Confirme seu e-mail') && (
+              <button
+                type="button"
+                className="w-full text-center text-sm text-primary underline-offset-4 hover:underline disabled:opacity-60"
+                disabled={resent || !email}
+                onClick={async () => { await signupApi.resendVerification(email).catch(() => undefined); setResent(true); }}
+              >
+                {resent ? 'Se a conta existir, enviamos um link novo.' : 'Reenviar link de confirmação'}
+              </button>
+            )}
 
             {/* Botão de Submit */}
             <Button 
