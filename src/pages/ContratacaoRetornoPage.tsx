@@ -17,7 +17,8 @@ const brlCents = (cents: number) => (cents / 100).toLocaleString('pt-BR', { styl
 export default function ContratacaoRetornoPage() {
   const [params] = useSearchParams();
   const checkoutId = params.get('checkout') ?? '';
-  const token = params.get('token') ?? recallCheckoutToken(checkoutId) ?? '';
+  // Lido uma vez: depois do cadastro o token sai do localStorage, e a tela não pode voltar a "Link incompleto".
+  const [token] = useState(() => params.get('token') ?? recallCheckoutToken(checkoutId) ?? '');
   const [status, setStatus] = useState<CheckoutStatus | null>(null);
   const [loadError, setLoadError] = useState('');
   const [done, setDone] = useState<{ email: string; requiresEmailVerification: boolean } | null>(null);
@@ -43,14 +44,6 @@ export default function ContratacaoRetornoPage() {
     return () => { cancelled = true; if (timer) clearTimeout(timer); };
   }, [checkoutId, token]);
 
-  if (!checkoutId || !token) {
-    return (
-      <Shell title="Link incompleto">
-        <p>Abra o link enviado para o seu e-mail depois do pagamento, ou use o mesmo navegador em que você iniciou a compra.</p>
-        <p className="mt-3">Se precisar, fale com a equipe pelo WhatsApp na página inicial.</p>
-      </Shell>
-    );
-  }
   if (done) {
     return (
       <Shell title="Conta criada">
@@ -60,6 +53,14 @@ export default function ContratacaoRetornoPage() {
           <p>Tudo pronto. Entre com <strong>{done.email}</strong> e a senha que você acabou de criar.</p>
         )}
         <Button asChild className="mt-6 w-full"><Link to="/login">Ir para o login</Link></Button>
+      </Shell>
+    );
+  }
+  if (!checkoutId || !token) {
+    return (
+      <Shell title="Link incompleto">
+        <p>Abra o link enviado para o seu e-mail depois do pagamento, ou use o mesmo navegador em que você iniciou a compra.</p>
+        <p className="mt-3">Se precisar, fale com a equipe pelo WhatsApp na página inicial.</p>
       </Shell>
     );
   }
