@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { SignupError, signupService as defaultService } from '../services/signup.service';
-import { loadMercadoPagoSettings, verifyWebhookSignature } from '../integrations/mercadopago/client';
+import { MercadoPagoError, loadMercadoPagoSettings, verifyWebhookSignature } from '../integrations/mercadopago/client';
 
 type Service = typeof defaultService;
 
@@ -66,7 +66,9 @@ export const createMercadoPagoWebhookRouter = (service: Service = defaultService
     try {
       const result = await service.handlePaymentNotification(dataId);
       return res.status(200).json({ result });
-    } catch {
+    } catch (error) {
+      // Pagamento inexistente (ex.: "Simular notificação" do painel): confirma e ignora; repetir não adianta.
+      if (error instanceof MercadoPagoError && error.status === 404) return res.status(200).json({ ignored: true, reason: 'payment_not_found' });
       console.error('Falha ao processar notificação do Mercado Pago.');
       return res.status(500).json({ message: 'Tente novamente' });
     }

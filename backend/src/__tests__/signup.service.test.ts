@@ -4,7 +4,7 @@ import { createHmac } from 'node:crypto';
 import { prisma } from '../lib/prisma';
 import { createSignupService, hashSecret, SignupError } from '../services/signup.service';
 import { getCurrentClinicId } from '../tenantContext';
-import { verifyWebhookSignature } from '../integrations/mercadopago/client';
+import { MercadoPagoError, verifyWebhookSignature } from '../integrations/mercadopago/client';
 import { createMercadoPagoWebhookRouter } from '../routes/signup.routes';
 
 const db = prisma as any;
@@ -175,6 +175,20 @@ describe('Webhook do Mercado Pago', () => {
 
     await request(app).post('/webhooks/mercadopago?data.id=555&type=payment').set('x-request-id', 'r1').set('x-signature', sign('555', 'r1')).send({ type: 'payment', data: { id: '555' } }).expect(200);
     expect(service.handlePaymentNotification).toHaveBeenCalledWith('555');
+  });
+
+  it('pagamento inexistente responde 200; outras falhas, 500 para nova tentativa', async () => {
+    const service = { handlePaymentNotification: jest.fn() } as any;
+    const app = express();
+    app.use(express.json());
+    app.use('/webhooks/mercadopago', createMercadoPagoWebhookRouter(service, () => ({ accessToken: 'x', webhookSecret: secret, publicBaseUrl: 'https://e.example' })));
+    const send = () => request(app).post('/webhooks/mercadopago?data.id=123456&type=payment').set('x-request-id', 'r2').set('x-signature', sign('123456', 'r2')).send({});
+
+    service.handlePaymentNotification.mockRejectedValueOnce(new MercadoPagoError('Mercado Pago respondeu 404', 404));
+    expect((await send().expect(200)).body).toEqual({ ignored: true, reason: 'payment_not_found' });
+
+    service.handlePaymentNotification.mockRejectedValueOnce(new MercadoPagoError('Mercado Pago indisponível'));
+    await send().expect(500);
   });
 });
 
